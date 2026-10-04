@@ -200,7 +200,7 @@ function msg(b,sms){const t=T(b.tenantId),p=db.profile,mm=(d=>d.toLocaleString('
  if(b.type!='rent')L.push(`Meter: ${b.prev} → ${b.cur} = ${b.units} units × ${R(b.rate)} = ${R(b.elec)}`);
  L.push('',`*Total: ${R(b.total)}*`);
  if(p.upi)L.push('',sms?`Pay via UPI ID: ${p.upi}`:`Pay via UPI: ${upiUri(b)}`)
- if(p.name)L.push('',`– ${p.name}${p.phone?', '+p.phone:''}`);return L.join('\n')}
+ if(p.name)L.push('',`– ${p.name}`);return L.join('\n')}
 function setSt(id,v){const b=db.bills.find(x=>x.id==id);if(b.status==v)return;b.status=v;save('bills',b);draw()}
 function editRent(id){$('#rc').innerHTML=`<label>Monthly rent (₹)</label><input id=er type=number inputmode=decimal value="${E(T(id).rent)}"><button class=btn onclick="updRent('${id}')">Update rent</button><button class="btn o" style="margin-bottom:0" onclick="draw()">Cancel</button>`;$('#er').focus()}
 function updRent(id){const v=V('er');if(!(N(v)>0))return alert('Enter a valid rent amount.');const t=T(id);t.rent=String(N(v));save('tenants',t);alert('Rent updated to '+R(t.rent)+'. It applies to new bills from now on.');draw()}
