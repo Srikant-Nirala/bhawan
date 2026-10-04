@@ -44,6 +44,8 @@ nav i{font-style:normal;font-size:23px;filter:grayscale(1);opacity:.7}nav .on{co
 .seg.big{display:flex;background:rgba(120,120,128,.16);margin:4px 0 14px}.seg.big button{flex:1;padding:9px;font-size:15px}.seg .on{background:var(--c);color:var(--t);box-shadow:0 1px 3px rgba(0,0,0,.15)}
 .mnav{display:flex;align-items:center;justify-content:space-between;margin:4px 0 6px}.mnav b{font-size:18px}.mnav button{width:40px;height:40px;border-radius:50%;border:0;background:var(--c);color:var(--p);font-size:24px;box-shadow:var(--sh)}.mnav button:disabled{opacity:.3}
 .badge.org{color:#ff9500;background:rgba(255,149,0,.16)}
+.seg:not(.big) button{width:80px;text-align:center}
+.card{overflow:hidden}
 </style></head><body>
 <div id="main"></div>
 <nav><button id="n0" onclick="tabTo(0)"><i>🏠</i>Manage</button><button id="n1" onclick="tabTo(1)"><i>👤</i>Profile</button></nav>
@@ -102,7 +104,7 @@ billForm:([id,type])=>{const t=T(id),prev=lastRead(id);return `<h2>${typeName[ty
 ${type!='rent'?`<label>Previous reading</label><input id=bp type=number value="${prev}" oninput="calc()"><label>Current reading</label><input id=bc type=number inputmode=decimal oninput="calc()">`:''}
 </div><div class=card id=sum></div><button class=btn onclick="genBill('${id}','${type}')" style="background:var(--g)">Generate bill</button><script>calc()<\/script>`},
 
-sent:id=>{const b=db.bills.find(x=>x.id==id),t=T(b.tenantId);return `<h2>Bill generated ✅</h2><div class=card><pre style="white-space:pre-wrap;font:inherit">${E(msg(b))}</pre></div>
+sent:id=>{const b=db.bills.find(x=>x.id==id),t=T(b.tenantId);return `<h2>Bill generated ✅</h2><div class=card><pre style="white-space:pre-wrap;font:inherit;margin:0;overflow-wrap:anywhere;word-break:break-all">${E(msg(b))}</pre></div>
 <a class=btn style="background:#25d366" target=_blank href="https://wa.me/${wa(t.phone)}?text=${encodeURIComponent(msg(b))}">Send on WhatsApp</a>
 <a class="btn" style="background:#34c759" href="sms:+${wa(t.phone)}${/iPhone|iPad|Mac/.test(navigator.userAgent)?'&':'?'}body=${encodeURIComponent(msg(b,1).replace(/\*/g,''))}">Send as Text Message</a>
 <button class="btn o" onclick="navigator.share?navigator.share({text:msg(db.bills.find(x=>x.id=='${id}'))}):alert('Share not supported')">Share…</button>`},
