@@ -87,9 +87,9 @@ addProp:()=>`<h2>Properties</h2><div class=card>${db.props.map(p=>`<div class=it
 
 addTen:()=>!db.props.length?'<div class=card>Add a property first.</div>':`<h2>Add tenant</h2><div class=card>
 <label>Tenant name *</label><input id=tn><label>Property *</label><select id=tp onchange="renderFlat()">${db.props.map(p=>`<option value="${p.id}">${E(p.name)}</option>`).join('')}</select>
-<label>Phone * (10 digits)</label><input id=tph type=tel inputmode=numeric maxlength=10 oninput="this.value=this.value.replace(/\D/g,'').slice(0,10)"><label>Flat number</label><div id=fw></div><label>Entry date</label><input id=te type=date value="${today()}">
+<label>Phone * (10 digits)</label><input id=tph type=tel inputmode=numeric maxlength=10 oninput="this.value=this.value.replace(/\\D/g,'').slice(0,10)"><label>Flat number</label><div id=fw></div><label>Entry date</label><input id=te type=date value="${today()}">
 <label>Monthly rent *</label><input id=tr type=number inputmode=decimal><label>Security deposit (optional)</label><input id=td type=number inputmode=decimal>
-<label>Billing type</label><select id=tb onchange="$('#mw').style.display=this.value=='both'?'':'none'"><option value=both>Rent + Electricity</option><option value=rent>Rent only</option></select><div id=mw><label>Initial meter reading *</label><input id=tm type=number inputmode=decimal></div><label>Aadhar number * (12 digits)</label><input id=ta inputmode=numeric maxlength=12 oninput="this.value=this.value.replace(/\D/g,'').slice(0,12)">
+<label>Billing type</label><select id=tb onchange="$('#mw').style.display=this.value=='both'?'':'none'"><option value=both>Rent + Electricity</option><option value=rent>Rent only</option></select><div id=mw><label>Initial meter reading *</label><input id=tm type=number inputmode=decimal></div><label>Aadhar number * (12 digits)</label><input id=ta inputmode=numeric maxlength=12 oninput="this.value=this.value.replace(/\\D/g,'').slice(0,12)">
 <label>Aadhar photo</label><input type=file accept="image/*" onchange="pickPhoto(this)">
 <label>Other documents (optional)</label><div id=dl></div><input type=file id=df multiple accept="image/*,application/pdf" onchange="addDocs(this)" hidden><button class="btn o" type=button onclick="$('#df').click()">+ Add document</button>
 <button class=btn onclick="addTen()">Save tenant</button></div><script>renderFlat()<\/script>`,
@@ -115,6 +115,7 @@ tenant:id=>{const t=T(id),bs=tbills(id),sec=s=>bs.filter(b=>b.status==s).map(b=>
 return `<h2>${E(t.name)}</h2><div class=card><div class=m>Flat ${E(t.flat)} · Rent ${R(t.rent)} · Deposit ${R(t.deposit)}<br>Entry ${E(t.entry)} · Aadhar ${E(t.aadhar)}</div>
 ${t.photo?`<a class=back target=_blank href="${E(t.photo)}">View Aadhar photo</a>`:''}${docLinks(t)}</div>
 <div class=card id=rc><div class=item style="padding:0"><div class=gr><div class=m>Monthly rent</div><b style="font-size:20px">${R(t.rent)}</b></div><button class=badge style="border:0;color:var(--p);background:rgba(10,132,255,.12)" onclick="editRent('${id}')">Edit</button></div></div>
+<div class=card id=pc><div class=item style="padding:0"><div class=gr><div class=m>Phone number</div><b style="font-size:20px">${E(t.phone)}</b></div><button class=badge style="border:0;color:var(--p);background:rgba(10,132,255,.12)" onclick="editPhone('${id}')">Edit</button></div></div>
 <a class="btn" style="background:var(--g)" href="tel:${E(t.phone)}">📞 Call ${E(t.phone)}</a>
 <h3>Pending</h3><div class=card>${sec('pending')}</div><h3>Settled</h3><div class=card>${sec('paid')}</div>
 <button class="btn r" onclick="go('archiveForm','${id}')">Archive tenant</button>`},
@@ -203,6 +204,8 @@ function msg(b,sms){const t=T(b.tenantId),p=db.profile,mm=(d=>d.toLocaleString('
  if(p.name)L.push('',`– ${p.name}`);return L.join('\n')}
 function setSt(id,v){const b=db.bills.find(x=>x.id==id);if(b.status==v)return;b.status=v;save('bills',b);draw()}
 function editRent(id){$('#rc').innerHTML=`<label>Monthly rent (₹)</label><input id=er type=number inputmode=decimal value="${E(T(id).rent)}"><button class=btn onclick="updRent('${id}')">Update rent</button><button class="btn o" style="margin-bottom:0" onclick="draw()">Cancel</button>`;$('#er').focus()}
+function editPhone(id){$('#pc').innerHTML=`<label>Phone number (10 digits)</label><input id=ep type=tel inputmode=numeric maxlength=10 value="${E(T(id).phone)}" oninput="this.value=this.value.replace(/\\D/g,'').slice(0,10)"><button class=btn onclick="updPhone('${id}')">Update phone</button><button class="btn o" style="margin-bottom:0" onclick="draw()">Cancel</button>`;$('#ep').focus()}
+function updPhone(id){const v=V('ep').replace(/\D/g,'');if(v.length!=10)return alert('Phone number must be exactly 10 digits.');const t=T(id);t.phone=v;save('tenants',t);alert('Phone number updated.');draw()}
 function updRent(id){const v=V('er');if(!(N(v)>0))return alert('Enter a valid rent amount.');const t=T(id);t.rent=String(N(v));save('tenants',t);alert('Rent updated to '+R(t.rent)+'. It applies to new bills from now on.');draw()}
 function pay(id){const b=db.bills.find(x=>x.id==id);b.status='paid';save('bills',b);draw()}
 function archive(id){if(!V('xd'))return alert('Select exit date');const t=T(id);t.active='0';t.exit=V('xd');save('tenants',t);cur().splice(-2);draw()}
