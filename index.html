@@ -78,7 +78,7 @@ menu:()=>{const p=db.profile,mo=today().slice(0,7),act=db.tenants.filter(t=>t.ac
 const tl=(k,ic,c,t,d)=>`<button class=tile onclick="go('${k}')"><span class=ic style="background:${c}">${ic}</span><span class=tx><b>${t}</b><small>${d}</small></span><span class=ch>›</span></button>`;
 return `<div class=m style="margin:6px 2px 0">${h<12?'Good morning':h<17?'Good afternoon':'Good evening'}${p.name?', '+E(p.name.trim().split(/\s+/).pop())+'ji':''}</div><h2>Rent Manager</h2>
 <div class=stats><div class="stat lg"><span>Total Rent · ${new Date().toLocaleString('en',{month:'short'})}</span><b>${R(tr)}</b></div><div class="stat org"><span>Pending</span><b>${R(pend)}</b></div></div>
-<div class=stats><div class="stat org"><span>Renter Electricity · ${new Date().toLocaleString('en',{month:'short'})}</span><b>${R(el)}</b></div><div class="stat lg"><span>Elec. Paid by Renter</span><b>${R(elP)}</b></div></div>
+<div class=stats><div class="stat org"><span>Renter Electricity · ${new Date().toLocaleString('en',{month:'short'})}</span><b>${R(el)}</b></div><div class="stat lg"><span>Elec Paid by Renter</span><b>${R(elP)}</b></div></div>
 <div class=stats><div class="stat lg"><span>Flats occupied</span><b>${n}</b></div><div class="stat org"><span>Flats empty</span><b>${Math.max(0,fl-n)}</b></div></div>
 ${tl('billProp','⚡','#ff9f0a','Send Rent & Meter Bill','Rent, electricity or both')}${tl('history','🕘','#8e8e93','Mark Paid & Bill History','Update payments, every month')}${tl('listProp','📋','#30b858','Tenants Information','Call and view bills')}${tl('analytics','📊','#bf5af2','Rent Analytics','Paid vs pending by month')}${tl('addTen','👤','#0a84ff','Add tenant','Details, deposit, Aadhar')}${tl('addProp','🏢','#5e5ce6','Add property','Name and address')}`},
 
@@ -196,7 +196,7 @@ function calc(){const [id,type]=cur()[cur().length-1][1],t=T(id),rate=N(db.profi
 function genBill(id,type){if(db.bills.some(b=>b.tenantId==id&&b.month==V('bm')))return alert('A bill for this month has already been generated for '+T(id).name+'.');if(type!='rent'&&V('bc')=='')return alert('Enter current reading');if(type!='rent'&&N(V('bc'))<N(V('bp')))return alert('Current reading is lower than previous');
  calc();const b={id:uid(),tenantId:id,month:V('bm'),type,prev:type=='rent'?'':V('bp'),cur:type=='rent'?'':V('bc'),units:B.units,rate:B.rate,elec:B.el,rent:B.rent,total:B.total,status:'pending',date:new Date().toISOString()};
  save('bills',b);cur().pop();go('sent',b.id)}
-function msg(b,sms){const t=T(b.tenantId),p=db.profile,mm=(d=>d.toLocaleString('en',{month:'long'})+'-'+d.getFullYear())(new Date(b.month+'-01T00:00')),L=[`Hello ${t.name} ji,`,'','Namaskar!','',`Your Bill of ${R(b.total)} Generated for ${mm}`,'',`Unit - Flat ${t.flat||'-'}`,'',`*${typeName[b.type]} Bill*`];
+function msg(b,sms){const t=T(b.tenantId),p=db.profile,mm=(d=>d.toLocaleString('en',{month:'long'})+'-'+d.getFullYear())(new Date(b.month+'-01T00:00')),L=[`Hello ${String(t.name).trim().split(/\s+/)[0]} ji,`,'','Namaskar!','',`Your Bill of ${R(b.total)} Generated for ${mm}`,'',`Unit - Flat ${t.flat||'-'}`,'',`*${typeName[b.type]} Bill*`];
  if(b.type!='elec')L.push(`Rent: ${R(b.rent)}`);
  if(b.type!='rent')L.push(`Meter: ${b.prev} → ${b.cur} = ${b.units} units × ${R(b.rate)} = ${R(b.elec)}`);
  L.push('',`*Total: ${R(b.total)}*`);
