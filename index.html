@@ -49,6 +49,20 @@ nav i{font-style:normal;font-size:23px;filter:grayscale(1);opacity:.7}nav .on{co
 nav button:disabled{opacity:.35}
 #nb:not(:disabled){color:var(--p)}#nb:not(:disabled) i{filter:none;opacity:1}
 .tap{cursor:pointer;transition:.12s}.tap:active{transform:scale(.97);opacity:.85}
+#main{animation:none}
+#main.fwd{animation:sR .3s cubic-bezier(.2,.8,.2,1)}#main.bck{animation:sL .3s cubic-bezier(.2,.8,.2,1)}#main.fade{animation:fd .25s ease}
+@keyframes sR{from{opacity:0;transform:translateX(28px)}to{opacity:1;transform:none}}
+@keyframes sL{from{opacity:0;transform:translateX(-28px)}to{opacity:1;transform:none}}
+@keyframes fd{from{opacity:0}to{opacity:1}}
+@keyframes up{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+#main.fwd>*,#main.fade>*{animation:up .38s cubic-bezier(.2,.8,.2,1) both}
+#main>*:nth-child(2){animation-delay:.04s}#main>*:nth-child(3){animation-delay:.08s}#main>*:nth-child(4){animation-delay:.12s}#main>*:nth-child(5){animation-delay:.16s}#main>*:nth-child(6){animation-delay:.2s}#main>*:nth-child(n+7){animation-delay:.24s}
+.item[onclick]{margin:0 -8px;padding-left:8px;padding-right:8px;border-radius:10px;transition:background .15s,transform .12s}
+.item[onclick]:active{background:rgba(120,120,128,.16);transform:scale(.985)}
+.badge,.mnav button,.seg button,nav button{transition:transform .12s,background .2s,color .2s,opacity .2s}
+.badge:active,.mnav button:active,.seg button:active{transform:scale(.9)}
+nav button:active i{transform:scale(.82)}nav i{transition:transform .15s}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style></head><body>
 <div id="main"></div>
 <nav><button id="n0" onclick="tabTo(0)"><i>🏠</i>Manage</button><button id="nb" onclick="back()"><i>⬅️</i>Back</button><button id="n1" onclick="tabTo(1)"><i>👤</i>Profile</button></nav>
@@ -69,8 +83,9 @@ async function sync(){if(!url)return;const d=await post({a:'all'});if(!d.props)r
  ym=v=>{v=String(v??'');if(!v||/^\d{4}-\d{2}$/.test(v))return v;const d=new Date(v);return isNaN(d)?v:d.getFullYear()+'-'+pd2(d.getMonth()+1)};
  db.bills.forEach(b=>{b.month=ym(b.month);b.date=String(b.date||'')});db.tenants.forEach(t=>{t.entry=ymd(t.entry);t.exit=ymd(t.exit)});
  d.profile.forEach(r=>db.profile[r.key]=r.value);persist();draw()}
-const cur=()=>st[tab],go=(v,a)=>{cur().push([v,a]);draw()},back=()=>{if(!cur().length)return;cur().pop();draw()},
-tabTo=t=>{tab=t;draw()};
+let dir='fade';
+const cur=()=>st[tab],go=(v,a)=>{cur().push([v,a]);dir='fwd';draw()},back=()=>{if(!cur().length)return;cur().pop();dir='bck';draw()},
+tabTo=t=>{tab=t;dir='fade';draw()};
 const T=id=>db.tenants.find(t=>t.id==id),P=id=>db.props.find(p=>p.id==id),active=pid=>db.tenants.filter(t=>t.propId==pid&&t.active!='0');
 const tbills=id=>db.bills.filter(b=>b.tenantId==id).sort((a,b)=>b.month.localeCompare(a.month)||b.date.localeCompare(a.date));
 const badge=b=>`<span class="badge ${b.status}">${b.status}</span>`;
@@ -179,6 +194,7 @@ const upiUri=b=>{const p=db.profile,t=T(b.tenantId),k={both:'Combined',rent:'Ren
 function draw(){$('#nb').disabled=!(cur().length);if(cur().length&&cur()[cur().length-1][0]=='addTen'){docs=[];photo=''}$('#n0').className=tab?'':'on';$('#n1').className=tab?'on':'';
  const s=cur(),[v,a]=s.length?s[s.length-1]:[tab?'profile':'menu'];
  $('#main').innerHTML=views[v](a);
+ if(dir){const M=$('#main');M.className='';void M.offsetWidth;M.className=dir;dir=''}
  $('#main').querySelectorAll('script').forEach(x=>{eval(x.textContent)});scrollTo(0,0)}
 function flatInputs(pre){const n=Math.min(100,Math.max(0,parseInt(V('pfl'))||0)),old=[...document.querySelectorAll('.fnm')].map(x=>x.value);$('#fn').innerHTML=n?'<label>Flat names (blank = 1, 2, 3…)</label>'+Array.from({length:n},(_,i)=>`<input class=fnm placeholder="Flat ${i+1} name" value="${E((old.length?old[i]:(pre||[])[i])||'')}">`).join(''):''}
 function addProp(){if(!V('pn'))return alert('Enter property name');const ns=[...document.querySelectorAll('.fnm')].map((x,i)=>x.value.trim()||String(i+1));
@@ -238,5 +254,6 @@ async function saveUrl(){const u=V('su').trim();
    persist();alert('Connected ✅ Your existing data was uploaded to Google Sheets.')}
   else{await sync();alert('Connected ✅ Synced with Google Sheets.')}
  }catch(e){alert('Could not connect to Google. Re-deploy the script with Execute as "Me" and Who has access "Anyone", then paste the new /exec URL.')}}
+document.addEventListener('click',e=>{if(e.target.closest('button,.item[onclick],.tap'))navigator.vibrate?.(8)});
 draw();sync();
 </script></body></html>
