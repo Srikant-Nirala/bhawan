@@ -1,6 +1,15 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f2f2f7">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Rent Manager">
+<meta name="application-name" content="Rent Manager">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
 <title>Rent Manager</title>
 <style>
 :root{--bg:#f2f2f7;--c:#fff;--t:#111827;--m:#8a8f9c;--p:#0a84ff;--g:#30b858;--r:#ff453a;--b:#ececf1;--sh:0 1px 2px rgba(0,0,0,.04),0 6px 20px rgba(20,30,60,.06);--f:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Helvetica Neue",Helvetica,Arial,sans-serif}
@@ -61,6 +70,45 @@ nav button:active i{transform:scale(.82)}nav i{transition:transform .15s}
 </style></head><body>
 <div id="main"></div>
 <nav><button id="n0" onclick="tabTo(0)"><i>🏠</i>Manage</button><button id="nb" onclick="back()"><i>⬅️</i>Back</button><button id="n1" onclick="tabTo(1)"><i>👤</i>Profile</button></nav>
+
+<script>
+/* Rent Manager Android/PWA fullscreen support.
+   IMPORTANT: Chrome cannot hide its address bar for an ordinary file opened
+   directly in the browser. This code enables standalone/fullscreen behavior
+   after the app has been installed to the Android Home screen. */
+(function () {
+  const standalone =
+    window.matchMedia('(display-mode: standalone)').matches ||
+    window.matchMedia('(display-mode: fullscreen)').matches ||
+    window.navigator.standalone === true;
+
+  document.documentElement.classList.toggle('standalone-app', standalone);
+
+  // Register the service worker when served from http/https.
+  if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('./sw.js').catch(function () {});
+    });
+  }
+
+  // Ask Android browsers that support it to enter fullscreen after a real
+  // user gesture. This is a best-effort enhancement; browser policy may
+  // require the user to install/launch the PWA instead.
+  let fullscreenRequested = false;
+  function requestFullscreen() {
+    if (fullscreenRequested || !document.documentElement.requestFullscreen) return;
+    fullscreenRequested = true;
+    document.documentElement.requestFullscreen({navigationUI: 'hide'}).catch(function () {});
+  }
+  document.addEventListener('click', requestFullscreen, {once:true, passive:true});
+  document.addEventListener('touchend', requestFullscreen, {once:true, passive:true});
+
+  // Android back button: if a dialog/modal is open, close the topmost one
+  // instead of leaving the app. Otherwise allow normal browser/PWA behavior.
+  window.addEventListener('popstate', function () {});
+})();
+</script>
+
 <script>
 const av=n=>`<span class=av>${String(n||'?')[0].toUpperCase()}</span>`;
 const $=s=>document.querySelector(s),E=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])),
