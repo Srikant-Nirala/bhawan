@@ -50,13 +50,8 @@ nav button:disabled{opacity:.35}
 #nb:not(:disabled){color:var(--p)}#nb:not(:disabled) i{filter:none;opacity:1}
 .tap{cursor:pointer;transition:.12s}.tap:active{transform:scale(.97);opacity:.85}
 #main{animation:none}
-#main.fwd{animation:sR .3s cubic-bezier(.2,.8,.2,1)}#main.bck{animation:sL .3s cubic-bezier(.2,.8,.2,1)}#main.fade{animation:fd .25s ease}
-@keyframes sR{from{opacity:0;transform:translateX(28px)}to{opacity:1;transform:none}}
-@keyframes sL{from{opacity:0;transform:translateX(-28px)}to{opacity:1;transform:none}}
+#main.fwd,#main.bck,#main.fade{animation:fd .22s ease}
 @keyframes fd{from{opacity:0}to{opacity:1}}
-@keyframes up{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
-#main.fwd>*,#main.fade>*{animation:up .38s cubic-bezier(.2,.8,.2,1) both}
-#main>*:nth-child(2){animation-delay:.04s}#main>*:nth-child(3){animation-delay:.08s}#main>*:nth-child(4){animation-delay:.12s}#main>*:nth-child(5){animation-delay:.16s}#main>*:nth-child(6){animation-delay:.2s}#main>*:nth-child(n+7){animation-delay:.24s}
 .item[onclick]{margin:0 -8px;padding-left:8px;padding-right:8px;border-radius:10px;transition:background .15s,transform .12s}
 .item[onclick]:active{background:rgba(120,120,128,.16);transform:scale(.985)}
 .badge,.mnav button,.seg button,nav button{transition:transform .12s,background .2s,color .2s,opacity .2s}
@@ -191,11 +186,11 @@ function showDocs(){$('#dl').innerHTML=docs.map((d,i)=>`<div class=item><div cla
 async function upDocs(t){let d=[];try{d=JSON.parse(t.docs||'[]')}catch(e){}for(const x of d)if(x.url&&x.url.startsWith('data:')){const r=await post({a:'upload',name:t.name+'_'+x.name.replace(/\.[^.]+$/,''),data:x.url});if(r.url)x.url=r.url}t.docs=JSON.stringify(d)}
 const docLinks=t=>{let d=[];try{d=JSON.parse(t.docs||'[]')}catch(e){}return d.map(x=>`<a class=back style="display:block" target=_blank href="${E(x.url)}">📄 ${E(x.name)}</a>`).join('')};
 const upiUri=b=>{const p=db.profile,t=T(b.tenantId),k={both:'Combined',rent:'Rent',elec:'Electricity'}[b.type];return `upi://pay?pa=${p.upi}&pn=${encodeURIComponent(p.upiName||p.name||'')}&am=${+(+b.total).toFixed(2)}&cu=INR&tn=${encodeURIComponent('Rent for - '+new Date(b.month+'-01T00:00').toLocaleString('en',{month:'short',year:'numeric'}))}`};
-function draw(){$('#nb').disabled=!(cur().length);if(cur().length&&cur()[cur().length-1][0]=='addTen'){docs=[];photo=''}$('#n0').className=tab?'':'on';$('#n1').className=tab?'on':'';
+function draw(){const y0=scrollY,nv=!!dir;$('#nb').disabled=!(cur().length);if(cur().length&&cur()[cur().length-1][0]=='addTen'){docs=[];photo=''}$('#n0').className=tab?'':'on';$('#n1').className=tab?'on':'';
  const s=cur(),[v,a]=s.length?s[s.length-1]:[tab?'profile':'menu'];
  $('#main').innerHTML=views[v](a);
  if(dir){const M=$('#main');M.className='';void M.offsetWidth;M.className=dir;dir=''}
- $('#main').querySelectorAll('script').forEach(x=>{eval(x.textContent)});scrollTo(0,0)}
+ $('#main').querySelectorAll('script').forEach(x=>{eval(x.textContent)});scrollTo(0,nv?0:y0)}
 function flatInputs(pre){const n=Math.min(100,Math.max(0,parseInt(V('pfl'))||0)),old=[...document.querySelectorAll('.fnm')].map(x=>x.value);$('#fn').innerHTML=n?'<label>Flat names (blank = 1, 2, 3…)</label>'+Array.from({length:n},(_,i)=>`<input class=fnm placeholder="Flat ${i+1} name" value="${E((old.length?old[i]:(pre||[])[i])||'')}">`).join(''):''}
 function addProp(){if(!V('pn'))return alert('Enter property name');const ns=[...document.querySelectorAll('.fnm')].map((x,i)=>x.value.trim()||String(i+1));
  if(new Set(ns.map(x=>x.toLowerCase())).size<ns.length)return alert('Flat names must be unique.');
@@ -204,7 +199,7 @@ function updProp(id){if(!V('pn'))return alert('Enter property name');const ns=[.
  if(new Set(ns.map(x=>x.toLowerCase())).size<ns.length)return alert('Flat names must be unique.');
  const bad=db.tenants.find(t=>t.active!='0'&&t.propId==id&&ns.length&&!ns.some(n=>n.toLowerCase()==String(t.flat).trim().toLowerCase()));
  if(bad)return alert('Flat '+bad.flat+' is occupied by '+bad.name+'. Keep it in the flat list.');
- const p=P(id);p.name=V('pn');p.address=V('pa');p.flats=ns.length||V('pfl');p.flatNames=JSON.stringify(ns);save('props',p);cur().pop();draw()}
+ const p=P(id);p.name=V('pn');p.address=V('pa');p.flats=ns.length||V('pfl');p.flatNames=JSON.stringify(ns);save('props',p);cur().pop();dir='bck';draw()}
 const flatList=p=>{try{return JSON.parse(p?.flatNames||'[]')}catch(e){return[]}};
 function renderFlat(){const p=P(V('tp')),fl=flatList(p),occ=n=>db.tenants.some(t=>t.active!='0'&&t.propId==p?.id&&String(t.flat).trim().toLowerCase()==String(n).trim().toLowerCase());
  $('#fw').innerHTML=fl.length?`<select id=tf onchange="chkFlat()"><option value="">Select flat</option>${fl.map(n=>`<option value="${E(n)}">${E(n)}${occ(n)?' (occupied)':''}</option>`).join('')}</select>`:'<input id=tf onchange="chkFlat()">'}
@@ -218,7 +213,7 @@ async function addTen(){if(!V('tn')||!V('tph')||!V('tr')||(V('tb')=='both'&&V('t
  const id=uid();let ph=photo;if(ph&&url){const r=await post({a:'upload',name:V('tn')+'_'+id,data:ph});ph=r.url||ph}
  const t={id,name:V('tn'),propId:V('tp'),phone:pn10,flat:V('tf'),entry:V('te'),rent:V('tr'),deposit:V('td'),meter:V('tb')=='both'?V('tm'):'',aadhar:ad,photo:ph,docs:JSON.stringify(docs.map(d=>({name:d.name,url:d.data}))),active:'1',btype:V('tb')};
  if(url)await upDocs(t);save('tenants',t);
- docs=[];photo='';alert('Tenant added');cur().length=0;draw()}
+ docs=[];photo='';alert('Tenant added');cur().length=0;dir='fade';draw()}
 function calc(){const [id,type]=cur()[cur().length-1][1],t=T(id),rate=N(db.profile.rate),
  units=type=='rent'?0:Math.max(0,N(V('bc'))-N(V('bp'))),el=units*rate,rent=type=='elec'?0:N(t.rent);
  window.B={units,el,rent,total:el+rent,rate};
@@ -238,7 +233,7 @@ function editPhone(id){$('#pc').innerHTML=`<label>Phone number (10 digits)</labe
 function updPhone(id){const v=V('ep').replace(/\D/g,'');if(v.length!=10)return alert('Phone number must be exactly 10 digits.');const t=T(id);t.phone=v;save('tenants',t);alert('Phone number updated.');draw()}
 function updRent(id){const v=V('er');if(!(N(v)>0))return alert('Enter a valid rent amount.');const t=T(id);t.rent=String(N(v));save('tenants',t);alert('Rent updated to '+R(t.rent)+'. It applies to new bills from now on.');draw()}
 function pay(id){const b=db.bills.find(x=>x.id==id);b.status='paid';save('bills',b);draw()}
-function archive(id){if(!V('xd'))return alert('Select exit date');const t=T(id);t.active='0';t.exit=V('xd');save('tenants',t);cur().splice(-2);draw()}
+function archive(id){if(!V('xd'))return alert('Select exit date');const t=T(id);t.active='0';t.exit=V('xd');save('tenants',t);cur().splice(-2);dir='bck';draw()}
 function restore(id){const t=T(id);t.active='1';t.exit='';save('tenants',t);draw()}
 function saveProf(){setProf('name',V('pf'));setProf('phone',V('pph'));setProf('rate',V('pr'));setProf('upi',V('pu'));setProf('upiName',V('pun'));alert('Profile saved')}
 async function saveUrl(){const u=V('su').trim();
