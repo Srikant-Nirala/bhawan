@@ -99,8 +99,8 @@ const views={
 menu:()=>{const p=db.profile,mo=today().slice(0,7),act=db.tenants.filter(t=>t.active!='0'),mb=db.bills.filter(b=>b.month==mo&&act.some(t=>t.id==b.tenantId)),tr=act.reduce((a,t)=>a+N(t.rent),0),paidR=mb.filter(b=>b.status=='paid').reduce((a,b)=>a+N(b.rent),0),el=mb.reduce((q,b)=>q+N(b.elec),0),elP=mb.filter(b=>b.status=='paid').reduce((q,b)=>q+N(b.elec),0),pend=Math.max(0,tr-paidR),n=act.length,fl=db.props.reduce((a,p)=>a+N(p.flats),0),h=new Date().getHours();
 const tl=(k,ic,c,t,d)=>`<button class=tile onclick="go('${k}')"><span class=ic style="background:${c}">${ic}</span><span class=tx><b>${t}</b><small>${d}</small></span><span class=ch>›</span></button>`;
 return `<div class=m style="margin:6px 2px 0">${h<12?'Good morning':h<17?'Good afternoon':'Good evening'}${p.name?', '+E(p.name.trim().split(/\s+/).pop())+'ji':''}</div><h2>Rent Manager</h2>
-<div class=stats><div class="stat lg"><span>Total Rent · ${new Date().toLocaleString('hi',{month:'short'})}</span><b>${R(tr)}</b></div><div class="stat org"><span>Pending</span><b>${R(pend)}</b></div></div>
-<div class=stats><div class="stat org tap" onclick="go('elecRaised')"><span>Renter Electricity · ${new Date().toLocaleString('hi',{month:'short'})}</span><b>${R(el)}</b></div><div class="stat lg tap" onclick="go('elecPaid')"><span>Elec Paid by Renter</span><b>${R(elP)}</b></div></div>
+<div class=stats><div class="stat lg"><span>Total Rent · ${new Date().toLocaleString('hi',{month:'long'})}</span><b>${R(tr)}</b></div><div class="stat org"><span>Pending</span><b>${R(pend)}</b></div></div>
+<div class=stats><div class="stat org tap" onclick="go('elecRaised')"><span>Renter Electricity · ${new Date().toLocaleString('hi',{month:'long'})}</span><b>${R(el)}</b></div><div class="stat lg tap" onclick="go('elecPaid')"><span>Elec Paid by Renter</span><b>${R(elP)}</b></div></div>
 <div class=stats><div class="stat lg tap" onclick="go('occ')"><span>Flats occupied</span><b>${n}</b></div><div class="stat org tap" onclick="go('empty')"><span>Flats empty</span><b>${Math.max(0,fl-n)}</b></div></div>
 ${tl('billProp','⚡','#ff9f0a','Send Rent & Meter Bill','Rent, electricity or both')}${tl('history','🕘','#8e8e93','Mark Paid & Bill History','Update payments, every month')}${tl('listProp','📋','#30b858','Tenants Information','Call and view bills')}${tl('analytics','📊','#bf5af2','Rent Analytics','Paid vs pending by month')}${tl('addTen','👤','#0a84ff','Add tenant','Details, deposit, Aadhar')}${tl('addProp','🏢','#5e5ce6','Add property','Name and address')}`},
 
@@ -231,7 +231,7 @@ function genBill(id,type){if(db.bills.some(b=>b.tenantId==id&&b.month==V('bm')))
  calc();const b={id:uid(),tenantId:id,month:V('bm'),type,prev:type=='rent'?'':V('bp'),cur:type=='rent'?'':V('bc'),units:B.units,rate:B.rate,elec:B.el,rent:B.rent,total:B.total,status:'pending',date:new Date().toISOString()};
  save('bills',b);cur().pop();go('sent',b.id)}
 function msg(b,sms){const t=T(b.tenantId),p=db.profile,mm=(d=>d.toLocaleString('hi',{month:'long'})+'-'+d.getFullYear())(new Date(b.month+'-01T00:00')),tn={rent:'किराया बिल',elec:'बिजली बिल',both:'किराया + बिजली बिल'}[b.type],
- L=[`नमस्ते ${String(t.name).trim().split(/\s+/)[0]} जी,`,'','नमस्कार!','',`आपका ${R(b.total)} का बिल ${mm} के लिए बन गया है।`,'',`यूनिट - फ्लैट ${t.flat||'-'}`,'',`*${tn}*`];
+ L=[`Hello ${String(t.name).trim().split(/\s+/)[0]} जी,`,'','नमस्कार!','',`आपका ${R(b.total)} का बिल ${mm} के लिए बन गया है।`,'',`यूनिट - फ्लैट ${t.flat||'-'}`,'',`*${tn}*`];
  if(b.type!='elec')L.push(`किराया: ${R(b.rent)}`);
  if(b.type!='rent')L.push(`मीटर: ${b.prev} → ${b.cur} = ${b.units} यूनिट × ${R(b.rate)} = ${R(b.elec)}`);
  L.push('',`*कुल: ${R(b.total)}*`);
