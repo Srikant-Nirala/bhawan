@@ -91,6 +91,9 @@ nav button:active i{transform:scale(.82)}nav i{transition:transform .15s}
 .due span{font-weight:800;font-size:15.5px;text-shadow:0 1px 2px rgba(0,50,140,.35);opacity:1}
 .due b{text-shadow:0 2px 6px rgba(0,50,140,.3)}
 @media(prefers-color-scheme:dark){.stat.lg span{color:#5ef08a}.stat.org span{color:#ffb340}.due::before{background:linear-gradient(180deg,rgba(255,255,255,.28),rgba(255,255,255,.02))}.due::after{background:linear-gradient(100deg,transparent,rgba(255,255,255,.14),transparent)}}
+.stat.lg span,.stat.org span,.due span{color:#fff}
+.stat.lg span{text-shadow:0 1px 3px rgba(8,90,35,.75),0 0 1px rgba(8,90,35,.6)}
+.stat.org span{text-shadow:0 1px 3px rgba(150,70,0,.75),0 0 1px rgba(150,70,0,.6)}
 </style></head><body>
 <div id="main"></div>
 <nav><button id="n0" onclick="tabTo(0)"><i>🏠</i>Manage</button><button id="nb" onclick="back()"><i>⬅️</i>Back</button><button id="n1" onclick="tabTo(1)"><i>👤</i>Profile</button></nav>
