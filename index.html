@@ -45,8 +45,9 @@ nav i{font-style:normal;font-size:23px;filter:grayscale(1);opacity:.7}nav .on{co
 .tot{font-size:22px;font-weight:700}table{width:100%;border-collapse:collapse;font-size:14px;margin-top:6px}td{padding:8px 3px;border-bottom:1px solid var(--b)}tr:last-child td{border:0}
 .seg{display:flex;background:var(--bg);border-radius:10px;padding:2px;flex:none}.seg button{border:0;background:none;color:var(--m);font-size:13px;font-weight:600;padding:6px 11px;border-radius:8px}.seg .pd{background:var(--g);color:#fff}.seg .pn{background:var(--r);color:#fff}
 .stat.warn b{color:var(--r)}
-.stat.org{background:linear-gradient(rgba(255,149,0,.16),rgba(255,149,0,.16)),var(--c)}.stat.org b{color:#ff9500}
-.stat.lg{background:linear-gradient(rgba(52,199,89,.16),rgba(52,199,89,.16)),var(--c)}.stat.lg b{color:#34c759}
+.stat.org{background:linear-gradient(rgba(255,149,0,.34),rgba(255,149,0,.34)),var(--c)}.stat.org b{color:#c76a00}
+.stat.lg{background:linear-gradient(rgba(52,199,89,.34),rgba(52,199,89,.34)),var(--c)}.stat.lg b{color:#1b8a3d}
+@media(prefers-color-scheme:dark){.stat.org{background:linear-gradient(rgba(255,149,0,.16),rgba(255,149,0,.16)),var(--c)}.stat.org b{color:#ff9500}.stat.lg{background:linear-gradient(rgba(52,199,89,.16),rgba(52,199,89,.16)),var(--c)}.stat.lg b{color:#34c759}}
 .seg.big{display:flex;background:rgba(120,120,128,.16);margin:4px 0 14px}.seg.big button{flex:1;padding:9px;font-size:15px}.seg .on{background:var(--c);color:var(--t);box-shadow:0 1px 3px rgba(0,0,0,.15)}
 .mnav{display:flex;align-items:center;justify-content:space-between;margin:4px 0 6px}.mnav b{font-size:18px}.mnav button{width:40px;height:40px;border-radius:50%;border:0;background:var(--c);color:var(--p);font-size:24px;box-shadow:var(--sh)}.mnav button:disabled{opacity:.3}
 .badge.org{color:#ff9500;background:rgba(255,149,0,.16)}
@@ -64,7 +65,7 @@ nav button:disabled{opacity:.35}
 .badge:active,.mnav button:active,.seg button:active{transform:scale(.9)}
 nav button:active i{transform:scale(.82)}nav i{transition:transform .15s}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
-.chip{display:inline-block;width:110px;text-align:center;padding:7px 6px;white-space:nowrap}
+.chip{display:inline-block;width:86px;text-align:center;padding:3px 4px;font-size:11px;white-space:nowrap}
 </style></head><body>
 <div id="main"></div>
 <nav><button id="n0" onclick="tabTo(0)"><i>🏠</i>Manage</button><button id="nb" onclick="back()"><i>⬅️</i>Back</button><button id="n1" onclick="tabTo(1)"><i>👤</i>Profile</button></nav>
