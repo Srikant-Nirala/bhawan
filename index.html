@@ -1,16 +1,12 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#f2f2f7">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="Rent Manager">
-<meta name="application-name" content="Rent Manager">
-<link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" href="icon-192.png">
-<link rel="apple-touch-icon" href="icon-192.png">
 <title>Rent Manager</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0a84ff" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+<meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Rent Manager"><meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="apple-touch-icon" href="icon-180.png"><link rel="icon" type="image/png" href="icon-192.png">
 <style>
 :root{--bg:#f2f2f7;--c:#fff;--t:#111827;--m:#8a8f9c;--p:#0a84ff;--g:#30b858;--r:#ff453a;--b:#ececf1;--sh:0 1px 2px rgba(0,0,0,.04),0 6px 20px rgba(20,30,60,.06);--f:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Helvetica Neue",Helvetica,Arial,sans-serif}
 @media(prefers-color-scheme:dark){:root{--bg:#000;--c:#1c1c1e;--t:#f5f5f7;--m:#98989f;--b:#2c2c2e;--sh:none}}
@@ -70,45 +66,6 @@ nav button:active i{transform:scale(.82)}nav i{transition:transform .15s}
 </style></head><body>
 <div id="main"></div>
 <nav><button id="n0" onclick="tabTo(0)"><i>🏠</i>Manage</button><button id="nb" onclick="back()"><i>⬅️</i>Back</button><button id="n1" onclick="tabTo(1)"><i>👤</i>Profile</button></nav>
-
-<script>
-/* Rent Manager Android/PWA fullscreen support.
-   IMPORTANT: Chrome cannot hide its address bar for an ordinary file opened
-   directly in the browser. This code enables standalone/fullscreen behavior
-   after the app has been installed to the Android Home screen. */
-(function () {
-  const standalone =
-    window.matchMedia('(display-mode: standalone)').matches ||
-    window.matchMedia('(display-mode: fullscreen)').matches ||
-    window.navigator.standalone === true;
-
-  document.documentElement.classList.toggle('standalone-app', standalone);
-
-  // Register the service worker when served from http/https.
-  if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
-    window.addEventListener('load', function () {
-      navigator.serviceWorker.register('./sw.js').catch(function () {});
-    });
-  }
-
-  // Ask Android browsers that support it to enter fullscreen after a real
-  // user gesture. This is a best-effort enhancement; browser policy may
-  // require the user to install/launch the PWA instead.
-  let fullscreenRequested = false;
-  function requestFullscreen() {
-    if (fullscreenRequested || !document.documentElement.requestFullscreen) return;
-    fullscreenRequested = true;
-    document.documentElement.requestFullscreen({navigationUI: 'hide'}).catch(function () {});
-  }
-  document.addEventListener('click', requestFullscreen, {once:true, passive:true});
-  document.addEventListener('touchend', requestFullscreen, {once:true, passive:true});
-
-  // Android back button: if a dialog/modal is open, close the topmost one
-  // instead of leaving the app. Otherwise allow normal browser/PWA behavior.
-  window.addEventListener('popstate', function () {});
-})();
-</script>
-
 <script>
 const av=n=>`<span class=av>${String(n||'?')[0].toUpperCase()}</span>`;
 const $=s=>document.querySelector(s),E=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])),
@@ -117,10 +74,13 @@ V=id=>document.getElementById(id)?.value||'',pd2=n=>String(n).padStart(2,'0'),to
 let db={props:[],tenants:[],bills:[],profile:{}},url='',tab=0,st=[[],[]],photo='';
 try{db=JSON.parse(localStorage.db||'null')||db;url=localStorage.url||''}catch(e){}
 const persist=()=>{try{localStorage.db=JSON.stringify(db)}catch(e){alert('Local storage full')}};
-const post=b=>url?fetch(url,{method:'POST',body:JSON.stringify(b)}).then(r=>r.json()).catch(()=>({})):Promise.resolve({});
+let Q=[];try{Q=JSON.parse(localStorage.q||'[]')}catch(e){}
+const sq=()=>{try{localStorage.q=JSON.stringify(Q)}catch(e){}};
+const post=b=>url?fetch(url,{method:'POST',body:JSON.stringify(b)}).then(r=>r.json()).catch(()=>{if(b.a=='upsert'){Q.push(b);sq()}return{}}):Promise.resolve({});
+async function flushQ(){if(!url||!Q.length)return;const q=Q;Q=[];sq();for(const b of q)await post(b)}
 function save(s,row){const a=db[s],i=a.findIndex(x=>x.id==row.id);i<0?a.push(row):a[i]=row;persist();post({a:'upsert',s,r:row})}
 function setProf(k,v){db.profile[k]=v;persist();post({a:'upsert',s:'profile',r:{key:k,value:v}})}
-async function sync(){if(!url)return;const d=await post({a:'all'});if(!d.props)return;
+async function sync(){if(!url)return;await flushQ();const d=await post({a:'all'});if(!d.props)return;
  db.props=d.props.filter(x=>x.id);db.tenants=d.tenants.filter(x=>x.id);db.bills=d.bills.filter(x=>x.id);
  const ymd=v=>{v=String(v??'');if(!v||/^\d{4}-\d{2}-\d{2}$/.test(v))return v;const d=new Date(v);return isNaN(d)?v:d.getFullYear()+'-'+pd2(d.getMonth()+1)+'-'+pd2(d.getDate())},
  ym=v=>{v=String(v??'');if(!v||/^\d{4}-\d{2}$/.test(v))return v;const d=new Date(v);return isNaN(d)?v:d.getFullYear()+'-'+pd2(d.getMonth()+1)};
@@ -288,7 +248,7 @@ async function saveUrl(){const u=V('su').trim();
  if(!u)return alert('Paste your Apps Script URL first (it ends with /exec).');
  if(!/^https:\/\/script\.google\.com\/.+\/exec$/.test(u))return alert('This does not look right. The URL must start with https://script.google.com and end with /exec (not /dev, not the editor link).');
  try{const r=await fetch(u,{method:'POST',body:JSON.stringify({a:'all'})}),d=await r.json();if(!d.props)throw 0;
-  url=u;localStorage.url=u;
+  url=u;try{localStorage.url=u}catch(e){};
   if(!d.props.length&&!d.tenants.length&&(db.props.length||db.tenants.length)){
    for(const p of db.props)await post({a:'upsert',s:'props',r:p});
    for(const t of db.tenants){if(t.photo&&t.photo.startsWith('data:')){const x=await post({a:'upload',name:t.name+'_'+t.id,data:t.photo});if(x.url)t.photo=x.url}await upDocs(t);await post({a:'upsert',s:'tenants',r:t})}
@@ -298,5 +258,7 @@ async function saveUrl(){const u=V('su').trim();
   else{await sync();alert('Connected ✅ Synced with Google Sheets.')}
  }catch(e){alert('Could not connect to Google. Re-deploy the script with Execute as "Me" and Who has access "Anyone", then paste the new /exec URL.')}}
 document.addEventListener('click',e=>{if(e.target.closest('button,.item[onclick],.tap'))navigator.vibrate?.(8)});
+addEventListener('online',()=>sync());
+if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
 draw();sync();
 </script></body></html>
