@@ -65,10 +65,11 @@ nav button:disabled{opacity:.35}
 .badge:active,.mnav button:active,.seg button:active{transform:scale(.9)}
 nav button:active i{transform:scale(.82)}nav i{transition:transform .15s}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
-.chip{display:inline-block;width:86px;text-align:center;padding:3px 4px;font-size:11px;white-space:nowrap}
+.chip{display:inline-block;width:104px;text-align:center;padding:7px 6px;font-size:13px;white-space:nowrap}
+.ap{font-weight:800;font-size:15px}.ap.g{color:#1fc65a}.ap.o{color:#ff8a00}.ap.b{color:#0a84ff}
 
 .stat span{font-weight:700}
-.due{display:block;width:100%;margin:6px 0 10px;padding:18px 18px 16px;border-radius:20px;background:linear-gradient(135deg,#3d9bff,#0a84ff 55%,#0066e0);color:#fff;box-shadow:0 6px 20px rgba(10,132,255,.35)}
+.due{display:block;width:100%;margin:6px 0 10px;padding:18px 18px 16px;border-radius:20px;background:linear-gradient(135deg,#7cc0ff,#52a8ff 55%,#2f90ff);color:#fff;box-shadow:0 6px 20px rgba(82,168,255,.38)}
 .due span{display:block;font-size:15px;font-weight:700;opacity:.95}
 .due b{display:block;font-size:40px;letter-spacing:-.04em;margin-top:2px;line-height:1.15}
 .due small{display:block;font-size:13px;font-weight:600;opacity:.88;margin-top:2px}
@@ -110,7 +111,7 @@ menu:()=>{const p=db.profile,mo=today().slice(0,7),act=db.tenants.filter(t=>t.ac
 const tl=(k,ic,c,t,d)=>`<button class=tile onclick="go('${k}')"><span class=ic style="background:${c}">${ic}</span><span class=tx><b>${t}</b><small>${d}</small></span><span class=ch>›</span></button>`;
 return `<div class=m style="margin:6px 2px 0">${h<12?'Good morning':h<17?'Good afternoon':'Good evening'}${p.name?', '+E(p.name.trim().split(/\s+/).pop())+'ji':''}</div><h2>Rent Manager</h2>
 <div class="due tap" onclick="go('dueAll')"><span>कुल बकाया किराया जिसका बिल बन चुका है ›</span><b>${R(dueTot)}</b><small>${dueN} किरायेदार · सभी महीने</small></div>
-<div class=stats><div class="stat lg tap" onclick="go('rentList')"><span>Total Rent · ${new Date().toLocaleString('hi',{month:'long'})}</span><b>${R(tr)}</b></div><div class="stat org tap" onclick="go('pendList')"><span>Pending for ${new Date().toLocaleString('hi',{month:'long'})}</span><b>${R(pend)}</b></div></div>
+<div class=stats><div class="stat lg tap" onclick="go('rentList')"><span>Total Rent · ${new Date().toLocaleString('hi',{month:'long'})}</span><b>${R(tr)}</b></div><div class="stat org tap" onclick="go('pendList')"><span>${new Date().toLocaleString('hi',{month:'long'})} का बकाया</span><b>${R(pend)}</b></div></div>
 <div class=stats><div class="stat org tap" onclick="go('elecRaised')"><span>Renter Electricity · ${new Date().toLocaleString('hi',{month:'long'})}</span><b>${R(el)}</b></div><div class="stat lg tap" onclick="go('elecPaid')"><span>Elec Paid by Renter</span><b>${R(elP)}</b></div></div>
 <div class=stats><div class="stat lg tap" onclick="go('occ')"><span>Flats occupied</span><b>${n}</b></div><div class="stat org tap" onclick="go('empty')"><span>Flats empty</span><b>${Math.max(0,fl-n)}</b></div></div>
 ${tl('billProp','⚡','#ff9f0a','Send Rent & Meter Bill','Rent, electricity or both')}${tl('history','🕘','#8e8e93','Mark Paid & Bill History','Update payments, every month')}${tl('listProp','📋','#30b858','Tenants Information','Call and view bills')}${tl('analytics','📊','#bf5af2','Rent Analytics','Paid vs pending by month')}${tl('addTen','👤','#0a84ff','Add tenant','Details, deposit, Aadhar')}${tl('addProp','🏢','#5e5ce6','Add property','Name and address')}`},
@@ -155,7 +156,7 @@ ${t.photo?`<a class=back target=_blank href="${E(t.photo)}">View Aadhar photo</a
 
 analytics:()=>{const ms=[...new Set(db.bills.map(b=>b.month))].sort().reverse();if(!ms.length)return'<h2>Rent Analytics</h2><div class=card>No bills yet</div>';
 return `<h2>Rent Analytics</h2>${ms.map(m=>{const bs=db.bills.filter(b=>b.month==m),pd=bs.reduce((a,b)=>a+paidAmt(b),0),pe=bs.reduce((a,b)=>a+dueOf(b),0),tot=pd+pe;
-return `<div class=card><b>${mlabel(m).replace(' ','-')}</b><div class=bar><i style="width:${tot?pd/tot*100:0}%"></i></div><div class=m>Paid ${R(pd)} · Pending ${R(pe)} · Total ${R(tot)}</div>
+return `<div class=card><b>${mlabel(m).replace(' ','-')}</b><div class=bar><i style="width:${tot?pd/tot*100:0}%"></i></div><div class=m style="margin-top:2px"><span class="ap g">Paid ${R(pd)}</span> · <span class="ap o">Pending ${R(pe)}</span> · <span class="ap b">Total ${R(tot)}</span></div>
 <table>${bs.map(b=>`<tr><td>${E(T(b.tenantId)?.name)}</td><td>${typeName[b.type]}</td><td>${R(own(b))}</td><td>${badge(b)}</td></tr>`).join('')}</table></div>`}).join('')}`},
 
 history:()=>`<h2>Mark Paid & Bill History</h2><div class="seg big"><button class="${H.t?'':'on'}" onclick="H.t=0;draw()">By flat</button><button class="${H.t?'on':''}" onclick="H.t=1;draw()">By renter</button></div>${H.t?histRenter():histFlat()}`,
