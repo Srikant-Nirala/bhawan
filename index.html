@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="hi"><head><meta charset="utf-8">
+<html lang="hi" translate="no" class="notranslate"><head><meta charset="utf-8">
+<meta name="google" content="notranslate"><meta http-equiv="content-language" content="hi">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Rent Manager</title>
 <link rel="manifest" href="manifest.webmanifest">
@@ -229,11 +230,12 @@ function calc(){const [id,type]=cur()[cur().length-1][1],t=T(id),rate=N(db.profi
 function genBill(id,type){if(db.bills.some(b=>b.tenantId==id&&b.month==V('bm')))return alert('A bill for this month has already been generated for '+T(id).name+'.');if(type!='rent'&&V('bc')=='')return alert('Enter current reading');if(type!='rent'&&N(V('bc'))<N(V('bp')))return alert('Current reading is lower than previous');
  calc();const b={id:uid(),tenantId:id,month:V('bm'),type,prev:type=='rent'?'':V('bp'),cur:type=='rent'?'':V('bc'),units:B.units,rate:B.rate,elec:B.el,rent:B.rent,total:B.total,status:'pending',date:new Date().toISOString()};
  save('bills',b);cur().pop();go('sent',b.id)}
-function msg(b,sms){const t=T(b.tenantId),p=db.profile,mm=(d=>d.toLocaleString('en',{month:'long'})+'-'+d.getFullYear())(new Date(b.month+'-01T00:00')),L=[`Hello ${String(t.name).trim().split(/\s+/)[0]} ji,`,'','Namaskar!','',`Your Bill of ${R(b.total)} Generated for ${mm}`,'',`Unit - Flat ${t.flat||'-'}`,'',`*${typeName[b.type]} Bill*`];
- if(b.type!='elec')L.push(`Rent: ${R(b.rent)}`);
- if(b.type!='rent')L.push(`Meter: ${b.prev} → ${b.cur} = ${b.units} units × ${R(b.rate)} = ${R(b.elec)}`);
- L.push('',`*Total: ${R(b.total)}*`);
- if(p.upi)L.push('',sms?`Pay via UPI ID: ${p.upi}`:`Pay via UPI: ${upiUri(b)}`)
+function msg(b,sms){const t=T(b.tenantId),p=db.profile,mm=(d=>d.toLocaleString('hi',{month:'long'})+'-'+d.getFullYear())(new Date(b.month+'-01T00:00')),tn={rent:'किराया बिल',elec:'बिजली बिल',both:'किराया + बिजली बिल'}[b.type],
+ L=[`नमस्ते ${String(t.name).trim().split(/\s+/)[0]} जी,`,'','नमस्कार!','',`आपका ${R(b.total)} का बिल ${mm} के लिए बन गया है।`,'',`यूनिट - फ्लैट ${t.flat||'-'}`,'',`*${tn}*`];
+ if(b.type!='elec')L.push(`किराया: ${R(b.rent)}`);
+ if(b.type!='rent')L.push(`मीटर: ${b.prev} → ${b.cur} = ${b.units} यूनिट × ${R(b.rate)} = ${R(b.elec)}`);
+ L.push('',`*कुल: ${R(b.total)}*`);
+ if(p.upi)L.push('',sms?`UPI आईडी से भुगतान करें: ${p.upi}`:`UPI से भुगतान करें: ${upiUri(b)}`);
  if(p.name)L.push('',`– ${p.name}`);return L.join('\n')}
 function setSt(id,v){const b=db.bills.find(x=>x.id==id);if(b.status==v)return;b.status=v;save('bills',b);draw()}
 function editRent(id){$('#rc').innerHTML=`<label>Monthly rent (₹)</label><input id=er type=number inputmode=decimal value="${E(T(id).rent)}"><button class=btn onclick="updRent('${id}')">Update rent</button><button class="btn o" style="margin-bottom:0" onclick="draw()">Cancel</button>`;$('#er').focus()}
