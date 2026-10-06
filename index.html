@@ -94,6 +94,80 @@ nav button:active i{transform:scale(.82)}nav i{transition:transform .15s}
 .stat.lg span,.stat.org span,.due span{color:#fff}
 .stat.lg span{text-shadow:0 1px 3px rgba(8,90,35,.75),0 0 1px rgba(8,90,35,.6)}
 .stat.org span{text-shadow:0 1px 3px rgba(150,70,0,.75),0 0 1px rgba(150,70,0,.6)}
+/* --- Flat iOS-style dashboard tiles --- */
+.due{background:#f5ead3;color:#1c1c1e;box-shadow:0 1px 2px rgba(0,0,0,.06),0 6px 18px rgba(0,0,0,.08);border:1px solid rgba(160,205,230,.45)}
+.due::before,.due::after{display:none}
+.due span,.due b,.due small{color:#1c1c1e;text-shadow:none;opacity:1}
+.due span{font-weight:700}.due b{font-weight:750}.due small{color:#5d7180;font-weight:600}
+.stat.lg,.stat.org{background:var(--c);box-shadow:var(--sh);border:1px solid var(--b)}
+.stat.lg::before,.stat.lg::after,.stat.org::before,.stat.org::after{display:none}
+.stat.lg span,.stat.org span{color:var(--t);text-shadow:none;font-weight:700;font-size:13.5px;line-height:1.25}
+.stat.lg b{color:#18863b}.stat.org b{color:#b85f00}
+@media(prefers-color-scheme:dark){
+.due{background:#3a3428;color:#f5ead3;border-color:rgba(190,230,248,.22);box-shadow:0 6px 18px rgba(0,0,0,.35)}
+.due span,.due b{color:#eaf8ff}.due small{color:#c9e1ee}
+.stat.lg,.stat.org{background:var(--c);border-color:var(--b);box-shadow:0 1px 2px rgba(0,0,0,.28),0 6px 18px rgba(0,0,0,.22)}
+.stat.lg span,.stat.org span{color:var(--t)}
+.stat.lg b{color:#5ee88a}.stat.org b{color:#ffb340}
+}
+/* --- Final dashboard tile colors --- */
+.due{
+  background:rgba(224,244,255,.72);
+  color:#123247;
+  border:1px solid rgba(120,190,225,.38);
+  box-shadow:0 8px 24px rgba(80,160,205,.18), inset 0 1px 0 rgba(255,255,255,.72);
+  -webkit-backdrop-filter:saturate(160%) blur(14px);
+  backdrop-filter:saturate(160%) blur(14px)
+}
+.due::before,.due::after{display:none}
+.due span,.due b{color:#123247;text-shadow:none}
+.due small{color:#527080}
+.stat.lg,.stat.org{
+  background:rgba(255,149,0,.16);
+  border:1px solid rgba(255,149,0,.22);
+  box-shadow:0 1px 2px rgba(0,0,0,.04),0 5px 14px rgba(255,149,0,.07)
+}
+.stat.lg::before,.stat.lg::after,.stat.org::before,.stat.org::after{display:none}
+.stat.lg span,.stat.org span{color:#8a4d00;text-shadow:none;font-weight:700}
+.stat.lg b,.stat.org b{color:#b85f00}
+@media(prefers-color-scheme:dark){
+  .due{
+    background:rgba(130,205,245,.18);
+    color:#e8f7ff;
+    border-color:rgba(150,220,250,.25);
+    box-shadow:0 8px 24px rgba(0,0,0,.32),inset 0 1px 0 rgba(255,255,255,.18)
+  }
+  .due span,.due b{color:#e8f7ff}
+  .due small{color:#b9d9e8}
+  .stat.lg,.stat.org{
+    background:rgba(255,149,0,.20);
+    border-color:rgba(255,180,70,.22);
+    box-shadow:0 5px 16px rgba(0,0,0,.28)
+  }
+  .stat.lg span,.stat.org span{color:#ffd08a}
+  .stat.lg b,.stat.org b{color:#ffb340}
+}
+
+/* --- Requested green tint: tiles 1, 4 and 5 --- */
+.stat.green-tint{
+  background:rgba(52,199,89,.16) !important;
+  border-color:rgba(52,199,89,.24) !important;
+  box-shadow:0 1px 2px rgba(0,0,0,.04),0 5px 14px rgba(52,199,89,.08) !important;
+}
+.stat.green-tint span{color:#287a43 !important}
+.stat.green-tint b{color:#18863b !important}
+@media(prefers-color-scheme:dark){
+  .stat.green-tint{
+    background:rgba(52,199,89,.20) !important;
+    border-color:rgba(90,220,120,.25) !important;
+    box-shadow:0 5px 16px rgba(0,0,0,.28) !important;
+  }
+  .stat.green-tint span{color:#9af0b2 !important}
+  .stat.green-tint b{color:#70e88f !important}
+}
+
+/* Remove borders from all dashboard tiles */
+.due, .stat, .tile { border: none !important; }
 </style></head><body>
 <div id="main"></div>
 <nav><button id="n0" onclick="tabTo(0)"><i>🏠</i>Manage</button><button id="nb" onclick="back()"><i>⬅️</i>Back</button><button id="n1" onclick="tabTo(1)"><i>👤</i>Profile</button></nav>
@@ -130,9 +204,9 @@ menu:()=>{const p=db.profile,mo=today().slice(0,7),act=db.tenants.filter(t=>t.ac
 const tl=(k,ic,c,t,d)=>`<button class=tile onclick="go('${k}')"><span class=ic style="background:${c}">${ic}</span><span class=tx><b>${t}</b><small>${d}</small></span><span class=ch>›</span></button>`;
 return `<div class=m style="margin:6px 2px 0">${h<12?'Good morning':h<17?'Good afternoon':'Good evening'}${p.name?', '+E(p.name.trim().split(/\s+/).pop())+'ji':''}</div><h2>Rent Manager</h2>
 <div class="due tap" onclick="go('dueAll')"><span>कुल बकाया किराया जिसका बिल बन चुका है ›</span><b>${R(dueTot)}</b><small>${dueN} किरायेदार · सभी महीने</small></div>
-<div class=stats><div class="stat lg tap" onclick="go('rentList')"><span>Total Rent · ${new Date().toLocaleString('hi',{month:'long'})}</span><b>${R(tr)}</b></div><div class="stat org tap" onclick="go('pendList')"><span>${new Date().toLocaleString('hi',{month:'long'})} का बकाया</span><b>${R(pend)}</b></div></div>
-<div class=stats><div class="stat org tap" onclick="go('elecRaised')"><span>Renter Electricity · ${new Date().toLocaleString('hi',{month:'long'})}</span><b>${R(el)}</b></div><div class="stat lg tap" onclick="go('elecPaid')"><span>Elec Paid by Renter</span><b>${R(elP)}</b></div></div>
-<div class=stats><div class="stat lg tap" onclick="go('occ')"><span>Flats occupied</span><b>${n}</b></div><div class="stat org tap" onclick="go('empty')"><span>Flats empty</span><b>${Math.max(0,fl-n)}</b></div></div>
+<div class=stats><div class="stat lg tap green-tint" onclick="go('rentList')"><span>Total Rent · ${new Date().toLocaleString('hi',{month:'long'})}</span><b>${R(tr)}</b></div><div class="stat org tap" onclick="go('pendList')"><span>${new Date().toLocaleString('hi',{month:'long'})} का बकाया</span><b>${R(pend)}</b></div></div>
+<div class=stats><div class="stat org tap" onclick="go('elecRaised')"><span>Renter Electricity · ${new Date().toLocaleString('hi',{month:'long'})}</span><b>${R(el)}</b></div><div class="stat lg tap green-tint" onclick="go('elecPaid')"><span>Elec Paid by Renter</span><b>${R(elP)}</b></div></div>
+<div class=stats><div class="stat lg tap green-tint" onclick="go('occ')"><span>Flats occupied</span><b>${n}</b></div><div class="stat org tap" onclick="go('empty')"><span>Flats empty</span><b>${Math.max(0,fl-n)}</b></div></div>
 ${tl('billProp','⚡','#ff9f0a','Send Rent & Meter Bill','Rent, electricity or both')}${tl('history','🕘','#8e8e93','Mark Paid & Bill History','Update payments, every month')}${tl('listProp','📋','#30b858','Tenants Information','Call and view bills')}${tl('analytics','📊','#bf5af2','Rent Analytics','Paid vs pending by month')}${tl('addTen','👤','#0a84ff','Add tenant','Details, deposit, Aadhar')}${tl('addProp','🏢','#5e5ce6','Add property','Name and address')}`},
 
 addProp:()=>`<h2>Properties</h2><div class=card>${db.props.map(p=>`<div class=item><div class=gr>${E(p.name)}<div class=m>${E(p.address)}${p.flats?' · '+E(p.flats)+' flats':''}</div></div><button class=badge style="border:0;color:var(--p);background:rgba(10,132,255,.12)" onclick="go('editProp','${p.id}')">Edit</button></div>`).join('')||'<span class=m>None yet</span>'}</div><h3>Add new property</h3><div class=card><label>Property name *</label><input id=pn><label>Address (optional)</label><input id=pa><label>Total number of flats</label><input id=pfl type=number inputmode=numeric min=0 max=100 oninput="flatInputs()"><div id=fn></div>
