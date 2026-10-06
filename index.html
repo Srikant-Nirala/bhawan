@@ -66,6 +66,14 @@ nav button:disabled{opacity:.35}
 nav button:active i{transform:scale(.82)}nav i{transition:transform .15s}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 .chip{display:inline-block;width:86px;text-align:center;padding:3px 4px;font-size:11px;white-space:nowrap}
+
+.stat span{font-weight:700}
+.due{display:block;width:100%;margin:6px 0 10px;padding:18px 18px 16px;border-radius:20px;background:linear-gradient(135deg,#ff6a5f,#ff453a);color:#fff;box-shadow:var(--sh)}
+.due span{display:block;font-size:15px;font-weight:700;opacity:.95}
+.due b{display:block;font-size:40px;letter-spacing:-.04em;margin-top:2px;line-height:1.15}
+.due small{display:block;font-size:13px;font-weight:600;opacity:.88;margin-top:2px}
+.item.bi{flex-direction:column;align-items:stretch;gap:10px}
+.badge.sbig{align-self:center;min-width:62%;padding:12px 24px;font-size:16px;text-align:center;border:0}
 </style></head><body>
 <div id="main"></div>
 <nav><button id="n0" onclick="tabTo(0)"><i>🏠</i>Manage</button><button id="nb" onclick="back()"><i>⬅️</i>Back</button><button id="n1" onclick="tabTo(1)"><i>👤</i>Profile</button></nav>
@@ -98,10 +106,11 @@ const badge=b=>b.status!='paid'&&N(b.paid)>0?`<span class="badge org">अधू�
 const typeName={rent:'Rent',elec:'Electricity',both:'Rent + Electricity'};
 
 const views={
-menu:()=>{const p=db.profile,mo=today().slice(0,7),act=db.tenants.filter(t=>t.active!='0'),mb=db.bills.filter(b=>b.month==mo&&act.some(t=>t.id==b.tenantId)),tr=act.reduce((a,t)=>a+N(t.rent),0),paidR=mb.reduce((a,b)=>a+rentPaid(b),0),el=mb.reduce((q,b)=>q+N(b.elec),0),elP=mb.reduce((q,b)=>q+elecPaid(b),0),pend=Math.max(0,tr-paidR),n=act.length,fl=db.props.reduce((a,p)=>a+N(p.flats),0),h=new Date().getHours();
+menu:()=>{const p=db.profile,mo=today().slice(0,7),act=db.tenants.filter(t=>t.active!='0'),mb=db.bills.filter(b=>b.month==mo&&act.some(t=>t.id==b.tenantId)),tr=act.reduce((a,t)=>a+N(t.rent),0),paidR=mb.reduce((a,b)=>a+rentPaid(b),0),el=mb.reduce((q,b)=>q+N(b.elec),0),elP=mb.reduce((q,b)=>q+elecPaid(b),0),pend=Math.max(0,tr-paidR),dueB=db.bills.filter(b=>T(b.tenantId)&&dueOf(b)>0),dueTot=r2(dueB.reduce((a,b)=>a+dueOf(b),0)),dueN=new Set(dueB.map(b=>b.tenantId)).size,n=act.length,fl=db.props.reduce((a,p)=>a+N(p.flats),0),h=new Date().getHours();
 const tl=(k,ic,c,t,d)=>`<button class=tile onclick="go('${k}')"><span class=ic style="background:${c}">${ic}</span><span class=tx><b>${t}</b><small>${d}</small></span><span class=ch>›</span></button>`;
 return `<div class=m style="margin:6px 2px 0">${h<12?'Good morning':h<17?'Good afternoon':'Good evening'}${p.name?', '+E(p.name.trim().split(/\s+/).pop())+'ji':''}</div><h2>Rent Manager</h2>
-<div class=stats><div class="stat lg tap" onclick="go('rentList')"><span>Total Rent · ${new Date().toLocaleString('hi',{month:'long'})}</span><b>${R(tr)}</b></div><div class="stat org tap" onclick="go('pendList')"><span>Pending</span><b>${R(pend)}</b></div></div>
+<div class="due tap" onclick="go('dueAll')"><span>कुल बकाया किराया ›</span><b>${R(dueTot)}</b><small>${dueN} किरायेदार · सभी महीने</small></div>
+<div class=stats><div class="stat lg tap" onclick="go('rentList')"><span>Total Rent · ${new Date().toLocaleString('hi',{month:'long'})}</span><b>${R(tr)}</b></div><div class="stat org tap" onclick="go('pendList')"><span>Pending for ${new Date().toLocaleString('hi',{month:'long'})}</span><b>${R(pend)}</b></div></div>
 <div class=stats><div class="stat org tap" onclick="go('elecRaised')"><span>Renter Electricity · ${new Date().toLocaleString('hi',{month:'long'})}</span><b>${R(el)}</b></div><div class="stat lg tap" onclick="go('elecPaid')"><span>Elec Paid by Renter</span><b>${R(elP)}</b></div></div>
 <div class=stats><div class="stat lg tap" onclick="go('occ')"><span>Flats occupied</span><b>${n}</b></div><div class="stat org tap" onclick="go('empty')"><span>Flats empty</span><b>${Math.max(0,fl-n)}</b></div></div>
 ${tl('billProp','⚡','#ff9f0a','Send Rent & Meter Bill','Rent, electricity or both')}${tl('history','🕘','#8e8e93','Mark Paid & Bill History','Update payments, every month')}${tl('listProp','📋','#30b858','Tenants Information','Call and view bills')}${tl('analytics','📊','#bf5af2','Rent Analytics','Paid vs pending by month')}${tl('addTen','👤','#0a84ff','Add tenant','Details, deposit, Aadhar')}${tl('addProp','🏢','#5e5ce6','Add property','Name and address')}`},
@@ -175,6 +184,8 @@ rentList:()=>{const g=db.props.map(p=>({p,ts:active(p.id).sort(byFlat)})).filter
 return `<h2>Total Rent</h2><div class=m style="margin:-6px 2px 8px">${mlabel(today().slice(0,7))} · Total ${R(tot)}</div>`+(g.map(x=>`<h3>${E(x.p.name)}</h3><div class=card>${x.ts.map(t=>`<div class=item>${av(t.name)}<div class=gr><b>Flat ${E(t.flat)}</b><div class=m>${E(t.name)}</div></div><b style="color:#34c759">${R(t.rent)}</b></div>`).join('')}</div>`).join('')||'<div class=card>No occupied flats</div>')},
 pendList:()=>{const mo=today().slice(0,7),rows=db.props.map(p=>({p,ts:active(p.id).sort(byFlat).map(t=>{const bs=db.bills.filter(b=>b.tenantId==t.id&&b.month==mo),paid=bs.reduce((q,b)=>q+rentPaid(b),0);return{t,due:Math.max(0,N(t.rent)-paid),bill:bs[0]}}).filter(x=>x.due>0)})).filter(x=>x.ts.length),tot=rows.reduce((a,x)=>a+x.ts.reduce((q,y)=>q+y.due,0),0);
 return `<h2>Pending</h2><div class=m style="margin:-6px 2px 8px">${mlabel(mo)} · Total ${R(tot)}</div>`+(rows.map(x=>`<h3>${E(x.p.name)}</h3><div class=card>${x.ts.map(y=>`<div class=item>${av(y.t.name)}<div class=gr><b>Flat ${E(y.t.flat)}</b><div class=m>${E(y.t.name)}</div></div><span style="display:flex;flex-direction:column;align-items:flex-end;gap:6px"><b style="color:#ff9500">${R(y.due)}</b>${y.bill?`<button class="badge paid chip" style="border:0" onclick="go('sent','${y.bill.id}')">Bill Sent</button>`:`<button class="badge org chip" style="border:0" onclick="go('billForm',['${y.t.id}','${y.t.btype||'both'}'])">Send Bill</button>`}</span></div>`).join('')}</div>`).join('')||'<div class=card>सभी ने किराया चुका दिया 🎉</div>')},
+dueAll:()=>{const rows=db.props.map(p=>({p,ts:db.tenants.filter(t=>t.propId==p.id).sort(byFlat).map(t=>{const bs=db.bills.filter(b=>b.tenantId==t.id&&dueOf(b)>0).sort((a,c)=>c.month.localeCompare(a.month));return{t,bs,due:r2(bs.reduce((q,b)=>q+dueOf(b),0))}}).filter(x=>x.due>0)})).filter(x=>x.ts.length),tot=r2(rows.reduce((a,x)=>a+x.ts.reduce((q,y)=>q+y.due,0),0));
+return `<h2>कुल बकाया किराया</h2><div class=m style="margin:-6px 2px 8px">सभी महीने · कुल ${R(tot)}</div>`+(rows.map(x=>`<h3>${E(x.p.name)}</h3><div class=card>${x.ts.map(y=>`<div class=item onclick="go('payForm','${y.bs[0].id}')">${av(y.t.name)}<div class=gr><b>Flat ${E(y.t.flat)}</b>${y.t.active=='0'?' <span class=m>(पूर्व)</span>':''}<div class=m>${E(y.t.name)} · ${y.bs.map(b=>mlabel(b.month)).join(', ')}</div></div><b style="color:#ff453a">${R(y.due)}</b></div>`).join('')}</div>`).join('')||'<div class=card>किसी का बकाया नहीं 🎉</div>')},
 payForm:id=>{const b=db.bills.find(x=>x.id==id);if(!b)return'<div class=card>बिल नहीं मिला</div>';const t=T(b.tenantId)||{},od=olderDue(b),A=r2(od.reduce((q,x)=>q+dueOf(x),0)),p=paidAmt(b),bal=r2(A+dueOf(b)),
 parts=[A>0?'पिछला बकाया '+R(A):'',b.type!='elec'?'किराया '+R(b.rent):'',b.type!='rent'?'बिजली '+R(b.elec):''].filter(Boolean);
 return `<h2>${E(t.name)}</h2><div class=m style="margin:-6px 2px 8px">Flat ${E(t.flat)} · ${mlabel(b.month)}</div>
@@ -183,8 +194,8 @@ ${p>0?`<div class=item style="margin-top:8px"><span>इस बिल में �
 <div class="item tot"><span>${bal>0?'अब बाकी':'सब चुकता ✅'}</span><span>${R(bal)}</span></div></div>
 ${od.length?`<h3>पिछला बकाया</h3><div class=card>${od.map(x=>`<div class=item><div class=gr>${mlabel(x.month)}<div class=m>${typeName[x.type]}</div></div><b style="color:#ff9500">${R(dueOf(x))}</b></div>`).join('')}</div>`:''}
 <button class=btn style="background:var(--g)" onclick="payFull('${b.id}')">✅ पूरा चुकाया</button>${A>0?'<div class=m style="text-align:center;margin:-6px 0 4px">पुराने महीनों का बकाया भी चुकता हो जाएगा</div>':''}
-<button class="btn r" onclick="payNone('${b.id}')">⏳ पूरा बकाया</button>
-<button class="btn o" onclick="go('partPay','${b.id}')">✂️ अधूरा चुकाया</button>`},
+<button class="btn r" onclick="payNone('${b.id}')">❌ पूरा बकाया</button>
+<button class="btn o" onclick="go('partPay','${b.id}')">⏳ अधूरा चुकाया</button>`},
 partPay:id=>{const b=db.bills.find(x=>x.id==id),bal=r2(olderDue(b).reduce((q,x)=>q+dueOf(x),0)+dueOf(b));
 return `<h2>अधूरा चुकाया</h2><div class=m style="margin:-6px 2px 8px">${E(T(b.tenantId)?.name)} · ${mlabel(b.month)}</div>
 <div class=card><div class="item tot"><span>अब बाकी</span><span>${R(bal)}</span></div>
@@ -206,15 +217,15 @@ const lastRead=id=>{const b=tbills(id).find(b=>b.type!='rent');return b?b.cur:T(
 
 let H={t:0,m:today().slice(0,7)},tx=0;
 const mlabel=m=>new Date(m+'-01T00:00').toLocaleString('hi',{month:'long',year:'numeric'}),
-segH=b=>{const pt=b.status!='paid'&&N(b.paid)>0;return `<button class="badge chip ${b.status=='paid'?'paid':pt?'org':''}" style="border:0;width:104px" onclick="go('payForm','${b.id}')">${b.status=='paid'?'चुकाया ✓':pt?'अधूरा चुकाया':'बकाया'} ›</button>`};
+segH=b=>{const pt=b.status!='paid'&&N(b.paid)>0;return `<button class="badge sbig ${b.status=='paid'?'paid':pt?'org':''}" onclick="go('payForm','${b.id}')">${b.status=='paid'?'चुकाया ✓':pt?'अधूरा चुकाया':'बकाया'} ›</button>`};
 function shiftM(d){const[y,m]=H.m.split('-').map(Number),x=new Date(y,m-1+d,1),k=x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0');H.m=k;draw()}
 function swp(e){const d=e.changedTouches[0].clientX-tx;if(Math.abs(d)>70)shiftM(d>0?-1:1)}
 const byFlat=(a,b)=>String(a.flat).localeCompare(String(b.flat),undefined,{numeric:true});
 const bd=b=>'Total '+R(b.total)+' = '+[N(b.arrear)>0?'पिछला बकाया '+R(b.arrear):'',b.type!='elec'?'Rent '+R(b.rent):'',b.type!='rent'?'Electricity '+R(b.elec):''].filter(Boolean).join(' + ')+(b.status!='paid'&&N(b.paid)>0?' · चुकाया '+R(b.paid):'');
 function histFlat(){let pv;const m=H.m,ts=db.tenants.filter(t=>t.active!='0'||db.bills.some(b=>b.tenantId==t.id&&b.month==m)).sort((a,b)=>String(P(a.propId)?.name).localeCompare(String(P(b.propId)?.name))||String(a.propId).localeCompare(String(b.propId))||String(a.flat).localeCompare(String(b.flat),undefined,{numeric:true}));
  return `<div ontouchstart="tx=event.touches[0].clientX" ontouchend="swp(event)" style="min-height:50vh"><div class=mnav><button onclick="shiftM(-1)">‹</button><b>${mlabel(m)}</b><button onclick="shiftM(1)">›</button></div>
-${ts.map(t=>{const bs=db.bills.filter(b=>b.tenantId==t.id&&b.month==m);return `${pv!==t.propId?(pv=t.propId,`<h3>${E(P(t.propId)?.name)}</h3>`):''}<div class=card><div class=item style="padding:0 0 10px">${av(t.name)}<div class=gr><b>Flat ${E(t.flat)}</b> · ${E(t.name)}<div class=m>${E(P(t.propId)?.name)}</div></div></div>${bs.map(b=>`<div class=item><div class=gr style="font-size:15px">${bd(b)}</div>${segH(b)}</div>`).join('')||'<div class=m>No bill generated</div>'}</div>`}).join('')||'<div class=card>No flats yet</div>'}</div>`}
-function histRenter(){return db.tenants.filter(t=>tbills(t.id).length).map(t=>`<div class=card><b>${E(t.name)}</b> <span class=m>Flat ${E(t.flat)}</span>${tbills(t.id).map(b=>`<div class=item><div class=gr><b>${mlabel(b.month)}</b><div style="font-size:15px">${bd(b)}</div></div>${segH(b)}</div>`).join('')}</div>`).join('')||'<div class=card>No bills yet</div>'}
+${ts.map(t=>{const bs=db.bills.filter(b=>b.tenantId==t.id&&b.month==m);return `${pv!==t.propId?(pv=t.propId,`<h3>${E(P(t.propId)?.name)}</h3>`):''}<div class=card><div class=item style="padding:0 0 10px">${av(t.name)}<div class=gr><b>Flat ${E(t.flat)}</b> · ${E(t.name)}<div class=m>${E(P(t.propId)?.name)}</div></div></div>${bs.map(b=>`<div class="item bi"><div class=gr style="font-size:15px">${bd(b)}</div>${segH(b)}</div>`).join('')||'<div class=m>No bill generated</div>'}</div>`}).join('')||'<div class=card>No flats yet</div>'}</div>`}
+function histRenter(){return db.tenants.filter(t=>tbills(t.id).length).map(t=>`<div class=card><b>${E(t.name)}</b> <span class=m>Flat ${E(t.flat)}</span>${tbills(t.id).map(b=>`<div class="item bi"><div class=gr><b>${mlabel(b.month)}</b><div style="font-size:15px">${bd(b)}</div></div>${segH(b)}</div>`).join('')}</div>`).join('')||'<div class=card>No bills yet</div>'}
 let docs=[];
 const rd=f=>new Promise(res=>{if(f.type.startsWith('image/')){const im=new Image;im.onload=()=>{const c=document.createElement('canvas'),k=Math.min(1,900/im.width);c.width=im.width*k;c.height=im.height*k;c.getContext('2d').drawImage(im,0,0,c.width,c.height);res(c.toDataURL('image/jpeg',.7))};im.src=URL.createObjectURL(f)}else{if(f.size>3e6){alert(f.name+' is larger than 3 MB');return res('')}const r=new FileReader;r.onload=()=>res(r.result);r.readAsDataURL(f)}});
 async function addDocs(i){for(const f of i.files){const d=await rd(f);if(d)docs.push({name:f.name,data:d})}i.value='';showDocs()}
