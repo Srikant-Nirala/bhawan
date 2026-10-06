@@ -75,22 +75,6 @@ nav button:active i{transform:scale(.82)}nav i{transition:transform .15s}
 .due small{display:block;font-size:13px;font-weight:600;opacity:.88;margin-top:2px}
 .item.bi{flex-direction:column;align-items:stretch;gap:10px}
 .badge.sbig{align-self:center;min-width:50%;padding:9px 18px;font-size:14px;text-align:center;border:0}
-
-@media(prefers-color-scheme:dark){}
-.stat.lg,.stat.org{position:relative;overflow:hidden;box-shadow:0 1px 2px rgba(0,0,0,.06),0 8px 22px rgba(20,30,60,.12),inset 0 1.5px 0 rgba(255,255,255,.95),inset 0 -1px 0 rgba(0,0,0,.05)}
-.stat.lg::before,.stat.org::before{content:"";position:absolute;left:0;right:0;top:0;height:55%;border-radius:18px 18px 60% 60%/18px 18px 28px 28px;background:linear-gradient(180deg,rgba(255,255,255,.75),rgba(255,255,255,.12));pointer-events:none}
-.stat.lg::after,.stat.org::after{content:"";position:absolute;top:-40%;left:-30%;width:60%;height:180%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.35),transparent);transform:rotate(12deg);pointer-events:none}
-.stat.lg>*,.stat.org>*{position:relative;z-index:1}
-@media(prefers-color-scheme:dark){.stat.lg,.stat.org{box-shadow:0 8px 22px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.28),inset 0 -1px 0 rgba(0,0,0,.3)}.stat.lg::before,.stat.org::before{background:linear-gradient(180deg,rgba(255,255,255,.2),rgba(255,255,255,.02))}.stat.lg::after,.stat.org::after{background:linear-gradient(100deg,transparent,rgba(255,255,255,.1),transparent)}}
-.stat.lg span,.stat.org span{font-weight:800;font-size:13.5px;letter-spacing:-.01em}
-.stat.lg span{color:#0e6b2a}.stat.org span{color:#a85200}
-.due{position:relative;overflow:hidden;box-shadow:0 8px 24px rgba(82,168,255,.45),inset 0 1.5px 0 rgba(255,255,255,.9),inset 0 -1px 0 rgba(0,0,40,.12)}
-.due::before{content:"";position:absolute;left:0;right:0;top:0;height:55%;border-radius:20px 20px 60% 60%/20px 20px 30px 30px;background:linear-gradient(180deg,rgba(255,255,255,.5),rgba(255,255,255,.06));pointer-events:none}
-.due::after{content:"";position:absolute;top:-40%;left:-30%;width:55%;height:190%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.3),transparent);transform:rotate(12deg);pointer-events:none}
-.due>*{position:relative;z-index:1}
-.due span{font-weight:800;font-size:15.5px;text-shadow:0 1px 2px rgba(0,50,140,.35);opacity:1}
-.due b{text-shadow:0 2px 6px rgba(0,50,140,.3)}
-@media(prefers-color-scheme:dark){.stat.lg span{color:#5ef08a}.stat.org span{color:#ffb340}.due::before{background:linear-gradient(180deg,rgba(255,255,255,.28),rgba(255,255,255,.02))}.due::after{background:linear-gradient(100deg,transparent,rgba(255,255,255,.14),transparent)}}
 </style></head><body>
 <div id="main"></div>
 <nav><button id="n0" onclick="tabTo(0)"><i>🏠</i>Manage</button><button id="nb" onclick="back()"><i>⬅️</i>Back</button><button id="n1" onclick="tabTo(1)"><i>👤</i>Profile</button></nav>
