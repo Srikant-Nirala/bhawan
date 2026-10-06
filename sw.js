@@ -1,5 +1,5 @@
 // Bump VERSION whenever you re-host index.html so phones pick up the new app.
-const VERSION = 'rent-manager-v1';
+const VERSION = 'rent-manager-v2';
 const SHELL = ['./', 'index.html', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png', 'icon-180.png'];
 
 self.addEventListener('install', e => {
