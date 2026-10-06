@@ -269,6 +269,8 @@ function trNode(n){if(n.nodeType==3){const v=n.nodeValue;if(v.trim()){const r=hi
 {const _al=window.alert.bind(window);window.alert=m=>_al(trMsg(String(m)));
 new MutationObserver(ms=>ms.forEach(m=>m.addedNodes.forEach(trNode))).observe(document.getElementById('main'),{childList:true,subtree:true});trNode(document.querySelector('nav'))}
 addEventListener('online',()=>sync());
-if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+if('serviceWorker' in navigator){const had=!!navigator.serviceWorker.controller;let rl=false;
+ navigator.serviceWorker.addEventListener('controllerchange',()=>{if(had&&!rl){rl=true;location.reload()}});
+ addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(r=>r.update()).catch(()=>{}))}
 draw();sync();
 </script></body></html>
