@@ -1,5 +1,5 @@
 // Bump VERSION whenever you re-host the app files.
-const VERSION = 'rent-manager-v12';
+const VERSION = 'rent-manager-v13';
 const SHELL = ['./', 'index.html', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png', 'icon-180.png'];
 
 // Install: always download a fresh copy of every file (bypass the browser's HTTP cache).
