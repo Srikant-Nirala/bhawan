@@ -94,11 +94,11 @@ const cur=()=>st[tab],go=(v,a)=>{cur().push([v,a]);dir='fwd';draw()},back=()=>{i
 tabTo=t=>{tab=t;dir='fade';draw()};
 const T=id=>db.tenants.find(t=>t.id==id),P=id=>db.props.find(p=>p.id==id),active=pid=>db.tenants.filter(t=>t.propId==pid&&t.active!='0');
 const tbills=id=>db.bills.filter(b=>b.tenantId==id).sort((a,b)=>b.month.localeCompare(a.month)||b.date.localeCompare(a.date));
-const badge=b=>`<span class="badge ${b.status}">${b.status}</span>`;
+const badge=b=>b.status!='paid'&&N(b.paid)>0?`<span class="badge org">अधूरा</span>`:`<span class="badge ${b.status}">${b.status}</span>`;
 const typeName={rent:'Rent',elec:'Electricity',both:'Rent + Electricity'};
 
 const views={
-menu:()=>{const p=db.profile,mo=today().slice(0,7),act=db.tenants.filter(t=>t.active!='0'),mb=db.bills.filter(b=>b.month==mo&&act.some(t=>t.id==b.tenantId)),tr=act.reduce((a,t)=>a+N(t.rent),0),paidR=mb.filter(b=>b.status=='paid').reduce((a,b)=>a+N(b.rent),0),el=mb.reduce((q,b)=>q+N(b.elec),0),elP=mb.filter(b=>b.status=='paid').reduce((q,b)=>q+N(b.elec),0),pend=Math.max(0,tr-paidR),n=act.length,fl=db.props.reduce((a,p)=>a+N(p.flats),0),h=new Date().getHours();
+menu:()=>{const p=db.profile,mo=today().slice(0,7),act=db.tenants.filter(t=>t.active!='0'),mb=db.bills.filter(b=>b.month==mo&&act.some(t=>t.id==b.tenantId)),tr=act.reduce((a,t)=>a+N(t.rent),0),paidR=mb.reduce((a,b)=>a+rentPaid(b),0),el=mb.reduce((q,b)=>q+N(b.elec),0),elP=mb.reduce((q,b)=>q+elecPaid(b),0),pend=Math.max(0,tr-paidR),n=act.length,fl=db.props.reduce((a,p)=>a+N(p.flats),0),h=new Date().getHours();
 const tl=(k,ic,c,t,d)=>`<button class=tile onclick="go('${k}')"><span class=ic style="background:${c}">${ic}</span><span class=tx><b>${t}</b><small>${d}</small></span><span class=ch>›</span></button>`;
 return `<div class=m style="margin:6px 2px 0">${h<12?'Good morning':h<17?'Good afternoon':'Good evening'}${p.name?', '+E(p.name.trim().split(/\s+/).pop())+'ji':''}</div><h2>Rent Manager</h2>
 <div class=stats><div class="stat lg tap" onclick="go('rentList')"><span>Total Rent · ${new Date().toLocaleString('hi',{month:'long'})}</span><b>${R(tr)}</b></div><div class="stat org tap" onclick="go('pendList')"><span>Pending</span><b>${R(pend)}</b></div></div>
@@ -126,7 +126,7 @@ billType:id=>`<h2>${E(T(id).name)}</h2><p class=m>Choose bill type</p>${Object.e
 billForm:([id,type])=>{const t=T(id),prev=lastRead(id);return `<h2>${typeName[type]} – ${E(t.name)}</h2><div class=card>
 <label>Month</label><input id=bm type=month value="${today().slice(0,7)}" oninput="calc()">
 ${type!='rent'?`<label>Previous reading</label><input id=bp type=number value="${prev}" oninput="calc()"><label>Current reading</label><input id=bc type=number inputmode=decimal oninput="calc()">`:''}
-</div><div class=card id=sum></div><button class=btn onclick="genBill('${id}','${type}')" style="background:var(--g)">Generate bill</button><script>calc()<\/script>`},
+<div id=arr></div></div><div class=card id=sum></div><button class=btn onclick="genBill('${id}','${type}')" style="background:var(--g)">Generate bill</button><script>calc()<\/script>`},
 
 sent:id=>{const b=db.bills.find(x=>x.id==id),t=T(b.tenantId);return `<h2>Bill generated ✅</h2><div class=card><pre style="white-space:pre-wrap;font:inherit;margin:0;overflow-wrap:anywhere;word-break:break-all">${E(msg(b))}</pre></div>
 <a class=btn style="background:#25d366" target=_blank href="https://wa.me/${wa(t.phone)}?text=${encodeURIComponent(msg(b))}">Send on WhatsApp</a>
@@ -135,7 +135,7 @@ sent:id=>{const b=db.bills.find(x=>x.id==id),t=T(b.tenantId);return `<h2>Bill ge
 
 listTen:pid=>`<h2>${E(P(pid)?.name)}</h2><div class=card>${active(pid).map(t=>`<div class=item>${av(t.name)}<div class=gr onclick="go('tenant','${t.id}')">${E(t.name)}<div class=m>Flat ${E(t.flat)} · ${E(t.phone)}</div></div><a href="tel:${E(t.phone)}" class=call>📞</a></div>`).join('')||'No tenants'}</div>`,
 
-tenant:id=>{const t=T(id),bs=tbills(id),sec=s=>bs.filter(b=>b.status==s).map(b=>`<div class=item><div>${b.month} · ${typeName[b.type]}<div class=m>${R(b.total)}</div></div>${b.status=='pending'?`<button class=badge style="border:0;background:var(--g)" onclick="pay('${b.id}')">Mark paid</button>`:badge(b)}</div>`).join('')||'<span class=m>None</span>';
+tenant:id=>{const t=T(id),bs=tbills(id),sec=s=>bs.filter(b=>b.status==s).map(b=>`<div class=item><div>${b.month} · ${typeName[b.type]}<div class=m>${b.status=='pending'?'बाकी '+R(dueOf(b))+(N(b.paid)>0?' · चुकाया '+R(b.paid):''):R(own(b))}</div></div>${b.status=='pending'?`<button class=badge style="border:0;background:var(--g)" onclick="pay('${b.id}')">Mark paid</button>`:badge(b)}</div>`).join('')||'<span class=m>None</span>';
 return `<h2>${E(t.name)}</h2><div class=card><div class=m>Flat ${E(t.flat)} · Rent ${R(t.rent)} · Deposit ${R(t.deposit)}<br>Entry ${E(t.entry)} · Aadhar ${E(t.aadhar)}</div>
 ${t.photo?`<a class=back target=_blank href="${E(t.photo)}">View Aadhar photo</a>`:''}${docLinks(t)}</div>
 <div class=card id=rc><div class=item style="padding:0"><div class=gr><div class=m>Monthly rent</div><b style="font-size:20px">${R(t.rent)}</b></div><button class=badge style="border:0;color:var(--p);background:rgba(10,132,255,.12)" onclick="editRent('${id}')">Edit</button></div></div>
@@ -145,9 +145,9 @@ ${t.photo?`<a class=back target=_blank href="${E(t.photo)}">View Aadhar photo</a
 <button class="btn r" onclick="go('archiveForm','${id}')">Archive tenant</button>`},
 
 analytics:()=>{const ms=[...new Set(db.bills.map(b=>b.month))].sort().reverse();if(!ms.length)return'<h2>Rent Analytics</h2><div class=card>No bills yet</div>';
-return `<h2>Rent Analytics</h2>${ms.map(m=>{const bs=db.bills.filter(b=>b.month==m),pd=sum(bs,'paid'),pe=sum(bs,'pending'),tot=pd+pe;
+return `<h2>Rent Analytics</h2>${ms.map(m=>{const bs=db.bills.filter(b=>b.month==m),pd=bs.reduce((a,b)=>a+paidAmt(b),0),pe=bs.reduce((a,b)=>a+dueOf(b),0),tot=pd+pe;
 return `<div class=card><b>${mlabel(m).replace(' ','-')}</b><div class=bar><i style="width:${tot?pd/tot*100:0}%"></i></div><div class=m>Paid ${R(pd)} · Pending ${R(pe)} · Total ${R(tot)}</div>
-<table>${bs.map(b=>`<tr><td>${E(T(b.tenantId)?.name)}</td><td>${typeName[b.type]}</td><td>${R(b.total)}</td><td>${badge(b)}</td></tr>`).join('')}</table></div>`}).join('')}`},
+<table>${bs.map(b=>`<tr><td>${E(T(b.tenantId)?.name)}</td><td>${typeName[b.type]}</td><td>${R(own(b))}</td><td>${badge(b)}</td></tr>`).join('')}</table></div>`}).join('')}`},
 
 history:()=>`<h2>Mark Paid & Bill History</h2><div class="seg big"><button class="${H.t?'':'on'}" onclick="H.t=0;draw()">By flat</button><button class="${H.t?'on':''}" onclick="H.t=1;draw()">By renter</button></div>${H.t?histRenter():histFlat()}`,
 
@@ -169,27 +169,48 @@ elecRaised:()=>{const mo=today().slice(0,7),rows=db.props.map(p=>({p,ts:active(p
 const body=rows.map(x=>`<h3>${E(x.p.name)}</h3><div class=card>${x.ts.map(t=>{const bs=db.bills.filter(b=>b.tenantId==t.id&&b.month==mo&&b.type!='rent'),amt=bs.reduce((q,b)=>q+N(b.elec),0),u=bs.reduce((q,b)=>q+N(b.units),0);tot+=amt;
 return `<div class=item>${av(t.name)}<div class=gr><b>Flat ${E(t.flat)}</b><div class=m>${E(t.name)}${bs.length?' · '+u+' units':''}</div></div>${bs.length?'<b style="color:#ff9500">'+R(amt)+'</b>':'<span class=m>Not raised</span>'}</div>`}).join('')}</div>`).join('');
 return `<h2>Renter Electricity</h2><div class=m style="margin:-6px 2px 8px">${mlabel(mo)} · Total ${R(tot)}</div>`+(body||'<div class=card>No occupied flats</div>')},
-elecPaid:()=>{const mo=today().slice(0,7),rows=db.tenants.filter(t=>t.active!='0').map(t=>({t,amt:db.bills.filter(b=>b.tenantId==t.id&&b.month==mo&&b.status=='paid'&&b.type!='rent').reduce((q,b)=>q+N(b.elec),0)})).filter(x=>x.amt>0),tot=rows.reduce((q,x)=>q+x.amt,0);
+elecPaid:()=>{const mo=today().slice(0,7),rows=db.tenants.filter(t=>t.active!='0').map(t=>({t,amt:db.bills.filter(b=>b.tenantId==t.id&&b.month==mo&&b.type!='rent').reduce((q,b)=>q+elecPaid(b),0)})).filter(x=>x.amt>0),tot=rows.reduce((q,x)=>q+x.amt,0);
 return `<h2>Elec Paid by Renter</h2><div class=m style="margin:-6px 2px 8px">${mlabel(mo)} · Total ${R(tot)}</div><div class=card>${rows.map(x=>`<div class=item>${av(x.t.name)}<div class=gr><b>${E(x.t.name)}</b><div class=m>${E(P(x.t.propId)?.name)} · Flat ${E(x.t.flat)}</div></div><b style="color:#34c759">${R(x.amt)}</b></div>`).join('')||'<span class=m>No electricity bill paid yet</span>'}</div>`},
 rentList:()=>{const g=db.props.map(p=>({p,ts:active(p.id).sort(byFlat)})).filter(x=>x.ts.length),tot=g.reduce((a,x)=>a+x.ts.reduce((q,t)=>q+N(t.rent),0),0);
 return `<h2>Total Rent</h2><div class=m style="margin:-6px 2px 8px">${mlabel(today().slice(0,7))} · Total ${R(tot)}</div>`+(g.map(x=>`<h3>${E(x.p.name)}</h3><div class=card>${x.ts.map(t=>`<div class=item>${av(t.name)}<div class=gr><b>Flat ${E(t.flat)}</b><div class=m>${E(t.name)}</div></div><b style="color:#34c759">${R(t.rent)}</b></div>`).join('')}</div>`).join('')||'<div class=card>No occupied flats</div>')},
-pendList:()=>{const mo=today().slice(0,7),rows=db.props.map(p=>({p,ts:active(p.id).sort(byFlat).map(t=>{const bs=db.bills.filter(b=>b.tenantId==t.id&&b.month==mo),paid=bs.filter(b=>b.status=='paid').reduce((q,b)=>q+N(b.rent),0);return{t,due:Math.max(0,N(t.rent)-paid),bill:bs[0]}}).filter(x=>x.due>0)})).filter(x=>x.ts.length),tot=rows.reduce((a,x)=>a+x.ts.reduce((q,y)=>q+y.due,0),0);
+pendList:()=>{const mo=today().slice(0,7),rows=db.props.map(p=>({p,ts:active(p.id).sort(byFlat).map(t=>{const bs=db.bills.filter(b=>b.tenantId==t.id&&b.month==mo),paid=bs.reduce((q,b)=>q+rentPaid(b),0);return{t,due:Math.max(0,N(t.rent)-paid),bill:bs[0]}}).filter(x=>x.due>0)})).filter(x=>x.ts.length),tot=rows.reduce((a,x)=>a+x.ts.reduce((q,y)=>q+y.due,0),0);
 return `<h2>Pending</h2><div class=m style="margin:-6px 2px 8px">${mlabel(mo)} · Total ${R(tot)}</div>`+(rows.map(x=>`<h3>${E(x.p.name)}</h3><div class=card>${x.ts.map(y=>`<div class=item>${av(y.t.name)}<div class=gr><b>Flat ${E(y.t.flat)}</b><div class=m>${E(y.t.name)}</div></div><span style="display:flex;flex-direction:column;align-items:flex-end;gap:6px"><b style="color:#ff9500">${R(y.due)}</b>${y.bill?`<button class="badge paid chip" style="border:0" onclick="go('sent','${y.bill.id}')">Bill Sent</button>`:`<button class="badge org chip" style="border:0" onclick="go('billForm',['${y.t.id}','${y.t.btype||'both'}'])">Send Bill</button>`}</span></div>`).join('')}</div>`).join('')||'<div class=card>सभी ने किराया चुका दिया 🎉</div>')},
+payForm:id=>{const b=db.bills.find(x=>x.id==id);if(!b)return'<div class=card>बिल नहीं मिला</div>';const t=T(b.tenantId)||{},od=olderDue(b),A=r2(od.reduce((q,x)=>q+dueOf(x),0)),p=paidAmt(b),bal=r2(A+dueOf(b)),
+parts=[A>0?'पिछला बकाया '+R(A):'',b.type!='elec'?'किराया '+R(b.rent):'',b.type!='rent'?'बिजली '+R(b.elec):''].filter(Boolean);
+return `<h2>${E(t.name)}</h2><div class=m style="margin:-6px 2px 8px">Flat ${E(t.flat)} · ${mlabel(b.month)}</div>
+<div class=card><div class=tot style="font-size:16px;line-height:1.5">कुल ${R(A+own(b))} = ${parts.join(' + ')}</div>
+${p>0?`<div class=item style="margin-top:8px"><span>इस बिल में चुकाया</span><b style="color:var(--g)">− ${R(p)}</b></div>`:''}
+<div class="item tot"><span>${bal>0?'अब बाकी':'सब चुकता ✅'}</span><span>${R(bal)}</span></div></div>
+${od.length?`<h3>पिछला बकाया</h3><div class=card>${od.map(x=>`<div class=item><div class=gr>${mlabel(x.month)}<div class=m>${typeName[x.type]}</div></div><b style="color:#ff9500">${R(dueOf(x))}</b></div>`).join('')}</div>`:''}
+<button class=btn style="background:var(--g)" onclick="payFull('${b.id}')">✅ पूरा चुकाया</button>${A>0?'<div class=m style="text-align:center;margin:-6px 0 4px">पुराने महीनों का बकाया भी चुकता हो जाएगा</div>':''}
+<button class="btn r" onclick="payNone('${b.id}')">⏳ पूरा बकाया</button>
+<button class="btn o" onclick="go('partPay','${b.id}')">✂️ अधूरा चुकाया</button>`},
+partPay:id=>{const b=db.bills.find(x=>x.id==id),bal=r2(olderDue(b).reduce((q,x)=>q+dueOf(x),0)+dueOf(b));
+return `<h2>अधूरा चुकाया</h2><div class=m style="margin:-6px 2px 8px">${E(T(b.tenantId)?.name)} · ${mlabel(b.month)}</div>
+<div class=card><div class="item tot"><span>अब बाकी</span><span>${R(bal)}</span></div>
+<label>कितनी रकम मिली? (₹)</label><input id=pamt type=number inputmode=decimal placeholder="0">
+<div class=m style="margin-bottom:10px">रकम पहले सबसे पुराने बकाया में जमा होगी। जो महीना पूरा हो जाएगा वह चुकता मार्क हो जाएगा, बची रकम अगले महीने में जुड़ेगी।</div>
+<button class=btn style="background:var(--g)" onclick="applyPart('${b.id}')">रकम जमा करें</button></div>`},
 archiveForm:id=>`<h2>Archive tenant</h2><div class=card><b>${E(T(id).name)}</b><div class=m style="margin-bottom:12px">Flat ${E(T(id).flat)}</div><label>Exit date</label><input id=xd type=date value="${today()}"><button class="btn r" onclick="archive('${id}')">Archive tenant</button></div>`,
 archived:()=>{const a=db.tenants.filter(t=>t.active=='0');return `<h2>Archived tenants</h2>${a.map(t=>`<div class=card><b>${E(t.name)}</b><div class=m>${E(P(t.propId)?.name)} · Flat ${E(t.flat)}<br>Phone ${E(t.phone)} · Entry ${E(t.entry)} · Exit ${E(t.exit||'—')}<br>Rent ${R(t.rent)} · Deposit ${R(t.deposit)} · Aadhar ${E(t.aadhar)}</div>
 ${t.photo?`<a target=_blank href="${E(t.photo)}">Aadhar photo</a>`:''}${docLinks(t)}${tbills(t.id).filter(b=>b.status=='pending').length?`<div class=m style="color:var(--r)">Has pending bills</div>`:''}
 <button class="btn o" onclick="restore('${t.id}')">Restore</button></div>`).join('')||'<div class=card>None</div>'}`}
 };
 const sum=(bs,s)=>bs.filter(b=>b.status==s).reduce((a,b)=>a+N(b.total),0),wa=p=>{p=String(p).replace(/\D/g,'');return p.length==10?'91'+p:p};
+const r2=x=>Math.round(N(x)*100)/100,own=b=>r2(N(b.rent)+N(b.elec)),paidAmt=b=>b.status=='paid'?own(b):Math.min(own(b),r2(N(b.paid))),dueOf=b=>r2(Math.max(0,own(b)-paidAmt(b))),
+rentPaid=b=>b.status=='paid'?N(b.rent):Math.min(N(b.rent),paidAmt(b)),elecPaid=b=>b.status=='paid'?N(b.elec):Math.max(0,paidAmt(b)-N(b.rent)),
+ML=m=>{const d=new Date(m+'-01T00:00');return d.toLocaleString('hi',{month:'long'})+'-'+d.getFullYear()},
+olderDue=b=>db.bills.filter(x=>x.tenantId==b.tenantId&&x.id!=b.id&&x.month<b.month&&dueOf(x)>0).sort((a,c)=>a.month.localeCompare(c.month)),
+arrears=(id,m)=>m?db.bills.filter(x=>x.tenantId==id&&x.month<m&&dueOf(x)>0).sort((a,c)=>a.month.localeCompare(c.month)).map(x=>[x.month,dueOf(x),x.type]):[];
 const lastRead=id=>{const b=tbills(id).find(b=>b.type!='rent');return b?b.cur:T(id).meter};
 
 let H={t:0,m:today().slice(0,7)},tx=0;
 const mlabel=m=>new Date(m+'-01T00:00').toLocaleString('hi',{month:'long',year:'numeric'}),
-segH=b=>`<div class=seg><button class="${b.status=='paid'?'pd':''}" onclick="setSt('${b.id}','paid')">Paid</button><button class="${b.status!='paid'?'pn':''}" onclick="setSt('${b.id}','pending')">Pending</button></div>`;
+segH=b=>{const pt=b.status!='paid'&&N(b.paid)>0;return `<button class="badge chip ${b.status=='paid'?'paid':pt?'org':''}" style="border:0;width:104px" onclick="go('payForm','${b.id}')">${b.status=='paid'?'चुकाया ✓':pt?'अधूरा चुकाया':'बकाया'} ›</button>`};
 function shiftM(d){const[y,m]=H.m.split('-').map(Number),x=new Date(y,m-1+d,1),k=x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0');H.m=k;draw()}
 function swp(e){const d=e.changedTouches[0].clientX-tx;if(Math.abs(d)>70)shiftM(d>0?-1:1)}
 const byFlat=(a,b)=>String(a.flat).localeCompare(String(b.flat),undefined,{numeric:true});
-const bd=b=>'Total '+R(b.total)+' = '+[b.type!='elec'?'Rent '+R(b.rent):'',b.type!='rent'?'Electricity '+R(b.elec):''].filter(Boolean).join(' + ');
+const bd=b=>'Total '+R(b.total)+' = '+[N(b.arrear)>0?'पिछला बकाया '+R(b.arrear):'',b.type!='elec'?'Rent '+R(b.rent):'',b.type!='rent'?'Electricity '+R(b.elec):''].filter(Boolean).join(' + ')+(b.status!='paid'&&N(b.paid)>0?' · चुकाया '+R(b.paid):'');
 function histFlat(){let pv;const m=H.m,ts=db.tenants.filter(t=>t.active!='0'||db.bills.some(b=>b.tenantId==t.id&&b.month==m)).sort((a,b)=>String(P(a.propId)?.name).localeCompare(String(P(b.propId)?.name))||String(a.propId).localeCompare(String(b.propId))||String(a.flat).localeCompare(String(b.flat),undefined,{numeric:true}));
  return `<div ontouchstart="tx=event.touches[0].clientX" ontouchend="swp(event)" style="min-height:50vh"><div class=mnav><button onclick="shiftM(-1)">‹</button><b>${mlabel(m)}</b><button onclick="shiftM(1)">›</button></div>
 ${ts.map(t=>{const bs=db.bills.filter(b=>b.tenantId==t.id&&b.month==m);return `${pv!==t.propId?(pv=t.propId,`<h3>${E(P(t.propId)?.name)}</h3>`):''}<div class=card><div class=item style="padding:0 0 10px">${av(t.name)}<div class=gr><b>Flat ${E(t.flat)}</b> · ${E(t.name)}<div class=m>${E(P(t.propId)?.name)}</div></div></div>${bs.map(b=>`<div class=item><div class=gr style="font-size:15px">${bd(b)}</div>${segH(b)}</div>`).join('')||'<div class=m>No bill generated</div>'}</div>`}).join('')||'<div class=card>No flats yet</div>'}</div>`}
@@ -230,25 +251,36 @@ async function addTen(){if(!V('tn')||!V('tph')||!V('tr')||(V('tb')=='both'&&V('t
  if(url)await upDocs(t);save('tenants',t);
  docs=[];photo='';alert('Tenant added');cur().length=0;dir='fade';draw()}
 function calc(){const [id,type]=cur()[cur().length-1][1],t=T(id),rate=N(db.profile.rate),
- units=type=='rent'?0:Math.max(0,N(V('bc'))-N(V('bp'))),el=units*rate,rent=type=='elec'?0:N(t.rent);
- window.B={units,el,rent,total:el+rent,rate};
- $('#sum').innerHTML=`${type!='elec'?`<div class=item>Rent<b>${R(rent)}</b></div>`:''}${type!='rent'?`<div class=item><span>Units: ${units}<br><span class=m>× ${R(rate)}/unit</span></span><b>${R(el)}</b></div>`:''}<div class="item tot"><span>Total</span><span>${R(B.total)}</span></div>${rate||type=='rent'?'':'<div class=m style="color:var(--r)">Set electricity rate in Profile tab</div>'}`}
+units=type=='rent'?0:Math.max(0,N(V('bc'))-N(V('bp'))),el=r2(units*rate),rent=type=='elec'?0:N(t.rent),
+ar=arrears(id,V('bm')),A=r2(ar.reduce((q,x)=>q+x[1],0));
+window.B={units,el,rent,arrear:A,arr:ar,total:r2(el+rent+A),rate};
+$('#arr').innerHTML=A?`<div style="background:rgba(255,149,0,.14);border-radius:12px;padding:10px 12px"><b style="color:#ff9500">⚠️ पिछला बकाया</b>${ar.map(x=>`<div style="display:flex;justify-content:space-between;padding:4px 0"><span>${mlabel(x[0])}</span><b>${R(x[1])}</b></div>`).join('')}<div class=m>यह रकम कुल बिल में जोड़ दी गई है</div></div>`:'';
+$('#sum').innerHTML=`${type!='elec'?`<div class=item>Rent<b>${R(rent)}</b></div>`:''}${type!='rent'?`<div class=item><span>Units: ${units}<br><span class=m>× ${R(rate)}/unit</span></span><b>${R(el)}</b></div>`:''}${A?`<div class=item><span>पिछला बकाया<br><span class=m>${ar.map(x=>mlabel(x[0])).join(', ')}</span></span><b style="color:#ff9500">${R(A)}</b></div>`:''}<div class="item tot"><span>Total</span><span>${R(B.total)}</span></div>${rate||type=='rent'?'':'<div class=m style="color:var(--r)">Set electricity rate in Profile tab</div>'}`}
 function genBill(id,type){if(db.bills.some(b=>b.tenantId==id&&b.month==V('bm')))return alert('A bill for this month has already been generated for '+T(id).name+'.');if(type!='rent'&&V('bc')=='')return alert('Enter current reading');if(type!='rent'&&N(V('bc'))<N(V('bp')))return alert('Current reading is lower than previous');
- calc();const b={id:uid(),tenantId:id,month:V('bm'),type,prev:type=='rent'?'':V('bp'),cur:type=='rent'?'':V('bc'),units:B.units,rate:B.rate,elec:B.el,rent:B.rent,total:B.total,status:'pending',date:new Date().toISOString()};
+ calc();const b={id:uid(),tenantId:id,month:V('bm'),type,prev:type=='rent'?'':V('bp'),cur:type=='rent'?'':V('bc'),units:B.units,rate:B.rate,elec:B.el,rent:B.rent,arrear:B.arrear,arrNote:JSON.stringify(B.arr.map(x=>[x[0],x[1]])),total:B.total,paid:'0',status:'pending',date:new Date().toISOString()};
  save('bills',b);cur().pop();go('sent',b.id)}
 function msg(b,sms){const t=T(b.tenantId),p=db.profile,mm=(d=>d.toLocaleString('hi',{month:'long'})+'-'+d.getFullYear())(new Date(b.month+'-01T00:00')),tn={rent:'किराया बिल',elec:'बिजली बिल',both:'किराया + बिजली बिल'}[b.type],
  L=[`Hello ${String(t.name).trim().split(/\s+/)[0]} जी,`,'','नमस्कार!','',`आपका ${R(b.total)} का बिल ${mm} के लिए बन गया है।`,'',`यूनिट - फ्लैट ${t.flat||'-'}`,'',`*${tn}*`];
  if(b.type!='elec')L.push(`किराया: ${R(b.rent)}`);
  if(b.type!='rent')L.push(`मीटर: ${b.prev} → ${b.cur} = ${b.units} यूनिट × ${R(b.rate)} = ${R(b.elec)}`);
+ if(N(b.arrear)>0){let ar=[];try{ar=JSON.parse(b.arrNote||'[]')}catch(e){}L.push('','*पिछला बकाया (Arrear):*');ar.forEach(x=>L.push(`${ML(x[0])}: ${R(x[1])}`));if(ar.length!=1)L.push(`कुल पिछला बकाया: ${R(b.arrear)}`)}
  L.push('',`*कुल: ${R(b.total)}*`);
  if(p.upi)L.push('',sms?`UPI आईडी से भुगतान करें: ${p.upi}`:`UPI से भुगतान करें: ${upiUri(b)}`);
  if(p.name)L.push('',`– ${p.name}`);return L.join('\n')}
-function setSt(id,v){const b=db.bills.find(x=>x.id==id);if(b.status==v)return;b.status=v;save('bills',b);draw()}
+function setPaid(x,v){const o=own(x);v=r2(Math.max(0,Math.min(v,o)));x.paid=String(v);x.status=v>=o?'paid':'pending';save('bills',x)}
+function payFull(id){const b=db.bills.find(x=>x.id==id);olderDue(b).forEach(x=>setPaid(x,own(x)));setPaid(b,own(b));cur().pop();dir='bck';draw()}
+function payNone(id){const b=db.bills.find(x=>x.id==id);b.paid='0';b.status='pending';save('bills',b);cur().pop();dir='bck';draw()}
+function applyPart(id){const b=db.bills.find(x=>x.id==id),amt=r2(N(V('pamt'))),od=olderDue(b),bal=r2(od.reduce((q,x)=>q+dueOf(x),0)+dueOf(b));
+ if(!(amt>0))return alert('सही रकम लिखें');
+ if(amt>bal)return alert('रकम बाकी बकाया ('+R(bal)+') से ज़्यादा नहीं हो सकती');
+ let rem=amt;for(const x of od){if(rem<=0)break;const a=Math.min(dueOf(x),rem);setPaid(x,paidAmt(x)+a);rem=r2(rem-a)}
+ if(rem>0)setPaid(b,paidAmt(b)+rem);
+ cur().pop();dir='bck';draw()}
 function editRent(id){$('#rc').innerHTML=`<label>Monthly rent (₹)</label><input id=er type=number inputmode=decimal value="${E(T(id).rent)}"><button class=btn onclick="updRent('${id}')">Update rent</button><button class="btn o" style="margin-bottom:0" onclick="draw()">Cancel</button>`;$('#er').focus()}
 function editPhone(id){$('#pc').innerHTML=`<label>Phone number (10 digits)</label><input id=ep type=tel inputmode=numeric maxlength=10 value="${E(T(id).phone)}" oninput="this.value=this.value.replace(/\\D/g,'').slice(0,10)"><button class=btn onclick="updPhone('${id}')">Update phone</button><button class="btn o" style="margin-bottom:0" onclick="draw()">Cancel</button>`;$('#ep').focus()}
 function updPhone(id){const v=V('ep').replace(/\D/g,'');if(v.length!=10)return alert('Phone number must be exactly 10 digits.');const t=T(id);t.phone=v;save('tenants',t);alert('Phone number updated.');draw()}
 function updRent(id){const v=V('er');if(!(N(v)>0))return alert('Enter a valid rent amount.');const t=T(id);t.rent=String(N(v));save('tenants',t);alert('Rent updated to '+R(t.rent)+'. It applies to new bills from now on.');draw()}
-function pay(id){const b=db.bills.find(x=>x.id==id);b.status='paid';save('bills',b);draw()}
+function pay(id){go('payForm',id)}
 function archive(id){if(!V('xd'))return alert('Select exit date');const t=T(id);t.active='0';t.exit=V('xd');save('tenants',t);cur().splice(-2);dir='bck';draw()}
 function restore(id){const t=T(id);t.active='1';t.exit='';save('tenants',t);draw()}
 function saveProf(){setProf('name',V('pf'));setProf('phone',V('pph'));setProf('rate',V('pr'));setProf('upi',V('pu'));setProf('upiName',V('pun'));alert('Profile saved')}
