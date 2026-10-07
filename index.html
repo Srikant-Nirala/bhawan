@@ -101,6 +101,11 @@ nav button:active i{transform:scale(.82)}nav i{transition:transform .15s}
 .lkp i{width:70px;height:70px}
 #lkc{margin-top:20px;background:none;border:0;color:var(--p);font-size:16px;font-weight:600;box-shadow:none}
 .locked #main,.locked nav,.cov #main,.cov nav{visibility:hidden}
+.nm{font-weight:800;color:var(--t);font-size:16px;line-height:1.3}
+.bfoot{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.bfoot .badge.sbig{min-width:0;align-self:auto;padding:9px 16px;margin:0}
+.bfoot .shr{color:var(--p);background:rgba(10,132,255,.12);cursor:pointer}
+.bfoot .shr:active{transform:scale(.94)}
 </style></head><body>
 <div id="lk"><div class="lkb"><div class="lkt" id="lkt"></div><div class="lkd" id="lkd"></div><div class="lke" id="lke"></div><div class="lkp" id="lkp"></div><button id="lkc" style="display:none" onclick="lkCancel()">रद्द करें</button></div></div>
 <div id="main"></div>
@@ -210,7 +215,7 @@ return `<h2>पेमेंट देखें</h2><div ontouchstart="tx=event.t
 return `<div class=item>${av(t.name)}<div class=gr><b>Flat ${E(t.flat)}</b><div class=m>${E(t.name)}</div>${es.map(e=>`<div class=m>${fmtD(e.pdate)} · ${N(e.amount)<0?'− ':''}${R(Math.abs(N(e.amount)))}${N(e.amount)<0?' (रद्द)':''}</div>`).join('')}</div><b style="color:#1b8a3d">${R(sum)}</b></div>`}).join('')}</div>`).join('')||'<div class=card><span class=m>इस महीने कोई भुगतान दर्ज नहीं</span></div>')+`</div>`},
 
 /* Tile4 list */ payRenter:()=>{const rows=db.props.map(p=>({p,ts:db.tenants.filter(t=>t.propId==p.id&&(t.active!='0'||db.bills.some(b=>b.tenantId==t.id&&dueOf(b)>0))).sort(byFlat)})).filter(x=>x.ts.length);
-return `<h2>पेमेंट नोट करें</h2><div class=m style="margin:-6px 2px 8px">किरायेदार चुनें</div>`+(rows.map(x=>`<h3>${E(x.p.name)}</h3><div class=card>${x.ts.map(t=>`<div class=item onclick="PT.t=0;go('payTenant','${t.id}')">${av(t.name)}<div class=gr><b>Flat ${E(t.flat)}</b>${t.active=='0'?' <span class=m>(पूर्व)</span>':''}<div class=m>${E(t.name)}</div></div>›</div>`).join('')}</div>`).join('')||'<div class=card>कोई किरायेदार नहीं</div>')},
+return `<h2>पेमेंट नोट करें</h2><div class=m style="margin:-6px 2px 8px">किरायेदार चुनें</div>`+(rows.map(x=>`<h3>${E(x.p.name)}</h3><div class=card>${x.ts.map(t=>`<div class=item onclick="PT.t=0;go('payTenant','${t.id}')">${av(t.name)}<div class=gr><b>Flat ${E(t.flat)}</b>${t.active=='0'?' <span class=m>(पूर्व)</span>':''}<div class=nm>${E(t.name)}</div></div>›</div>`).join('')}</div>`).join('')||'<div class=card>कोई किरायेदार नहीं</div>')},
 
 payTenant:id=>{const t=T(id)||{},ps=db.payments.filter(x=>x.tenantId==id).sort((p,q)=>String(q.pdate).localeCompare(String(p.pdate))||String(q.id).localeCompare(String(p.id)));
 const hd=`<h2>${E(t.name)}</h2><div class=m style="margin:-6px 2px 8px">${E(P(t.propId)?.name)} · Flat ${E(t.flat)}</div><div class="seg big"><button class="${PT.t?'':'on'}" onclick="PT.t=0;draw()">रकम दर्ज करें</button><button class="${PT.t?'on':''}" onclick="PT.t=1;draw()">भुगतान इतिहास</button></div>`;
@@ -222,7 +227,7 @@ return hd+`<div class=card><label>रकम मिली (₹)</label><input id=
 /* Tile6 */ billHist:()=>`<h2>पुराना बिल देखें</h2>${histFlat(1)}`,
 
 /* Tile1 list: every tenant with pending + unpaid raised bills, one combined amount each */ totalDue:()=>{const rows=db.props.map(p=>({p,ts:db.tenants.filter(t=>t.propId==p.id).sort(byFlat).map(t=>{const bs=db.bills.filter(b=>b.tenantId==t.id&&dueOf(b)>0).sort((a,c)=>c.month.localeCompare(a.month));return{t,bs,due:r2(bs.reduce((q,b)=>q+dueOf(b),0))}}).filter(y=>y.due>0)})).filter(x=>x.ts.length),tot=r2(rows.reduce((a,x)=>a+x.ts.reduce((q,y)=>q+y.due,0),0)),n=rows.reduce((a,x)=>a+x.ts.length,0);
-return `<h2>कुल किराया बकाया</h2><div class=m style="margin:-6px 2px 8px">${n} किरायेदार · कुल ${R(tot)}</div>`+(rows.map(x=>`<h3>${E(x.p.name)}</h3><div class=card>${x.ts.map(y=>`<div class=item onclick="PT.t=0;go('payTenant','${y.t.id}')">${av(y.t.name)}<div class=gr><b>Flat ${E(y.t.flat)}</b>${y.t.active=='0'?' <span class=m>(पूर्व)</span>':''}<div class=m>${E(y.t.name)} · ${y.bs.map(b=>mlabel(b.month)).join(', ')}</div></div><b style="color:#ff453a">${R(y.due)}</b></div>`).join('')}</div>`).join('')||'<div class=card>कोई बकाया नहीं 🎉</div>')},
+return `<h2>कुल किराया बकाया</h2><div class=m style="margin:-6px 2px 8px">${n} किरायेदार · कुल ${R(tot)}</div>`+(rows.map(x=>`<h3>${E(x.p.name)}</h3><div class=card>${x.ts.map(y=>`<div class=item onclick="PT.t=0;go('payTenant','${y.t.id}')">${av(y.t.name)}<div class=gr><b>Flat ${E(y.t.flat)}</b>${y.t.active=='0'?' <span class=m>(पूर्व)</span>':''}<div class=nm>${E(y.t.name)}</div><div class=m>${y.bs.map(b=>mlabel(b.month)).join(', ')}</div></div><b style="color:#ff453a">${R(y.due)}</b></div>`).join('')}</div>`).join('')||'<div class=card>कोई बकाया नहीं 🎉</div>')},
 
 /* Tile2 list: payments received this month, per tenant */ rcvMonth:()=>{const m=today().slice(0,7),ps=db.payments.filter(x=>T(x.tenantId)&&String(x.pdate).slice(0,7)==m),tot=r2(ps.reduce((q,x)=>q+N(x.amount),0));
 const rows=db.props.map(p=>({p,ts:db.tenants.filter(t=>t.propId==p.id&&ps.some(x=>x.tenantId==t.id)).sort(byFlat)})).filter(x=>x.ts.length);
@@ -263,8 +268,10 @@ billForm:([id,type])=>{const t=T(id),prev=lastRead(id);return `<h2>${typeName[ty
 ${type!='rent'?`<label>Previous reading</label><input id=bp type=number value="${prev}" oninput="calc()"><label>Current reading</label><input id=bc type=number inputmode=decimal oninput="calc()">`:''}
 <div id=arr></div></div><div class=card id=sum></div><button class=btn onclick="genBill('${id}','${type}')" style="background:var(--g)">Generate bill</button><script>calc()<\/script>`},
 
-sent:id=>{const b=db.bills.find(x=>x.id==id),t=T(b.tenantId);return `<h2>Bill generated ✅</h2><div class=card><pre style="white-space:pre-wrap;font:inherit;margin:0;overflow-wrap:anywhere;word-break:break-all">${E(msg(b))}</pre></div>
+sent:id=>{const b=db.bills.find(x=>x.id==id),t=T(b.tenantId),q=qrInfo(b),pf=db.profile;return `<h2>Bill generated ✅</h2><div class=card><pre style="white-space:pre-wrap;font:inherit;margin:0;overflow-wrap:anywhere;word-break:break-all">${E(msg(b))}</pre></div>
+${q?`<div class=card style="text-align:center">${qrSvg(q.m)}<div class=m style="margin-top:10px">UPI से स्कैन करके ${R(q.bal)} चुकाएँ</div></div>`:(pf.upi?(balOf(b)>0?'':'<div class=card><span class=m>सब चुकता ✅ — QR की ज़रूरत नहीं</span></div>'):'<div class=card><span class=m>QR के लिए Profile में UPI ID डालें</span></div>')}
 <a class=btn style="background:#25d366" target=_blank href="https://wa.me/${wa(t.phone)}?text=${encodeURIComponent(msg(b))}">Send on WhatsApp</a>
+${q?`<button class=btn style="background:#128c7e" onclick="shareQR('${id}')">QR व्हाट्सऐप पर भेजें</button>`:''}
 <a class="btn" style="background:#34c759" href="sms:+${wa(t.phone)}${/iPhone|iPad|Mac/.test(navigator.userAgent)?'&':'?'}body=${encodeURIComponent(msg(b,1).replace(/\*/g,''))}">Send as Text Message</a>
 <button class="btn o" onclick="navigator.share?navigator.share({text:msg(db.bills.find(x=>x.id=='${id}'))}):alert('Share not supported')">Share…</button>`},
 
@@ -287,13 +294,15 @@ return `<div class=card><b>${mlabel(m).replace(' ','-')}</b><div class=bar><i st
 history:()=>`<h2>Mark Paid & Bill History</h2><div class="seg big"><button class="${H.t?'':'on'}" onclick="H.t=0;draw()">By flat</button><button class="${H.t?'on':''}" onclick="H.t=1;draw()">By renter</button></div>${H.t?histRenter():histFlat()}`,
 
 profile:()=>`<h2>Profile</h2><button class=tile onclick="go('savedProfile')"><span class=ic style="background:#0a84ff">🪪</span><span class=tx><b>Saved Profile</b><small>Name, phone, electricity rate, UPI</small></span><span class=ch>›</span></button>
-<button class=tile onclick="go('archived')"><span class=ic style="background:#8e8e93">🗄️</span><span class=tx><b>Archived tenants</b><small>Past tenants and their details</small></span><span class=ch>›</span></button><button class=tile onclick="go('advance')"><span class=ic style="background:#636366">⚙️</span><span class=tx><b>Advance</b><small>Keys and Google sync</small></span><span class=ch>›</span></button><button class=tile onclick=\"changePin()\"><span class=ic style=\"background:#ff9f0a\">🔒</span><span class=tx><b>ऐप लॉक कोड</b><small>4 अंकों का कोड बदलें</small></span><span class=ch>›</span></button>`,
+<button class=tile onclick="go('archived')"><span class=ic style="background:#8e8e93">🗄️</span><span class=tx><b>Archived tenants</b><small>Past tenants and their details</small></span><span class=ch>›</span></button><button class=tile onclick="go('advance')"><span class=ic style="background:#636366">⚙️</span><span class=tx><b>Advance</b><small>ऐप लॉक कोड और कीज़</small></span><span class=ch>›</span></button>`,
 savedProfile:()=>{const p=db.profile;return `<h2>Saved Profile</h2><div class=card>
 <label>Full name</label><input id=pf value="${E(p.name)}"><label>Phone</label><input id=pph type=tel value="${E(p.phone)}">
 <label>Electricity rate (₹ per unit)</label><input id=pr type=number step=0.01 value="${E(p.rate)}">
 <label>UPI ID</label><input id=pu value="${E(p.upi)}"><label>UPI name</label><input id=pun value="${E(p.upiName)}">
 <button class=btn onclick="saveProf()">Save profile</button></div>`},
-advance:()=>`<h2>Advance</h2><div class=card><label>Keys</label><input id=su value="${E(url)}" placeholder="Paste Google Apps Script URL (ends with /exec)" autocapitalize=off autocorrect=off>
+advance:()=>`<h2>Advance</h2><button class=tile onclick="changePin()"><span class=ic style="background:#ff9f0a">🔒</span><span class=tx><b>ऐप लॉक कोड</b><small>4 अंकों का कोड बदलें</small></span><span class=ch>›</span></button>
+<button class=tile onclick="go('keys')"><span class=ic style="background:#636366">🔑</span><span class=tx><b>कीज़ डालें</b><small>Google Sheets सिंक की कीज़</small></span><span class=ch>›</span></button>`,
+keys:()=>`<h2>कीज़ डालें</h2><div class=card><label>Keys</label><input id=su value="${E(url)}" placeholder="Paste Google Apps Script URL (ends with /exec)" autocapitalize=off autocorrect=off>
 <button class="btn o" onclick="saveUrl()" style="margin-bottom:0">Save & sync</button></div>`,
 editProp:id=>{const p=P(id);return `<h2>Edit property</h2><div class=card><label>Property name *</label><input id=pn value="${E(p.name)}"><label>Address (optional)</label><input id=pa value="${E(p.address)}"><label>Total number of flats</label><input id=pfl type=number inputmode=numeric min=0 max=100 value="${E(p.flats)}" oninput="flatInputs()"><div id=fn></div><button class=btn onclick="updProp('${id}')">Update property</button></div><script>flatInputs(${JSON.stringify(flatList(p))})<\/script>`},
 occ:()=>{const g=db.props.map(p=>({p,ts:active(p.id).sort(byFlat)})).filter(x=>x.ts.length);
@@ -348,6 +357,7 @@ bd2=b=>{const pend=r2(olderDue(b).reduce((q,x)=>q+dueOf(x),0)),pd=paidAmt(b);ret
 roH=b=>{const pt=b.status!='paid'&&N(b.paid)>0;return `<span class="badge sbig ${b.status=='paid'?'paid':pt?'org':''}">${b.status=='paid'?'चुकाया ✓':pt?'अधूरा चुकाया':'बकाया'}</span>`},
 mname=m=>new Date(m+'-01T00:00').toLocaleString('hi',{month:'long'}),
 mlabel=m=>new Date(m+'-01T00:00').toLocaleString('hi',{month:'long',year:'numeric'}),
+roL=b=>{const pt=b.status!='paid'&&N(b.paid)>0;return `<span class="badge sbig ${b.status=='paid'?'paid':pt?'org':''}">${b.status=='paid'?'चुकाया ✓':pt?'अधूरा चुकाया':'बकाया'}</span>`},
 segH=b=>{const pt=b.status!='paid'&&N(b.paid)>0;return `<button class="badge sbig ${b.status=='paid'?'paid':pt?'org':''}" onclick="go('payForm','${b.id}')">${b.status=='paid'?'चुकाया ✓':pt?'अधूरा चुकाया':'बकाया'} ›</button>`};
 function shiftM(d){const[y,m]=H.m.split('-').map(Number),x=new Date(y,m-1+d,1),k=x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0');H.m=k;draw()}
 function shiftPM(d){const[y,m]=PV.m.split('-').map(Number),x=new Date(y,m-1+d,1);PV.m=x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0');draw()}
@@ -357,7 +367,7 @@ const byFlat=(a,b)=>String(a.flat).localeCompare(String(b.flat),undefined,{numer
 const bd=b=>'Total '+R(b.total)+' = '+[N(b.arrear)>0?'पिछला बकाया '+R(b.arrear):'',b.type!='elec'?'Rent '+R(b.rent):'',b.type!='rent'?'Electricity '+R(b.elec):''].filter(Boolean).join(' + ')+(b.status!='paid'&&N(b.paid)>0?' · चुकाया '+R(b.paid):'');
 function histFlat(ro){let pv;const m=H.m,ts=db.tenants.filter(t=>t.active!='0'||db.bills.some(b=>b.tenantId==t.id&&b.month==m)).sort((a,b)=>String(P(a.propId)?.name).localeCompare(String(P(b.propId)?.name))||String(a.propId).localeCompare(String(b.propId))||String(a.flat).localeCompare(String(b.flat),undefined,{numeric:true}));
  return `<div ontouchstart="tx=event.touches[0].clientX" ontouchend="swp(event)" style="min-height:50vh"><div class=mnav><button onclick="shiftM(-1)">‹</button><b>${mlabel(m)}</b><button onclick="shiftM(1)">›</button></div>
-${ts.map(t=>{const bs=db.bills.filter(b=>b.tenantId==t.id&&b.month==m);return `${pv!==t.propId?(pv=t.propId,`<h3>${E(P(t.propId)?.name)}</h3>`):''}<div class=card><div class=item style="padding:0 0 10px">${av(t.name)}<div class=gr><b>Flat ${E(t.flat)}</b> · ${E(t.name)}<div class=m>${E(P(t.propId)?.name)}</div></div></div>${bs.map(b=>`<div class="item bi"><div class=gr style="font-size:15px">${bd(b)}</div>${ro?roH(b):segH(b)}</div>`).join('')||'<div class=m>No bill generated</div>'}</div>`}).join('')||'<div class=card>No flats yet</div>'}</div>`}
+${ts.map(t=>{const bs=db.bills.filter(b=>b.tenantId==t.id&&b.month==m);return `${pv!==t.propId?(pv=t.propId,`<h3>${E(P(t.propId)?.name)}</h3>`):''}<div class=card><div class=item style="padding:0 0 10px">${av(t.name)}<div class=gr>${ro?`<b>Flat ${E(t.flat)}</b><div class=nm>${E(t.name)}</div>`:`<b>Flat ${E(t.flat)}</b> · ${E(t.name)}`}<div class=m>${E(P(t.propId)?.name)}</div></div></div>${bs.map(b=>`<div class="item bi"><div class=gr style="font-size:15px">${bd(b)}</div>${ro?`<div class=bfoot>${roL(b)}${m==today().slice(0,7)?`<button class="badge sbig shr" onclick="go('sent','${b.id}')">शेयर करें</button>`:''}</div>`:segH(b)}</div>`).join('')||'<div class=m>No bill generated</div>'}</div>`}).join('')||'<div class=card>No flats yet</div>'}</div>`}
 function histRenter(){return db.tenants.filter(t=>tbills(t.id).length).map(t=>`<div class=card><b>${E(t.name)}</b> <span class=m>Flat ${E(t.flat)}</span>${tbills(t.id).map(b=>`<div class="item bi"><div class=gr><b>${mlabel(b.month)}</b><div style="font-size:15px">${bd(b)}</div></div>${segH(b)}</div>`).join('')}</div>`).join('')||'<div class=card>No bills yet</div>'}
 let docs=[];
 const rd=f=>new Promise(res=>{if(f.type.startsWith('image/')){const im=new Image;im.onload=()=>{const c=document.createElement('canvas'),k=Math.min(1,900/im.width);c.width=im.width*k;c.height=im.height*k;c.getContext('2d').drawImage(im,0,0,c.width,c.height);res(c.toDataURL('image/jpeg',.7))};im.src=URL.createObjectURL(f)}else{if(f.size>3e6){alert(f.name+' is larger than 3 MB');return res('')}const r=new FileReader;r.onload=()=>res(r.result);r.readAsDataURL(f)}});
@@ -366,6 +376,66 @@ function showDocs(){$('#dl').innerHTML=docs.map((d,i)=>`<div class=item><div cla
 async function upDocs(t){let d=[];try{d=JSON.parse(t.docs||'[]')}catch(e){}for(const x of d)if(x.url&&x.url.startsWith('data:')){const r=await post({a:'upload',name:t.name+'_'+x.name.replace(/\.[^.]+$/,''),data:x.url});if(r.url)x.url=r.url}t.docs=JSON.stringify(d)}
 const docLinks=t=>{let d=[];try{d=JSON.parse(t.docs||'[]')}catch(e){}return d.map(x=>`<a class=back style="display:block" target=_blank href="${E(x.url)}">📄 ${E(x.name)}</a>`).join('')};
 const upiUri=b=>{const p=db.profile,t=T(b.tenantId),k={both:'Combined',rent:'Rent',elec:'Electricity'}[b.type];return `upi://pay?pa=${p.upi}&pn=${encodeURIComponent(p.upiName||p.name||'')}&am=${+(+b.total).toFixed(2)}&cu=INR&tn=${encodeURIComponent('Rent for - '+new Date(b.month+'-01T00:00').toLocaleString('en',{month:'short',year:'numeric'}))}`};
+const QR=(()=>{
+const EC=[10,16,26,18,24,16,18,22,22,26,30,22,22,24,24],NB=[1,1,1,2,2,4,4,4,5,5,5,8,9,9,10];
+const raw=v=>{let r=(16*v+128)*v+64;if(v>1){const a=(v/7|0)+2;r-=(25*a-10)*a-55;if(v>6)r-=36}return r};
+const EXP=[],LOG=[];{let x=1;for(let i=0;i<255;i++){EXP[i]=x;LOG[x]=i;x<<=1;if(x>255)x^=285}}
+const mul=(a,b)=>a&&b?EXP[(LOG[a]+LOG[b])%255]:0;
+function rs(d,deg){let g=[1];for(let i=0;i<deg;i++){const n=Array(g.length+1).fill(0);g.forEach((c,j)=>{n[j]^=c;n[j+1]^=mul(c,EXP[i])});g=n}
+ const r=Array(deg).fill(0);for(const b of d){const f=b^r.shift();r.push(0);for(let j=0;j<deg;j++)r[j]^=mul(g[j+1],f)}return r}
+function make(text){
+ const by=[...new TextEncoder().encode(text)];let v=1;
+ for(;v<=15;v++)if(4+(v<10?8:16)+8*by.length<=((raw(v)>>3)-EC[v-1]*NB[v-1])*8)break;
+ if(v>15)return null;
+ const bits=[],put=(x,n)=>{for(let i=n-1;i>=0;i--)bits.push((x>>i)&1)};
+ put(4,4);put(by.length,v<10?8:16);by.forEach(b=>put(b,8));
+ const cap=((raw(v)>>3)-EC[v-1]*NB[v-1])*8;put(0,Math.min(4,cap-bits.length));while(bits.length%8)bits.push(0);
+ const dc=[];for(let i=0;i<bits.length;i+=8)dc.push(parseInt(bits.slice(i,i+8).join(''),2));
+ for(let p=0xEC;dc.length<cap/8;p^=0xEC^0x11)dc.push(p);
+ const nb=NB[v-1],ec=EC[v-1],rc=raw(v)>>3,sl=rc/nb|0,ns=nb-rc%nb,bl=[];
+ for(let i=0,k=0;i<nb;i++){const l=sl-ec+(i<ns?0:1),d=dc.slice(k,k+l);k+=l;bl.push([d,rs(d,ec)])}
+ const all=[];for(let i=0;i<=sl;i++)bl.forEach(([d,e],j)=>{if(i<d.length)all.push(d[i])});
+ for(let i=0;i<ec;i++)bl.forEach(([d,e])=>all.push(e[i]));
+ const n=v*4+17,m=Array.from({length:n},()=>Array(n).fill(0)),fn=Array.from({length:n},()=>Array(n).fill(0));
+ const sf=(x,y,d)=>{m[y][x]=d?1:0;fn[y][x]=1};
+ for(let i=0;i<n;i++){sf(6,i,i%2==0);sf(i,6,i%2==0)}
+ for(const[cx,cy]of[[3,3],[n-4,3],[3,n-4]])for(let dy=-4;dy<=4;dy++)for(let dx=-4;dx<=4;dx++){const x=cx+dx,y=cy+dy,d=Math.max(Math.abs(dx),Math.abs(dy));if(x>=0&&x<n&&y>=0&&y<n)sf(x,y,d!=2&&d!=4)}
+ if(v>1){const a=(v/7|0)+2,st=v==32?26:Math.ceil((v*4+4)/(a*2-2))*2,ps=[6];for(let p=n-7;ps.length<a;p-=st)ps.splice(1,0,p);
+  ps.forEach((cy,i)=>ps.forEach((cx,j)=>{if((i==0&&j==0)||(i==0&&j==a-1)||(i==a-1&&j==0))return;for(let dy=-2;dy<=2;dy++)for(let dx=-2;dx<=2;dx++)sf(cx+dx,cy+dy,Math.max(Math.abs(dx),Math.abs(dy))!=1)}))}
+ const fmt=k=>{let r=k;for(let i=0;i<10;i++)r=(r<<1)^((r>>9)*0x537);const b=((k<<10)|r)^0x5412,g=i=>(b>>i)&1;
+  for(let i=0;i<=5;i++)sf(8,i,g(i));sf(8,7,g(6));sf(8,8,g(7));sf(7,8,g(8));for(let i=9;i<15;i++)sf(14-i,8,g(i));
+  for(let i=0;i<8;i++)sf(n-1-i,8,g(i));for(let i=8;i<15;i++)sf(8,n-15+i,g(i));sf(8,n-8,1)};
+ fmt(0);
+ if(v>=7){let r=v;for(let i=0;i<12;i++)r=(r<<1)^((r>>11)*0x1F25);const b=(v<<12)|r;for(let i=0;i<18;i++){const a=n-11+i%3,c=i/3|0,d=(b>>i)&1;sf(a,c,d);sf(c,a,d)}}
+ for(let i=0,r=n-1;r>=1;r-=2){if(r==6)r=5;for(let t=0;t<n;t++)for(let j=0;j<2;j++){const x=r-j,y=((r+1)&2)==0?n-1-t:t;if(!fn[y][x]&&i<all.length*8){m[y][x]=(all[i>>3]>>(7-(i&7)))&1;i++}}}
+ const mk=[(x,y)=>(x+y)%2==0,(x,y)=>y%2==0,(x,y)=>x%3==0,(x,y)=>(x+y)%3==0,(x,y)=>((x/3|0)+(y/2|0))%2==0,(x,y)=>x*y%2+x*y%3==0,(x,y)=>(x*y%2+x*y%3)%2==0,(x,y)=>((x+y)%2+x*y%3)%2==0];
+ const ap=k=>{for(let y=0;y<n;y++)for(let x=0;x<n;x++)if(!fn[y][x]&&mk[k](x,y))m[y][x]^=1};
+ const pen=()=>{let p=0,dk=0;const rows=m.map(r=>r.join('')),cols=m[0].map((_,x)=>m.map(r=>r[x]).join(''));
+  for(const s of rows.concat(cols)){(s.match(/0{5,}|1{5,}/g)||[]).forEach(x=>p+=x.length-2);p+=40*(s.match(/(?=00001011101|10111010000)/g)||[]).length}
+  for(let y=0;y<n;y++)for(let x=0;x<n;x++){dk+=m[y][x];if(x<n-1&&y<n-1&&m[y][x]==m[y][x+1]&&m[y][x]==m[y+1][x]&&m[y][x]==m[y+1][x+1])p+=3}
+  return p+(Math.ceil(Math.abs(dk*20-n*n*10)/(n*n))-1)*10};
+ let bm=0,bp=1e9;for(let k=0;k<8;k++){ap(k);fmt(k);const p=pen();if(p<bp){bp=p;bm=k}ap(k)}
+ ap(bm);fmt(bm);return m}
+return{make}})();
+
+const billDate=b=>{const d=new Date(b.date);return isNaN(d)||!b.date?'':d.toLocaleDateString('hi',{day:'numeric',month:'long',year:'numeric'})},
+balOf=b=>r2(olderDue(b).reduce((q,x)=>q+dueOf(x),0)+dueOf(b)),
+qrInfo=b=>{const p=db.profile,bal=balOf(b);if(!p.upi||!(bal>0))return null;const m=QR.make(upiUri({...b,total:bal}));return m?{bal,m}:null},
+qrSvg=m=>{const n=m.length;let d='';m.forEach((r,y)=>r.forEach((v,x)=>{if(v)d+=`M${x+4} ${y+4}h1v1h-1z`}));return `<svg viewBox="0 0 ${n+8} ${n+8}" shape-rendering="crispEdges" style="width:min(260px,72vw);height:auto;display:block;margin:0 auto;border-radius:10px"><rect width="100%" height="100%" fill="#fff"/><path d="${d}" fill="#000"/></svg>`};
+function billPng(b,q){const t=T(b.tenantId),p=db.profile,W=640,c=document.createElement('canvas');c.width=W;c.height=900;const x=c.getContext('2d'),F='-apple-system,"Helvetica Neue",Arial,sans-serif';
+ x.fillStyle='#fff';x.fillRect(0,0,W,900);x.textAlign='center';
+ x.fillStyle='#111';x.font='700 30px '+F;x.fillText(p.name||'Rent Manager',W/2,60,W-40);
+ x.fillStyle='#555';x.font='600 24px '+F;x.fillText(mlabel(b.month)+' का बिल',W/2,102,W-40);x.fillText(String(t.name).trim()+' · फ्लैट '+(t.flat||'-'),W/2,140,W-40);
+ x.fillStyle='#111';x.font='800 54px '+F;x.fillText(R(q.bal),W/2,215);
+ const n=q.m.length,s=Math.floor(480/(n+8)),sz=s*(n+8),ox=(W-sz)/2,oy=250;
+ x.fillStyle='#000';q.m.forEach((r,yy)=>r.forEach((v,xx)=>{if(v)x.fillRect(ox+(xx+4)*s,oy+yy*s+4*s,s,s)}));
+ x.fillStyle='#555';x.font='600 22px '+F;x.fillText('UPI: '+p.upi,W/2,oy+sz+40,W-40);x.fillText('QR स्कैन करके भुगतान करें',W/2,oy+sz+76);
+ const bd=billDate(b);if(bd)x.fillText('बिल की तारीख: '+bd,W/2,oy+sz+112);return c}
+async function shareQR(id){const b=db.bills.find(x=>x.id==id),q=b&&qrInfo(b);if(!q)return alert('QR के लिए Profile में UPI ID डालें');const t=T(b.tenantId),
+ blob=await new Promise(r=>billPng(b,q).toBlob(r,'image/png')),f=new File([blob],'bill-qr.png',{type:'image/png'}),tx='आपका '+R(q.bal)+' का बिल ('+mlabel(b.month)+') — QR स्कैन करके भुगतान करें।';
+ if(navigator.canShare&&navigator.canShare({files:[f]})){try{await navigator.share({files:[f],text:tx});return}catch(e){if(e&&e.name=='AbortError')return}}
+ const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='bill-qr.png';document.body.appendChild(a);a.click();a.remove();
+ alert('QR की फ़ोटो सेव हो गई। अब व्हाट्सऐप खुलेगा, उसमें फ़ोटो जोड़कर भेजें।');window.open('https://wa.me/'+wa(t.phone)+'?text='+encodeURIComponent(tx),'_blank')}
 function draw(){const y0=scrollY,nv=!!dir;$('#nb').disabled=!(cur().length);if(cur().length&&cur()[cur().length-1][0]=='addTen'){docs=[];photo=''}$('#n0').className=tab?'':'on';$('#n1').className=tab?'on':'';
  const s=cur(),[v,a]=s.length?s[s.length-1]:[tab?'profile':'menu'];
  $('#main').innerHTML=views[v](a);
@@ -411,7 +481,7 @@ function msg(b,sms){const t=T(b.tenantId),p=db.profile,mm=(d=>d.toLocaleString('
  if(N(b.arrear)>0){let ar=[];try{ar=JSON.parse(b.arrNote||'[]')}catch(e){}L.push('','*पिछला बकाया (Arrear):*');ar.forEach(x=>L.push(`${ML(x[0])}: ${R(x[1])}`));if(ar.length!=1)L.push(`कुल पिछला बकाया: ${R(b.arrear)}`)}
  L.push('',`*कुल: ${R(b.total)}*`);
  if(p.upi)L.push('',sms?`UPI आईडी से भुगतान करें: ${p.upi}`:`UPI से भुगतान करें: ${upiUri(b)}`);
- if(p.name)L.push('',`– ${p.name}`);return L.join('\n')}
+ if(p.name)L.push('',`– ${p.name}`);const bdt=billDate(b);if(bdt)L.push('',`बिल की तारीख: ${bdt}`);return L.join('\n')}
 function setPaid(x,v){const o=own(x);v=r2(Math.max(0,Math.min(v,o)));x.paid=String(v);x.status=v>=o?'paid':'pending';save('bills',x)}
 function payFull(id){const b=db.bills.find(x=>x.id==id),amt=r2(olderDue(b).reduce((q,x)=>q+dueOf(x),0)+dueOf(b));olderDue(b).forEach(x=>setPaid(x,own(x)));setPaid(b,own(b));if(amt>0)logPay(b.tenantId,amt);cur().pop();dir='bck';draw()}
 function recvPay(id,full){const dt=V('rdt'),
