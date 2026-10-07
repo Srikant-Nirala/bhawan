@@ -84,6 +84,7 @@ nav button:active i{transform:scale(.82)}nav i{transition:transform .15s}
 .quad span{font-size:16px;font-weight:700;color:rgba(255,255,255,.9);line-height:1.3;min-height:2.6em;display:flex;align-items:center;justify-content:center}
 .quad small{font-size:14px;font-weight:600;color:rgba(255,255,255,.9);line-height:1.2;min-height:1.2em}
 .quad b{font-size:28px;font-weight:800;letter-spacing:-.035em;line-height:1.1;color:#fff;text-shadow:0 1px 6px rgba(0,0,40,.18)}
+.quad.one>div{border-bottom:0!important;min-height:104px}
 .pb{height:12px;border-radius:7px;background:var(--r);overflow:hidden;margin:12px 0 10px}.pb i{display:block;height:100%;background:var(--g);border-radius:7px 0 0 7px;transition:width .4s}
 .duo{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0}
 .duo .tile{flex-direction:column;margin:0;padding:18px 10px;text-align:center;gap:10px;font-weight:700;font-size:16px}
@@ -121,21 +122,32 @@ const badge=b=>b.status!='paid'&&N(b.paid)>0?`<span class="badge org">अधू�
 const typeName={rent:'Rent',elec:'Electricity',both:'Rent + Electricity'};
 
 const views={
+/* HOME SCREEN MAP (top to bottom)
+   Tile1 = "<माह> का बकाया"   (big tile, left)    -> view monthBills('m')
+   Tile2 = "पुराना बकाया"      (big tile, right)   -> view oldDue
+   Tile3 = "बिल भेजें"          (row 1, left)       -> view notBilled
+   Tile4 = "पेमेंट नोट करें"    (row 1, right)      -> views payRenter / payTenant
+   Tile5 = "पेमेंट देखें"       (row 2, left)       -> view payView
+   Tile6 = "पुराना बिल देखें"   (row 2, right)      -> view billHist
+   menu1..menu4 = Tenants Information, Rent Analytics, Add tenant, Add property */
 menu:()=>{const mo=today().slice(0,7),mn=mname(mo),ok=db.bills.filter(b=>T(b.tenantId)),mb=ok.filter(b=>b.month==mo),act=db.tenants.filter(t=>t.active!='0'),bi=new Set(mb.map(b=>b.tenantId)),
-b1=r2(mb.reduce((a,b)=>a+dueOf(b),0)),b2=mb.length,b3=r2(ok.filter(b=>b.month<mo).reduce((a,b)=>a+dueOf(b),0)),b4=act.filter(t=>!bi.has(t.id)).length,
-logR=r2(db.payments.filter(x=>T(x.tenantId)&&String(x.pdate).slice(0,7)==mo).reduce((a,x)=>a+N(x.amount),0)),got=Math.max(logR,r2(mb.reduce((a,b)=>a+paidAmt(b),0))),outst=r2(ok.reduce((a,b)=>a+dueOf(b),0)),tot=r2(got+outst),pct=tot?Math.min(100,got/tot*100):0,p=db.profile,h=new Date().getHours();
-const tl=(k,ic,c,t,d)=>`<button class=tile onclick="go('${k}')"><span class=ic style="background:${c}">${ic}</span><span class=tx><b>${t}</b><small>${d}</small></span><span class=ch>›</span></button>`;
+b1=r2(mb.reduce((a,b)=>a+dueOf(b),0)),b3=r2(ok.filter(b=>b.month<mo).reduce((a,b)=>a+dueOf(b),0)),b4=act.filter(t=>!bi.has(t.id)).length,p=db.profile,h=new Date().getHours();
+const tl=(i,k,ic,c,t,d)=>`<button class=tile id=${i} onclick="go('${k}')"><span class=ic style="background:${c}">${ic}</span><span class=tx><b>${t}</b><small>${d}</small></span><span class=ch>›</span></button>`;
 return `<h2 style="margin-bottom:2px">Rent Manager</h2><div style="margin:0 2px 12px;font-weight:600;font-size:15px;opacity:.5">${h<12?'Good morning':h<17?'Good afternoon':'Good evening'}${p.name?', '+E(p.name.trim().split(/\s+/).pop())+' जी':''}</div>
-<div class=quad>
-<div class=tap onclick="go('monthBills','m')"><span>${mn} का बकाया</span><b class=g>${R(b1)}</b><small></small></div>
-<div class=tap onclick="go('oldDue')"><span>पुराना बकाया</span><b class=r>${R(b3)}</b><small></small></div>
-<div class=tap onclick="go('monthBills','all')"><span>बिल जा चुका - ${mn}</span><b class=b>${b2}</b><small>बिल देखें ›</small></div>
-<div class=tap onclick="go('notBilled')"><span>बिल भेजना बाकी</span><b class=o>${b4}</b><small>बिल भेजें ›</small></div></div>
-<div class=card style="margin:12px 0"><div style="display:flex;justify-content:space-between;align-items:baseline"><b>${mn} में किराया मिला</b><span class=m>${Math.round(pct)}%</span></div><div class=pb><i style="width:${pct}%"></i></div><div style="display:flex;justify-content:space-between;font-size:14px;font-weight:700"><span style="color:var(--g)">मिला ${R(got)}</span><span style="color:var(--r)">बकाया ${R(outst)}</span></div></div>
-<div class=duo><button class=tile onclick="go('payRenter')"><span class=ic style="background:#30b858">💰</span>पेमेंट नोट करें</button><button class=tile onclick="go('billHist')"><span class=ic style="background:#5e5ce6">🧾</span>पुराना बिल देखें</button></div>
-${tl('listProp','📋','#30b858','Tenants Information','Call and view bills')}${tl('analytics','📊','#bf5af2','Rent Analytics','Paid vs pending by month')}${tl('addTen','👤','#0a84ff','Add tenant','Details, deposit, Aadhar')}${tl('addProp','🏢','#5e5ce6','Add property','Name and address')}`},
+<div class="quad one">
+<div class=tap id=Tile1 onclick="go('monthBills','m')"><span>${mn} का बकाया</span><b>${R(b1)}</b></div>
+<div class=tap id=Tile2 onclick="go('oldDue')"><span>पुराना बकाया</span><b>${R(b3)}</b></div></div>
+<div class=duo><button class=tile id=Tile3 onclick="go('notBilled')"><span class=ic style="background:#ff9f0a">⚡</span>बिल भेजें<small style="font-size:13px;font-weight:600;color:var(--m)">${b4>0?b4+' बाकी':'सब बन गए ✓'}</small></button><button class=tile id=Tile4 onclick="go('payRenter')"><span class=ic style="background:#30b858">💰</span>पेमेंट नोट करें</button></div>
+<div class=duo><button class=tile id=Tile5 onclick="PV.m=today().slice(0,7);go('payView')"><span class=ic style="background:#0a84ff">👁</span>पेमेंट देखें</button><button class=tile id=Tile6 onclick="go('billHist')"><span class=ic style="background:#5e5ce6">🧾</span>पुराना बिल देखें</button></div>
+${tl('menu1','listProp','📋','#30b858','Tenants Information','Call and view bills')}${tl('menu2','analytics','📊','#bf5af2','Rent Analytics','Paid vs pending by month')}${tl('menu3','addTen','👤','#0a84ff','Add tenant','Details, deposit, Aadhar')}${tl('menu4','addProp','🏢','#5e5ce6','Add property','Name and address')}`},
 
-payRenter:()=>{const rows=db.props.map(p=>({p,ts:db.tenants.filter(t=>t.propId==p.id&&(t.active!='0'||db.bills.some(b=>b.tenantId==t.id&&dueOf(b)>0))).sort(byFlat)})).filter(x=>x.ts.length);
+/* Tile5: payments received per tenant, by month */
+payView:()=>{const m=PV.m,ps=db.payments.filter(x=>T(x.tenantId)&&String(x.pdate).slice(0,7)==m),tot=r2(ps.reduce((q,x)=>q+N(x.amount),0));
+const rows=db.props.map(p=>({p,ts:db.tenants.filter(t=>t.propId==p.id&&ps.some(x=>x.tenantId==t.id)).sort(byFlat)})).filter(x=>x.ts.length);
+return `<h2>पेमेंट देखें</h2><div ontouchstart="tx=event.touches[0].clientX" ontouchend="swpP(event)" style="min-height:50vh"><div class=mnav><button onclick="shiftPM(-1)">‹</button><b>${mlabel(m)}</b><button onclick="shiftPM(1)">›</button></div><div class=m style="margin:0 2px 8px">इस महीने कुल मिला ${R(tot)}</div>`+(rows.map(x=>`<h3>${E(x.p.name)}</h3><div class=card>${x.ts.map(t=>{const es=ps.filter(e=>e.tenantId==t.id).sort((u,v)=>String(u.pdate).localeCompare(String(v.pdate))),sum=r2(es.reduce((q,e)=>q+N(e.amount),0));
+return `<div class=item>${av(t.name)}<div class=gr><b>Flat ${E(t.flat)}</b><div class=m>${E(t.name)}</div>${es.map(e=>`<div class=m>${fmtD(e.pdate)} · ${N(e.amount)<0?'− ':''}${R(Math.abs(N(e.amount)))}${N(e.amount)<0?' (रद्द)':''}</div>`).join('')}</div><b style="color:#1b8a3d">${R(sum)}</b></div>`}).join('')}</div>`).join('')||'<div class=card><span class=m>इस महीने कोई भुगतान दर्ज नहीं</span></div>')+`</div>`},
+
+/* Tile4 list */ payRenter:()=>{const rows=db.props.map(p=>({p,ts:db.tenants.filter(t=>t.propId==p.id&&(t.active!='0'||db.bills.some(b=>b.tenantId==t.id&&dueOf(b)>0))).sort(byFlat)})).filter(x=>x.ts.length);
 return `<h2>पेमेंट नोट करें</h2><div class=m style="margin:-6px 2px 8px">किरायेदार चुनें</div>`+(rows.map(x=>`<h3>${E(x.p.name)}</h3><div class=card>${x.ts.map(t=>`<div class=item onclick="PT.t=0;go('payTenant','${t.id}')">${av(t.name)}<div class=gr><b>Flat ${E(t.flat)}</b>${t.active=='0'?' <span class=m>(पूर्व)</span>':''}<div class=m>${E(t.name)}</div></div>›</div>`).join('')}</div>`).join('')||'<div class=card>कोई किरायेदार नहीं</div>')},
 
 payTenant:id=>{const t=T(id)||{},ps=db.payments.filter(x=>x.tenantId==id).sort((p,q)=>String(q.pdate).localeCompare(String(p.pdate))||String(q.id).localeCompare(String(p.id)));
@@ -145,18 +157,18 @@ const bs=tbills(id).slice(0,12);
 return hd+`<div class=card><label>रकम मिली (₹)</label><input id=rcv type=number inputmode=decimal placeholder="0"><label>भुगतान की तारीख</label><input id=rdt type=date value="${today()}"><div class=duo style="margin:14px 0 0"><button class=tile style="background:var(--p);color:#fff" onclick="recvPay('${id}')"><span class=ic style="background:rgba(255,255,255,.25)">＋</span>रकम जमा करें</button><button class=tile style="background:var(--g);color:#fff" onclick="recvPay('${id}',1)"><span class=ic style="background:rgba(255,255,255,.25)">✓</span>पूरा पेमेंट किया</button></div></div>
 <h3>पिछले 12 महीने के बिल की स्थिति</h3><div class=card>${bs.map(b=>`<div class="item bi"><div class=gr><b>${mlabel(b.month)}</b><div style="font-size:15px">${bd2(b)}</div></div>${roH(b)}</div>`).join('')||'<span class=m>अभी कोई बिल नहीं</span>'}</div>`},
 
-billHist:()=>`<h2>पुराना बिल देखें</h2>${histFlat(1)}`,
+/* Tile6 */ billHist:()=>`<h2>पुराना बिल देखें</h2>${histFlat(1)}`,
 
-monthBills:(mode)=>{const all=mode=='all',mo=today().slice(0,7),mn=mname(mo),rows=db.props.map(p=>({p,ts:db.tenants.filter(t=>t.propId==p.id&&(t.active!='0'||db.bills.some(b=>b.tenantId==t.id&&b.month==mo))).sort(byFlat)})).filter(x=>x.ts.length);let tot=0,cnt=0;
+/* Tile1 list */ monthBills:(mode)=>{const all=mode=='all',mo=today().slice(0,7),mn=mname(mo),rows=db.props.map(p=>({p,ts:db.tenants.filter(t=>t.propId==p.id&&(t.active!='0'||db.bills.some(b=>b.tenantId==t.id&&b.month==mo))).sort(byFlat)})).filter(x=>x.ts.length);let tot=0,cnt=0;
 const cell='display:flex;flex-direction:column;align-items:center;gap:6px;width:104px';
 const body=rows.map(x=>`<h3>${E(x.p.name)}</h3><div class=card>${x.ts.map(t=>{const bl=db.bills.find(b=>b.tenantId==t.id&&b.month==mo),old=all?r2(db.bills.filter(b=>b.tenantId==t.id&&b.month<mo).reduce((q,b)=>q+dueOf(b),0)):0,cm=bl?(all?own(bl):dueOf(bl)):0,amt=r2(cm+old);if(bl)cnt++;tot+=amt;
 return `<div class=item>${av(t.name)}<div class=gr><b>Flat ${E(t.flat)}</b><div class=m>${E(t.name)}</div>${all&&old>0&&bl?`<div class=m>पिछला ${R(old)} + इस माह ${R(cm)}</div>`:''}</div>${bl?`<span style="${cell}"><b style="color:${!all&&cm>0?'#ff453a':'#1b8a3d'};text-align:center">${R(amt)}</b><button class="badge paid chip" style="border:0" onclick="go('sent','${bl.id}')">बिल देखें</button></span>`:(old>0?`<span style="${cell}"><b style="color:#ff9500">${R(old)}</b><span class=m>बिल नहीं बना</span></span>`:'<span class=m style="width:104px;text-align:center">बिल नहीं बना</span>')}</div>`}).join('')}</div>`).join('');
 return `<h2>${all?'बिल जा चुका - '+mn:mn+' का बकाया'}</h2><div class=m style="margin:-6px 2px 8px">${cnt} बिल बने · ${all?'बकाया सहित कुल ':'कुल बकाया '}${R(r2(tot))}</div>`+(body||'<div class=card>कोई फ्लैट नहीं</div>')},
 
-oldDue:()=>{const mo=today().slice(0,7),rows=db.props.map(p=>({p,ts:db.tenants.filter(t=>t.propId==p.id).sort(byFlat).map(t=>{const bs=db.bills.filter(b=>b.tenantId==t.id&&b.month<mo&&dueOf(b)>0).sort((a,c)=>c.month.localeCompare(a.month));return{t,bs,due:r2(bs.reduce((q,b)=>q+dueOf(b),0))}}).filter(y=>y.due>0)})).filter(x=>x.ts.length),tot=r2(rows.reduce((a,x)=>a+x.ts.reduce((q,y)=>q+y.due,0),0));
+/* Tile2 list */ oldDue:()=>{const mo=today().slice(0,7),rows=db.props.map(p=>({p,ts:db.tenants.filter(t=>t.propId==p.id).sort(byFlat).map(t=>{const bs=db.bills.filter(b=>b.tenantId==t.id&&b.month<mo&&dueOf(b)>0).sort((a,c)=>c.month.localeCompare(a.month));return{t,bs,due:r2(bs.reduce((q,b)=>q+dueOf(b),0))}}).filter(y=>y.due>0)})).filter(x=>x.ts.length),tot=r2(rows.reduce((a,x)=>a+x.ts.reduce((q,y)=>q+y.due,0),0));
 return `<h2>पुराना बकाया</h2><div class=m style="margin:-6px 2px 8px">${mname(mo)} से पहले के महीने · कुल ${R(tot)}</div>`+(rows.map(x=>`<h3>${E(x.p.name)}</h3><div class=card>${x.ts.map(y=>`<div class=item onclick="go('payForm','${y.bs[0].id}')">${av(y.t.name)}<div class=gr><b>Flat ${E(y.t.flat)}</b>${y.t.active=='0'?' <span class=m>(पूर्व)</span>':''}<div class=m>${E(y.t.name)} · ${y.bs.map(b=>mlabel(b.month)).join(', ')}</div></div><b style="color:#ff453a">${R(y.due)}</b></div>`).join('')}</div>`).join('')||'<div class=card>पुराना कोई बकाया नहीं 🎉</div>')},
 
-notBilled:()=>{const mo=today().slice(0,7),rows=db.props.map(p=>({p,ts:active(p.id).filter(t=>!db.bills.some(b=>b.tenantId==t.id&&b.month==mo)).sort(byFlat)})).filter(x=>x.ts.length),n=rows.reduce((a,x)=>a+x.ts.length,0);
+/* Tile3 list */ notBilled:()=>{const mo=today().slice(0,7),rows=db.props.map(p=>({p,ts:active(p.id).filter(t=>!db.bills.some(b=>b.tenantId==t.id&&b.month==mo)).sort(byFlat)})).filter(x=>x.ts.length),n=rows.reduce((a,x)=>a+x.ts.length,0);
 return `<h2>बिल भेजना बाकी</h2><div class=m style="margin:-6px 2px 8px">${mname(mo)} · ${n} किरायेदार</div>`+(rows.map(x=>`<h3>${E(x.p.name)}</h3><div class=card>${x.ts.map(t=>`<div class=item>${av(t.name)}<div class=gr><b>Flat ${E(t.flat)}</b><div class=m>${E(t.name)} · ${t.btype=='rent'?'सिर्फ़ किराया':'किराया + बिजली'}</div></div><button class="badge org chip" style="border:0" onclick="go('billForm',['${t.id}','${t.btype||'both'}'])">बिल बनाएँ</button></div>`).join('')}</div>`).join('')||'<div class=card>सभी का बिल बन चुका 🎉</div>')},
 
 addProp:()=>`<h2>Properties</h2><div class=card>${db.props.map(p=>`<div class=item><div class=gr>${E(p.name)}<div class=m>${E(p.address)}${p.flats?' · '+E(p.flats)+' flats':''}</div></div><button class=badge style="border:0;color:var(--p);background:rgba(10,132,255,.12)" onclick="go('editProp','${p.id}')">Edit</button></div>`).join('')||'<span class=m>None yet</span>'}</div><h3>Add new property</h3><div class=card><label>Property name *</label><input id=pn><label>Address (optional)</label><input id=pa><label>Total number of flats</label><input id=pfl type=number inputmode=numeric min=0 max=100 oninput="flatInputs()"><div id=fn></div>
@@ -259,7 +271,7 @@ olderDue=b=>db.bills.filter(x=>x.tenantId==b.tenantId&&x.id!=b.id&&x.month<b.mon
 arrears=(id,m)=>m?db.bills.filter(x=>x.tenantId==id&&x.month<m&&dueOf(x)>0).sort((a,c)=>a.month.localeCompare(c.month)).map(x=>[x.month,dueOf(x),x.type]):[];
 const lastRead=id=>{const b=tbills(id).find(b=>b.type!='rent');return b?b.cur:T(id).meter};
 
-let H={t:0,m:today().slice(0,7)},tx=0,PT={t:0};
+let H={t:0,m:today().slice(0,7)},tx=0,PT={t:0},PV={m:today().slice(0,7)};
 const fmtD=d=>{const x=new Date(String(d)+'T00:00');return isNaN(x)?String(d):x.toLocaleDateString('hi',{day:'numeric',month:'short',year:'numeric'})},
 logPay=(tid,amt,note)=>save('payments',{id:uid(),tenantId:tid,amount:String(amt),pdate:today(),note:note||''}),
 bd2=b=>{const pend=r2(olderDue(b).reduce((q,x)=>q+dueOf(x),0)),pd=paidAmt(b);return 'कुल बाकी '+R(r2(pend+own(b)-pd))+' = '+[pend>0?'पिछला बकाया '+R(pend):'',b.type!='elec'?'Rent '+R(b.rent):'',b.type!='rent'?'Electricity '+R(b.elec):''].filter(Boolean).join(' + ')+(pd>0?' − चुकाया '+R(pd):'')},
@@ -268,6 +280,8 @@ mname=m=>new Date(m+'-01T00:00').toLocaleString('hi',{month:'long'}),
 mlabel=m=>new Date(m+'-01T00:00').toLocaleString('hi',{month:'long',year:'numeric'}),
 segH=b=>{const pt=b.status!='paid'&&N(b.paid)>0;return `<button class="badge sbig ${b.status=='paid'?'paid':pt?'org':''}" onclick="go('payForm','${b.id}')">${b.status=='paid'?'चुकाया ✓':pt?'अधूरा चुकाया':'बकाया'} ›</button>`};
 function shiftM(d){const[y,m]=H.m.split('-').map(Number),x=new Date(y,m-1+d,1),k=x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0');H.m=k;draw()}
+function shiftPM(d){const[y,m]=PV.m.split('-').map(Number),x=new Date(y,m-1+d,1);PV.m=x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0');draw()}
+function swpP(e){const d=e.changedTouches[0].clientX-tx;if(Math.abs(d)>70)shiftPM(d>0?-1:1)}
 function swp(e){const d=e.changedTouches[0].clientX-tx;if(Math.abs(d)>70)shiftM(d>0?-1:1)}
 const byFlat=(a,b)=>String(a.flat).localeCompare(String(b.flat),undefined,{numeric:true});
 const bd=b=>'Total '+R(b.total)+' = '+[N(b.arrear)>0?'पिछला बकाया '+R(b.arrear):'',b.type!='elec'?'Rent '+R(b.rent):'',b.type!='rent'?'Electricity '+R(b.elec):''].filter(Boolean).join(' + ')+(b.status!='paid'&&N(b.paid)>0?' · चुकाया '+R(b.paid):'');
