@@ -89,9 +89,68 @@ nav button:active i{transform:scale(.82)}nav i{transition:transform .15s}
 .duo{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0}
 .slim{display:flex;align-items:center;justify-content:center;text-align:center;background:#d1d1d6;color:#3a3a3c;border-radius:12px;padding:5px 14px;min-height:28px;margin:0 0 28px;font-size:13px;font-weight:600;box-shadow:var(--sh);cursor:pointer;transition:.12s}.slim:active{transform:scale(.98);opacity:.85}.slim.ok{color:#636366}.slim.two{padding:0;overflow:hidden;margin-bottom:28px;cursor:default}.slim.two:active{transform:none;opacity:1}.slim.two>div{flex:1;padding:5px 8px;cursor:pointer;transition:background .15s}.slim.two>div:active{background:rgba(0,0,0,.1)}.slim.two>i{width:1px;align-self:stretch;margin:5px 0;background:#8e8e93}@media(prefers-color-scheme:dark){.slim{background:#aeaeb2;color:#1c1c1e}.slim.ok{color:#48484a}}
 .duo .tile{flex-direction:column;justify-content:center;min-height:104px;margin:0;padding:18px 10px;text-align:center;gap:10px;font-weight:700;font-size:16px}
+
+#lk{position:fixed;inset:0;z-index:99999;background:var(--bg);display:flex;align-items:center;justify-content:center;font-family:var(--f);color:var(--t)}
+.lkb{width:min(320px,86vw);text-align:center}
+.lkt{font-size:20px;font-weight:700;margin-bottom:16px}
+.lkd{font-size:28px;letter-spacing:.55em;height:38px;margin-bottom:6px;padding-left:.55em;white-space:nowrap}
+.lke{min-height:20px;color:var(--r);font-size:14px;font-weight:600;margin-bottom:12px}
+.lkp{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;justify-items:center}
+.lkp button{width:70px;height:70px;border-radius:50%;border:0;background:var(--c);color:var(--t);font-size:26px;font-weight:600;box-shadow:var(--sh);padding:0;margin:0}
+.lkp button:active{background:var(--p);color:#fff}
+.lkp i{width:70px;height:70px}
+#lkc{margin-top:20px;background:none;border:0;color:var(--p);font-size:16px;font-weight:600;box-shadow:none}
+.locked #main,.locked nav,.cov #main,.cov nav{visibility:hidden}
 </style></head><body>
+<div id="lk"><div class="lkb"><div class="lkt" id="lkt"></div><div class="lkd" id="lkd"></div><div class="lke" id="lke"></div><div class="lkp" id="lkp"></div><button id="lkc" style="display:none" onclick="lkCancel()">रद्द करें</button></div></div>
 <div id="main"></div>
 <nav><button id="n0" onclick="tabTo(0)"><i>🏠</i>Manage</button><button id="nb" onclick="back()"><i>⬅️</i>Back</button><button id="n1" onclick="tabTo(1)"><i>👤</i>Profile</button></nav>
+<script>
+/* APP LOCK: the 4-digit code is chosen by you on first open and is NOT stored in this file.
+   Only a salted, slowed-down hash of it is kept in this phone's browser storage. */
+(function(){
+const K={h:'lk_h',s:'lk_s',f:'lk_f',u:'lk_u'},g=k=>{try{return localStorage.getItem(k)}catch(e){return null}},st=(k,v)=>{try{v==null?localStorage.removeItem(k):localStorage.setItem(k,v)}catch(e){}};
+const $=id=>document.getElementById(id),hex=b=>[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('');
+async function hash(pin,salt){
+ if(window.crypto&&crypto.subtle){const km=await crypto.subtle.importKey('raw',new TextEncoder().encode(pin),'PBKDF2',false,['deriveBits']);return hex(await crypto.subtle.deriveBits({name:'PBKDF2',salt:new TextEncoder().encode(salt),iterations:200000,hash:'SHA-256'},km,256))}
+ let h=0x811c9dc5;const t=salt+pin;for(let r=0;r<30000;r++)for(let i=0;i<t.length;i++){h^=t.charCodeAt(i);h=Math.imul(h,16777619)>>>0}return 'f'+h.toString(16)}
+const TT={verify:'कोड डालें',old:'पुराना कोड डालें',new1:'नया 4 अंकों का कोड बनाएँ',new2:'कोड दोबारा डालें'};
+let mode='verify',buf='',first='',chg=false,busy=false,t0=0;
+const paint=()=>{$('lkt').textContent=TT[mode];$('lkd').textContent='●'.repeat(buf.length)+'○'.repeat(4-buf.length)},
+err=m=>{$('lke').textContent=m||''},
+hide=()=>{$('lk').style.display='none';document.body.classList.remove('locked','cov')},
+show=(m,c)=>{mode=m;buf='';first='';chg=!!c;err('');$('lk').style.display='flex';document.body.classList.add('locked');$('lkc').style.display=c?'':'none';paint()};
+async function done(){
+ busy=true;const pin=buf;
+ try{
+  if(mode=='verify'||mode=='old'){
+   const wait=+g(K.u)-Date.now();
+   if(wait>0){err(Math.ceil(wait/1000)+' सेकंड बाद कोशिश करें')}
+   else if(await hash(pin,g(K.s)||'')==g(K.h)){st(K.f,null);st(K.u,null);if(mode=='verify')hide();else{show('new1',true);busy=false;return}}
+   else{const n=(+g(K.f)||0)+1;st(K.f,n);if(n>=5){st(K.u,Date.now()+Math.min(600000,30000*2**(n-5)));err('बहुत गलत कोशिशें — कुछ देर रुकें')}else err('गलत कोड')}
+  }else if(mode=='new1'){first=pin;mode='new2';err('')}
+  else{
+   if(pin!=first){mode='new1';first='';err('कोड मेल नहीं खाया, फिर से बनाएँ')}
+   else{const salt=hex(crypto.getRandomValues(new Uint8Array(16)));st(K.s,salt);st(K.h,await hash(pin,salt));st(K.f,null);st(K.u,null);const c=chg;hide();if(c)setTimeout(()=>alert('कोड बदल गया ✅'),50)}
+  }
+ }catch(e){err('कुछ गड़बड़ हुई, फिर कोशिश करें')}
+ buf='';paint();busy=false}
+function press(d){if(busy||buf.length>=4)return;buf+=d;paint();if(buf.length==4)done()}
+const kp=$('lkp');'123456789'.split('').forEach(d=>{const b=document.createElement('button');b.textContent=d;b.onclick=()=>press(d);kp.appendChild(b)});
+kp.appendChild(document.createElement('i'));
+{const b=document.createElement('button');b.textContent='0';b.onclick=()=>press('0');kp.appendChild(b)}
+{const b=document.createElement('button');b.textContent='⌫';b.onclick=()=>{if(!busy){buf=buf.slice(0,-1);paint()}};kp.appendChild(b)}
+addEventListener('keydown',e=>{if($('lk').style.display=='none')return;if(/^\d$/.test(e.key))press(e.key);else if(e.key=='Backspace'&&!busy){buf=buf.slice(0,-1);paint()}});
+window.lkCancel=()=>hide();
+window.changePin=()=>show(g(K.h)?'old':'new1',true);
+/* lock when you come back after more than 1 minute away; cover the screen while away */
+document.addEventListener('visibilitychange',()=>{
+ if(document.hidden){t0=Date.now();document.body.classList.add('cov')}
+ else if(g(K.h)&&Date.now()-t0>60000)show('verify');
+ else if($('lk').style.display=='none')document.body.classList.remove('cov')});
+g(K.h)?show('verify'):show('new1');
+})();
+</script>
 <script>
 const av=n=>`<span class=av>${String(n||'?')[0].toUpperCase()}</span>`;
 const $=s=>document.querySelector(s),E=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])),
@@ -228,7 +287,7 @@ return `<div class=card><b>${mlabel(m).replace(' ','-')}</b><div class=bar><i st
 history:()=>`<h2>Mark Paid & Bill History</h2><div class="seg big"><button class="${H.t?'':'on'}" onclick="H.t=0;draw()">By flat</button><button class="${H.t?'on':''}" onclick="H.t=1;draw()">By renter</button></div>${H.t?histRenter():histFlat()}`,
 
 profile:()=>`<h2>Profile</h2><button class=tile onclick="go('savedProfile')"><span class=ic style="background:#0a84ff">🪪</span><span class=tx><b>Saved Profile</b><small>Name, phone, electricity rate, UPI</small></span><span class=ch>›</span></button>
-<button class=tile onclick="go('archived')"><span class=ic style="background:#8e8e93">🗄️</span><span class=tx><b>Archived tenants</b><small>Past tenants and their details</small></span><span class=ch>›</span></button><button class=tile onclick="go('advance')"><span class=ic style="background:#636366">⚙️</span><span class=tx><b>Advance</b><small>Keys and Google sync</small></span><span class=ch>›</span></button>`,
+<button class=tile onclick="go('archived')"><span class=ic style="background:#8e8e93">🗄️</span><span class=tx><b>Archived tenants</b><small>Past tenants and their details</small></span><span class=ch>›</span></button><button class=tile onclick="go('advance')"><span class=ic style="background:#636366">⚙️</span><span class=tx><b>Advance</b><small>Keys and Google sync</small></span><span class=ch>›</span></button><button class=tile onclick=\"changePin()\"><span class=ic style=\"background:#ff9f0a\">🔒</span><span class=tx><b>ऐप लॉक कोड</b><small>4 अंकों का कोड बदलें</small></span><span class=ch>›</span></button>`,
 savedProfile:()=>{const p=db.profile;return `<h2>Saved Profile</h2><div class=card>
 <label>Full name</label><input id=pf value="${E(p.name)}"><label>Phone</label><input id=pph type=tel value="${E(p.phone)}">
 <label>Electricity rate (₹ per unit)</label><input id=pr type=number step=0.01 value="${E(p.rate)}">
