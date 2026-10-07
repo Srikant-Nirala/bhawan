@@ -84,10 +84,11 @@ nav button:active i{transform:scale(.82)}nav i{transition:transform .15s}
 .quad span{font-size:16px;font-weight:700;color:rgba(255,255,255,.9);line-height:1.3;min-height:2.6em;display:flex;align-items:center;justify-content:center}
 .quad small{font-size:14px;font-weight:600;color:rgba(255,255,255,.9);line-height:1.2;min-height:1.2em}
 .quad b{font-size:28px;font-weight:800;letter-spacing:-.035em;line-height:1.1;color:#fff;text-shadow:0 1px 6px rgba(0,0,40,.18)}
-.quad.one{margin-bottom:28px}.quad.one>div{border-bottom:0!important;min-height:168px;padding:22px 12px;justify-content:center;gap:10px}.quad.one span{font-size:19px;min-height:2.6em}.quad.one b{font-size:36px}.quad.one small{font-size:15px}
+.quad.one{margin-bottom:28px}.quad.one>div{border-bottom:0!important;min-height:168px;padding:22px 12px;justify-content:center;gap:10px}.quad.one span{font-size:16px;font-weight:700;min-height:2.6em}#Tile1 b{color:#ff9500}#Tile2 b{color:#34c759}.quad.one b{font-size:28px}.quad.one small{font-size:15px}
 .pb{height:12px;border-radius:7px;background:var(--r);overflow:hidden;margin:12px 0 10px}.pb i{display:block;height:100%;background:var(--g);border-radius:7px 0 0 7px;transition:width .4s}
 .duo{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0}
-.duo .tile{flex-direction:column;margin:0;padding:18px 10px;text-align:center;gap:10px;font-weight:700;font-size:16px}
+.slim{display:flex;align-items:center;justify-content:center;text-align:center;background:#d1d1d6;color:#3a3a3c;border-radius:12px;padding:5px 14px;min-height:28px;margin:0 0 28px;font-size:13px;font-weight:600;box-shadow:var(--sh);cursor:pointer;transition:.12s}.slim:active{transform:scale(.98);opacity:.85}.slim.ok{color:#636366}.slim.two{padding:0;overflow:hidden;margin-bottom:28px;cursor:default}.slim.two:active{transform:none;opacity:1}.slim.two>div{flex:1;padding:5px 8px;cursor:pointer;transition:background .15s}.slim.two>div:active{background:rgba(0,0,0,.1)}.slim.two>i{width:1px;align-self:stretch;margin:5px 0;background:#8e8e93}@media(prefers-color-scheme:dark){.slim{background:#aeaeb2;color:#1c1c1e}.slim.ok{color:#48484a}}
+.duo .tile{flex-direction:column;justify-content:center;min-height:104px;margin:0;padding:18px 10px;text-align:center;gap:10px;font-weight:700;font-size:16px}
 </style></head><body>
 <div id="main"></div>
 <nav><button id="n0" onclick="tabTo(0)"><i>🏠</i>Manage</button><button id="nb" onclick="back()"><i>⬅️</i>Back</button><button id="n1" onclick="tabTo(1)"><i>👤</i>Profile</button></nav>
@@ -115,7 +116,7 @@ async function sync(){if(!url)return;await flushQ();const d=await post({a:'all'}
  d.profile.forEach(r=>db.profile[r.key]=r.value);persist();draw()}
 let dir='fade';
 const cur=()=>st[tab],go=(v,a)=>{cur().push([v,a]);dir='fwd';draw()},back=()=>{if(!cur().length)return;cur().pop();dir='bck';draw()},
-tabTo=t=>{tab=t;dir='fade';draw()};
+tabTo=t=>{st[t].length=0;tab=t;dir='fade';draw()};
 const T=id=>db.tenants.find(t=>t.id==id),P=id=>db.props.find(p=>p.id==id),active=pid=>db.tenants.filter(t=>t.propId==pid&&t.active!='0');
 const tbills=id=>db.bills.filter(b=>b.tenantId==id).sort((a,b)=>b.month.localeCompare(a.month)||b.date.localeCompare(a.date));
 const badge=b=>b.status!='paid'&&N(b.paid)>0?`<span class="badge org">अधूरा</span>`:`<span class="badge ${b.status}">${b.status}</span>`;
@@ -131,14 +132,16 @@ const views={
    Tile6 = "पुराना बिल देखें"   (row 2, right)      -> view billHist
    menu1..menu4 = Tenants Information, Rent Analytics, Add tenant, Add property */
 menu:()=>{const mo=today().slice(0,7),mn=mname(mo),ok=db.bills.filter(b=>T(b.tenantId)),mb=ok.filter(b=>b.month==mo),act=db.tenants.filter(t=>t.active!='0'),bi=new Set(mb.map(b=>b.tenantId)),
-b1=r2(ok.reduce((a,b)=>a+dueOf(b),0)),b3=r2(db.payments.filter(x=>T(x.tenantId)&&String(x.pdate).slice(0,7)==mo).reduce((a,x)=>a+N(x.amount),0)),b4=act.filter(t=>!bi.has(t.id)).length,p=db.profile,h=new Date().getHours();
+b1=r2(ok.reduce((a,b)=>a+dueOf(b),0)),b3=r2(db.payments.filter(x=>T(x.tenantId)&&String(x.pdate).slice(0,7)==mo).reduce((a,x)=>a+N(x.amount),0)),b4=act.filter(t=>!bi.has(t.id)).length,oc=db.tenants.filter(t=>t.active!='0'&&P(t.propId)).length,em=db.props.reduce((a,p)=>{const fl=flatList(p),o=new Set(active(p.id).map(t=>String(t.flat).trim().toLowerCase()));return a+fl.filter(n=>!o.has(String(n).trim().toLowerCase())).length+(fl.length?0:Math.max(0,N(p.flats)-active(p.id).length))},0),p=db.profile,h=new Date().getHours();
 const tl=(i,k,ic,c,t,d)=>`<button class=tile id=${i} onclick="go('${k}')"><span class=ic style="background:${c}">${ic}</span><span class=tx><b>${t}</b><small>${d}</small></span><span class=ch>›</span></button>`;
 return `<h2 style="margin-bottom:2px">Rent Manager</h2><div style="margin:0 2px 12px;font-weight:600;font-size:15px;opacity:.5">${h<12?'Good morning':h<17?'Good afternoon':'Good evening'}${p.name?', '+E(p.name.trim().split(/\s+/).pop())+' जी':''}</div>
 <div class="quad one">
 <div class=tap id=Tile1 onclick="go('totalDue')"><span>कुल किराया बकाया</span><b>${R(b1)}</b></div>
 <div class=tap id=Tile2 onclick="go('rcvMonth')"><span>${mn} में किराया पाया</span><b>${R(b3)}</b></div></div>
-<div class=duo><button class=tile id=Tile3 onclick="go('notBilled')"><span class=ic style="background:#ff9f0a">⚡</span>बिल भेजें<small style="font-size:13px;font-weight:600;color:var(--m)">${b4>0?b4+' बाकी':'सब बन गए ✓'}</small></button><button class=tile id=Tile4 onclick="go('payRenter')"><span class=ic style="background:#30b858">💰</span>पेमेंट नोट करें</button></div>
+<div class="slim${b4>0?'':' ok'}" id=Tile3s onclick="go('notBilled')"><span>${b4>0?'⚡ '+b4+' किरायेदार का बिल भेजना बाकी':'सब बिल बन गए ✓'}</span></div>
+<div class=duo><button class=tile id=Tile3 onclick="go('notBilled')"><span class=ic style="background:#ff9f0a">⚡</span>बिल भेजें</button><button class=tile id=Tile4 onclick="go('payRenter')"><span class=ic style="background:#30b858">💰</span>पेमेंट नोट करें</button></div>
 <div class=duo style="margin-bottom:28px"><button class=tile id=Tile5 onclick="PV.m=today().slice(0,7);go('payView')"><span class=ic style="background:#0a84ff">👁</span>पेमेंट देखें</button><button class=tile id=Tile6 onclick="go('billHist')"><span class=ic style="background:#5e5ce6">🧾</span>पुराना बिल देखें</button></div>
+<div class="slim two" id=Tile7s><div onclick="go('occ')">🏠 ${oc} फ्लैट भरे हुए</div><i></i><div onclick="go('empty')">🔑 ${em} फ्लैट खाली</div></div>
 ${tl('menu1','listProp','📋','#30b858','Tenants Information','Call and view bills')}${tl('menu2','analytics','📊','#bf5af2','Rent Analytics','Paid vs pending by month')}${tl('menu3','addTen','👤','#0a84ff','Add tenant','Details, deposit, Aadhar')}${tl('menu4','addProp','🏢','#5e5ce6','Add property','Name and address')}`},
 
 /* Tile5: payments received per tenant, by month */
