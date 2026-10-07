@@ -192,7 +192,7 @@ addTen:()=>!db.props.length?'<div class=card>Add a property first.</div>':`<h2>A
 <label>Billing type</label><select id=tb onchange="$('#mw').style.display=this.value=='both'?'':'none'"><option value=both>Rent + Electricity</option><option value=rent>Rent only</option></select><div id=mw><label>Initial meter reading *</label><input id=tm type=number inputmode=decimal></div><label>Aadhar number * (12 digits)</label><input id=ta inputmode=numeric maxlength=12 oninput="this.value=this.value.replace(/\\D/g,'').slice(0,12)">
 <label>Aadhar photo</label><input type=file accept="image/*" onchange="pickPhoto(this)">
 <label>Other documents (optional)</label><div id=dl></div><input type=file id=df multiple accept="image/*,application/pdf" onchange="addDocs(this)" hidden><button class="btn o" type=button onclick="$('#df').click()">+ Add document</button>
-<button class=btn onclick="addTen()">Save tenant</button></div><script>renderFlat()<\/script>`,
+<button class=btn onclick="addTen()">Save tenant</button></div><script>renderFlat();prefillTen()<\/script>`,
 
 pickProp:next=>`<h2>Select property</h2><div class=card>${db.props.map(p=>`<div class=item onclick="go('${next}','${p.id}')"><span class=av style="border-radius:12px">🏢</span><div class=gr>${E(p.name)}<div class=m>${active(p.id).length} tenants${p.flats?' · '+E(p.flats)+' flats':''}</div></div>›</div>`).join('')||'No properties yet'}</div>`,
 billProp:()=>views.pickProp('billTen'),listProp:()=>views.pickProp('listTen'),
@@ -238,9 +238,9 @@ advance:()=>`<h2>Advance</h2><div class=card><label>Keys</label><input id=su val
 <button class="btn o" onclick="saveUrl()" style="margin-bottom:0">Save & sync</button></div>`,
 editProp:id=>{const p=P(id);return `<h2>Edit property</h2><div class=card><label>Property name *</label><input id=pn value="${E(p.name)}"><label>Address (optional)</label><input id=pa value="${E(p.address)}"><label>Total number of flats</label><input id=pfl type=number inputmode=numeric min=0 max=100 value="${E(p.flats)}" oninput="flatInputs()"><div id=fn></div><button class=btn onclick="updProp('${id}')">Update property</button></div><script>flatInputs(${JSON.stringify(flatList(p))})<\/script>`},
 occ:()=>{const g=db.props.map(p=>({p,ts:active(p.id).sort(byFlat)})).filter(x=>x.ts.length);
-return `<h2>Flats occupied</h2>`+(g.map(x=>`<h3>${E(x.p.name)}</h3><div class=card>${x.ts.map(t=>`<div class=item>${av(t.name)}<div class=gr><b>Flat ${E(t.flat)}</b><div class=m>${E(t.name)}</div></div></div>`).join('')}</div>`).join('')||'<div class=card>No occupied flats</div>')},
+return `<h2>Flats occupied</h2>`+(g.map(x=>`<h3>${E(x.p.name)}</h3><div class=card>${x.ts.map(t=>`<div class=item onclick="go('tenant','${t.id}')">${av(t.name)}<div class=gr><b>Flat ${E(t.flat)}</b><div class=m>${E(t.name)}</div></div>›</div>`).join('')}</div>`).join('')||'<div class=card>No occupied flats</div>')},
 empty:()=>{const g=db.props.map(p=>{const fl=flatList(p),oc=new Set(active(p.id).map(t=>String(t.flat).trim().toLowerCase()));return{p,names:fl.filter(n=>!oc.has(String(n).trim().toLowerCase())),un:fl.length?0:Math.max(0,N(p.flats)-active(p.id).length)}}).filter(x=>x.names.length||x.un);
-return `<h2>Flats empty</h2>`+(g.map(x=>`<h3>${E(x.p.name)}</h3><div class=card>${x.names.map(n=>`<div class=item><span class=av style="border-radius:12px">🏠</span><div class=gr><b>Flat ${E(n)}</b><div class=m>Vacant</div></div></div>`).join('')}${x.un?`<div class=item><div class=gr><b>${x.un} flat${x.un>1?'s':''} vacant</b><div class=m>Flat names not added for this property</div></div></div>`:''}</div>`).join('')||'<div class=card>No empty flats</div>')},
+return `<h2>Flats empty</h2>`+(g.map(x=>`<h3>${E(x.p.name)}</h3><div class=card>${x.names.map(n=>`<div class=item onclick=\"PRE={p:'${x.p.id}',f:${E(JSON.stringify(n))}};go('addTen')\"><span class=av style="border-radius:12px">🏠</span><div class=gr><b>Flat ${E(n)}</b><div class=m>Vacant</div></div>›</div>`).join('')}${x.un?`<div class=item onclick=\"PRE={p:'${x.p.id}',f:''};go('addTen')\"><div class=gr><b>${x.un} flat${x.un>1?'s':''} vacant</b><div class=m>Flat names not added for this property</div></div>›</div>`:''}</div>`).join('')||'<div class=card>No empty flats</div>')},
 elecRaised:()=>{const mo=today().slice(0,7),rows=db.props.map(p=>({p,ts:active(p.id).filter(t=>t.btype!='rent').sort(byFlat)})).filter(x=>x.ts.length);let tot=0;
 const body=rows.map(x=>`<h3>${E(x.p.name)}</h3><div class=card>${x.ts.map(t=>{const bs=db.bills.filter(b=>b.tenantId==t.id&&b.month==mo&&b.type!='rent'),amt=bs.reduce((q,b)=>q+N(b.elec),0),u=bs.reduce((q,b)=>q+N(b.units),0);tot+=amt;
 return `<div class=item>${av(t.name)}<div class=gr><b>Flat ${E(t.flat)}</b><div class=m>${E(t.name)}${bs.length?' · '+u+' units':''}</div></div>${bs.length?'<b style="color:#ff9500">'+R(amt)+'</b>':'<span class=m>Not raised</span>'}</div>`}).join('')}</div>`).join('');
@@ -282,7 +282,7 @@ olderDue=b=>db.bills.filter(x=>x.tenantId==b.tenantId&&x.id!=b.id&&x.month<b.mon
 arrears=(id,m)=>m?db.bills.filter(x=>x.tenantId==id&&x.month<m&&dueOf(x)>0).sort((a,c)=>a.month.localeCompare(c.month)).map(x=>[x.month,dueOf(x),x.type]):[];
 const lastRead=id=>{const b=tbills(id).find(b=>b.type!='rent');return b?b.cur:T(id).meter};
 
-let H={t:0,m:today().slice(0,7)},tx=0,PT={t:0},PV={m:today().slice(0,7)};
+let H={t:0,m:today().slice(0,7)},tx=0,PT={t:0},PV={m:today().slice(0,7)},PRE=null;
 const fmtD=d=>{const x=new Date(String(d)+'T00:00');return isNaN(x)?String(d):x.toLocaleDateString('hi',{day:'numeric',month:'short',year:'numeric'})},
 logPay=(tid,amt,note)=>save('payments',{id:uid(),tenantId:tid,amount:String(amt),pdate:today(),note:note||''}),
 bd2=b=>{const pend=r2(olderDue(b).reduce((q,x)=>q+dueOf(x),0)),pd=paidAmt(b);return 'कुल बाकी '+R(r2(pend+own(b)-pd))+' = '+[pend>0?'पिछला बकाया '+R(pend):'',b.type!='elec'?'Rent '+R(b.rent):'',b.type!='rent'?'Electricity '+R(b.elec):''].filter(Boolean).join(' + ')+(pd>0?' − चुकाया '+R(pd):'')},
@@ -321,6 +321,7 @@ function updProp(id){if(!V('pn'))return alert('Enter property name');const ns=[.
  const bad=db.tenants.find(t=>t.active!='0'&&t.propId==id&&ns.length&&!ns.some(n=>n.toLowerCase()==String(t.flat).trim().toLowerCase()));
  if(bad)return alert('Flat '+bad.flat+' is occupied by '+bad.name+'. Keep it in the flat list.');
  const p=P(id);p.name=V('pn');p.address=V('pa');p.flats=ns.length||V('pfl');p.flatNames=JSON.stringify(ns);save('props',p);cur().pop();dir='bck';draw()}
+function prefillTen(){if(!PRE)return;const q=PRE;PRE=null;$('#tp').value=q.p;renderFlat();const f=$('#tf');if(f&&q.f)f.value=q.f;if(typeof chkFlat=='function')chkFlat()}
 const flatList=p=>{try{return JSON.parse(p?.flatNames||'[]')}catch(e){return[]}};
 function renderFlat(){const p=P(V('tp')),fl=flatList(p),occ=n=>db.tenants.some(t=>t.active!='0'&&t.propId==p?.id&&String(t.flat).trim().toLowerCase()==String(n).trim().toLowerCase());
  $('#fw').innerHTML=fl.length?`<select id=tf onchange="chkFlat()"><option value="">Select flat</option>${fl.map(n=>`<option value="${E(n)}">${E(n)}${occ(n)?' (occupied)':''}</option>`).join('')}</select>`:'<input id=tf onchange="chkFlat()">'}
