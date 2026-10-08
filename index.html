@@ -204,7 +204,7 @@ return `<h2 style="margin-bottom:2px">Rent Manager</h2><div style="margin:0 2px 
 <div class="quad one">
 <div class=tap id=Tile1 onclick="go('totalDue')"><span>कुल किराया बकाया</span><b>${R(b1)}</b></div>
 <div class=tap id=Tile2 onclick="go('rcvMonth')"><span>${mn} में किराया पाया</span><b>${R(b3)}</b></div></div>
-<div class="slim${b4>0?'':' ok'}" id=Tile3s onclick="go('notBilled')"><span>${b4>0?'⚡ '+b4+' किरायेदार का बिल भेजना बाकी':'सब बिल बन गए ✓'}</span></div>
+<div class="slim${b4>0?'':' ok'}" id=Tile3s onclick="go('notBilled')"><span>${b4>0?'⚡ '+mn+' माह में '+b4+' किरायेदार का बिल भेजना बाकी':mn+' माह के सब बिल बन गए ✓'}</span></div>
 <div class=duo><button class=tile id=Tile3 onclick="go('notBilled')"><span class=ic style="background:#ff9f0a">⚡</span>बिल भेजें</button><button class=tile id=Tile4 onclick="go('payRenter')"><span class=ic style="background:#30b858">💰</span>पेमेंट नोट करें</button></div>
 <div class=duo style="margin-bottom:28px"><button class=tile id=Tile6 onclick="go('billHist')"><span class=ic style="background:#5e5ce6">🧾</span>पुराना बिल देखें</button><button class=tile id=Tile5 onclick="PV.m=today().slice(0,7);go('payView')"><span class=ic style="background:#0a84ff">👁</span>पेमेंट देखें</button></div>
 <div class="slim two" id=Tile7s><div onclick="go('occ')">🏠 ${oc} फ्लैट भरे हुए</div><i></i><div onclick="go('empty')">🔑 ${em} फ्लैट खाली</div></div>
@@ -276,6 +276,9 @@ ${type!='rent'?`<label>Previous reading</label><input id=bp type=number value="$
 
 bulkDone:ids=>{const bs=ids.map(i=>db.bills.find(b=>b.id==i)).filter(Boolean).sort((a,c)=>String(T(a.tenantId)?.propId).localeCompare(String(T(c.tenantId)?.propId))||byFlat(T(a.tenantId),T(c.tenantId)));
 return `<h2>बिल बन गए ✅</h2><div class=m style="margin:-6px 2px 8px">${bs.length} बिल · ${mname(bs[0]?.month||today().slice(0,7))}</div><div class=card>${bs.map(b=>{const t=T(b.tenantId);return `<div class=item>${av(t.name)}<div class=gr><b class=fl>Flat ${E(t.flat)}</b><div class=nm>${E(t.name)}</div></div><button class="badge chip" style="border:0;background:#25d366;color:#fff" onclick="shareBill('${b.id}')">शेयर करें</button></div>`}).join('')}</div>`},
+
+welcome:id=>{const t=T(id);return `<h2>Welcome message</h2><div class=card><pre style="white-space:pre-wrap;font:inherit;margin:0;overflow-wrap:anywhere;word-break:break-word">${E(welcomeMsg(t))}</pre></div>
+<a class=btn style="background:#25d366" target=_blank href="https://wa.me/${wa(t.phone)}?text=${encodeURIComponent(welcomeMsg(t))}">Send on WhatsApp</a>`},
 
 sent:id=>{const b=db.bills.find(x=>x.id==id),t=T(b.tenantId),q=upiQr();return `<h2>Bill generated ✅</h2><div class=card><pre style="white-space:pre-wrap;font:inherit;margin:0;overflow-wrap:anywhere;word-break:break-all">${E(msg(b))}</pre></div>
 ${q?`<div class=card style="text-align:center">${qrSvg(q)}<div class=m style="margin-top:10px">QR स्कैन करके UPI से भुगतान करें</div><div class=m>${E(db.profile.upi)}</div></div>`:'<div class=card><span class=m>QR के लिए Profile में UPI ID डालें</span></div>'}
@@ -399,6 +402,13 @@ function bulkGen(){const mo=today().slice(0,7),todo=[],bad=[];let skip=0;
  bills.forEach(b=>db.bills.push(b));persist();
  (async()=>{for(const b of bills)await post({a:'upsert',s:'bills',r:b})})();
  cur().pop();go('bulkDone',bills.map(b=>b.id))}
+function welcomeMsg(t){const o=(db.profile.name||'').trim(),ad=String(t.aadhar||'').replace(/(\d{4})(?=\d)/g,'$1 ');
+ return ['Hello '+String(t.name).trim().split(/\s+/)[0]+' जी,','','नमस्कार!','',
+ 'हमारे घर में आपको किराये पर फ्लैट देकर मुझे बहुत खुशी हो रही है। आशा है आपका प्रवास सुखद और शांतिपूर्ण रहेगा। धन्यवाद!','',
+ 'हमारे रिकॉर्ड में आपकी जानकारी इस प्रकार है:','नाम - '+t.name,'आधार नंबर: '+ad,'मोबाइल नंबर: '+t.phone,'फ्लैट नंबर: '+(t.flat||'-'),'मासिक एडवांस तय किराया: '+R(t.rent),
+ ...(String(t.meter||'')!==''?['सब-मीटर की शुरुआती रीडिंग: '+t.meter]:[]),'',
+ 'नोट:','कृपया अपने आधार कार्ड की कॉपी उपलब्ध करा दें (यदि पहले से नहीं दी है)।','साथ ही, कृपया सुनिश्चित करें कि किराया हर महीने की 7 तारीख तक जमा हो जाए।','',
+ 'सादर,',...(o?[o]:[])].join('\n')}
 function shiftA(d){const i=A.l.indexOf(A.m)+d;if(i>=0&&i<A.l.length){A.m=A.l[i];draw()}}
 function pickA(m){A.m=m;draw();scrollTo({top:0,behavior:'smooth'})}
 function shiftPM(d){const[y,m]=PV.m.split('-').map(Number),x=new Date(y,m-1+d,1);PV.m=x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0');draw()}
@@ -503,7 +513,7 @@ async function addTen(){if(!V('tn')||!V('tph')||!V('tr')||(V('tb')=='both'&&V('t
  const id=uid();let ph=photo;if(ph&&url){const r=await post({a:'upload',name:V('tn')+'_'+id,data:ph});ph=r.url||ph}
  const t={id,name:V('tn'),propId:V('tp'),phone:pn10,flat:V('tf'),entry:V('te'),rent:V('tr'),deposit:V('td'),meter:V('tb')=='both'?V('tm'):'',aadhar:ad,photo:ph,docs:JSON.stringify(docs.map(d=>({name:d.name,url:d.data}))),active:'1',btype:V('tb')};
  if(url)await upDocs(t);save('tenants',t);
- docs=[];photo='';alert('Tenant added');cur().length=0;dir='fade';draw()}
+ docs=[];photo='';cur().length=0;go('welcome',id)}
 function calc(){const [id,type]=cur()[cur().length-1][1],t=T(id),rate=N(db.profile.rate),
 units=type=='rent'?0:Math.max(0,N(V('bc'))-N(V('bp'))),el=r2(units*rate),rent=type=='elec'?0:N(t.rent),
 ar=arrears(id,V('bm')),A=r2(ar.reduce((q,x)=>q+x[1],0));
