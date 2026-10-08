@@ -107,6 +107,15 @@ nav button:active i{transform:scale(.82)}nav i{transition:transform .15s}
 .bfoot .badge.sbig{width:124px;min-width:124px;align-self:auto;padding:9px 4px;margin:0;text-align:center;white-space:nowrap}
 .bfoot .shr{color:var(--p);background:rgba(10,132,255,.12);cursor:pointer}
 .bfoot .shr:active{transform:scale(.94)}
+
+/* custom popup (replaces browser alert/confirm: no "site says" header, bigger bolder text) */
+.mdl{position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:24px;animation:in .15s ease}
+.mbx{background:var(--c);color:var(--t);border-radius:22px;padding:26px 22px 18px;width:100%;max-width:360px;box-shadow:0 10px 40px rgba(0,0,0,.3)}
+.mtx{font-size:22px;font-weight:700;line-height:1.4;text-align:center;white-space:pre-line;word-break:break-word;margin-bottom:22px;letter-spacing:-.01em}
+.mbt{display:flex;gap:10px}
+.mb{flex:1;padding:15px;border:0;border-radius:14px;font-size:18px;font-weight:700}
+.mb.mo{background:var(--p);color:#fff}.mb.mc{background:var(--bg);color:var(--t)}
+body.busy #main .btn,body.busy #main .badge{pointer-events:none;opacity:.55}
 </style></head><body>
 <div id="lk"><div class="lkb"><div class="lkt" id="lkt"></div><div class="lkd" id="lkd"></div><div class="lke" id="lke"></div><div class="lkp" id="lkp"></div><button id="lkc" style="display:none" onclick="lkCancel()">रद्द करें</button></div></div>
 <div id="main"></div>
@@ -169,7 +178,10 @@ db.payments=db.payments||[];
 const persist=()=>{try{localStorage.db=JSON.stringify(db)}catch(e){alert('Local storage full')}};
 let Q=[];try{Q=JSON.parse(localStorage.q||'[]')}catch(e){}
 const sq=()=>{try{localStorage.q=JSON.stringify(Q)}catch(e){}};
-const post=b=>url?fetch(url,{method:'POST',body:JSON.stringify(b)}).then(r=>r.json()).catch(()=>{if(b.a=='upsert'){Q.push(b);sq()}return{}}):Promise.resolve({});
+let chain=Promise.resolve();
+const post=b=>{if(!url)return Promise.resolve({});
+ const run=()=>fetch(url,{method:'POST',body:JSON.stringify(b)}).then(r=>r.json()).catch(()=>{if(b.a=='upsert'){Q.push(b);sq()}return{}});
+ const p=chain.then(run,run);chain=p.catch(()=>{});return p}; // every request to Google waits for the previous one -> strictly one at a time, in order
 async function flushQ(){if(!url||!Q.length)return;const q=Q;Q=[];sq();for(const b of q)await post(b)}
 function save(s,row){const a=db[s],i=a.findIndex(x=>x.id==row.id);i<0?a.push(row):a[i]=row;persist();post({a:'upsert',s,r:row})}
 function setProf(k,v){db.profile[k]=v;persist();post({a:'upsert',s:'profile',r:{key:k,value:v}})}
@@ -388,10 +400,10 @@ async function shareQrOnly(){const m=upiQr();if(!m)return alert('Profile मे�
  blob=await new Promise(r=>qrPng(m).toBlob(r,'image/png')),f=new File([blob],'upi-qr.png',{type:'image/png'});
  if(navigator.canShare&&navigator.canShare({files:[f]})){try{await navigator.share({files:[f],text:tx});return}catch(e){if(e&&e.name=='AbortError')return}}
  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='upi-qr.png';document.body.appendChild(a);a.click();a.remove();
- alert('QR की फ़ोटो सेव हो गई। अब व्हाट्सऐप खुलेगा, उसमें फ़ोटो जोड़कर भेजें।');window.open('https://wa.me/?text='+encodeURIComponent(tx),'_blank')}
+ await alert('QR की फ़ोटो सेव हो गई। अब व्हाट्सऐप खुलेगा, उसमें फ़ोटो जोड़कर भेजें।');window.open('https://wa.me/?text='+encodeURIComponent(tx),'_blank')}
 function mkBill(t,type,month,prev,curR){const rate=N(db.profile.rate),units=type=='rent'?0:Math.max(0,N(curR)-N(prev)),el=r2(units*rate),rent=type=='elec'?0:N(t.rent),ar=arrears(t.id,month),A=r2(ar.reduce((q,x)=>q+x[1],0));
  return{id:uid(),tenantId:t.id,month,type,prev:type=='rent'?'':String(prev),cur:type=='rent'?'':String(curR),units,rate,elec:el,rent,arrear:A,arrNote:JSON.stringify(ar.map(x=>[x[0],x[1]])),total:r2(el+rent+A),paid:'0',status:'pending',date:new Date().toISOString()}}
-function bulkGen(){const mo=today().slice(0,7),todo=[],bad=[];let skip=0;
+async function bulkGen(){const mo=today().slice(0,7),todo=[],bad=[];let skip=0;
  db.props.forEach(p=>active(p.id).filter(t=>!db.bills.some(b=>b.tenantId==t.id&&b.month==mo)).sort(byFlat).forEach(t=>{const ty=t.btype||'both';
   if(ty=='rent'){todo.push([t,ty,'','']);return}
   const el=document.getElementById('bk_'+t.id),v=el?el.value.trim():'';if(v===''){skip++;return}
@@ -399,7 +411,7 @@ function bulkGen(){const mo=today().slice(0,7),todo=[],bad=[];let skip=0;
  if(bad.length)return alert('इनकी रीडिंग पिछली रीडिंग से कम है:\n'+bad.join('\n'));
  if(!todo.length)return alert('कम से कम एक मीटर रीडिंग डालें');
  if(todo.some(x=>x[1]!='rent')&&!N(db.profile.rate))return alert('पहले Profile में बिजली की दर डालें');
- if(!confirm(todo.length+' बिल बनेंगे'+(skip?' · '+skip+' किरायेदार बिना रीडिंग के छूट जाएँगे':'')+'। आगे बढ़ें?'))return;
+ if(!await modal(todo.length+' बिल बनेंगे'+(skip?' · '+skip+' किरायेदार बिना रीडिंग के छूट जाएँगे':'')+'। आगे बढ़ें?',1))return;
  const bills=todo.map(x=>mkBill(x[0],x[1],mo,x[2],x[3]));
  bills.forEach(b=>db.bills.push(b));persist();
  (async()=>{for(const b of bills)await post({a:'upsert',s:'bills',r:b})})();
@@ -418,7 +430,7 @@ function swpP(e){const d=e.changedTouches[0].clientX-tx;if(Math.abs(d)>70)shiftP
 function swp(e){const d=e.changedTouches[0].clientX-tx;if(Math.abs(d)>70)shiftM(d>0?-1:1)}
 const byFlat=(a,b)=>String(a.flat).localeCompare(String(b.flat),undefined,{numeric:true});
 const bd=b=>'Total '+R(b.total)+' = '+[N(b.arrear)>0?'पिछला बकाया '+R(b.arrear):'',b.type!='elec'?'Rent '+R(b.rent):'',b.type!='rent'?'Electricity '+R(b.elec):''].filter(Boolean).join(' + ')+(b.status!='paid'&&N(b.paid)>0?`<div style="text-align:center;margin-top:6px;font-weight:700"><span style="color:var(--r)">बकाया ${R(r2(olderDue(b).reduce((q,x)=>q+dueOf(x),0)+own(b)-paidAmt(b)))}</span></div>`:'');
-function histFlat(ro){let pv;const m=H.m,ts=db.tenants.filter(t=>t.active!='0'||db.bills.some(b=>b.tenantId==t.id&&b.month==m)).sort((a,b)=>String(P(a.propId)?.name).localeCompare(String(P(b.propId)?.name))||String(a.propId).localeCompare(String(b.propId))||String(a.flat).localeCompare(String(b.flat),undefined,{numeric:true}));
+function histFlat(ro){let pv;const m=H.m,ts=db.tenants.filter(t=>t.active!='0'||db.bills.some(b=>b.tenantId==t.id&&b.month==m)||(String(t.exit||'').slice(0,7)>=m&&(!t.entry||String(t.entry).slice(0,7)<=m))).sort((a,b)=>String(P(a.propId)?.name).localeCompare(String(P(b.propId)?.name))||String(a.propId).localeCompare(String(b.propId))||String(a.flat).localeCompare(String(b.flat),undefined,{numeric:true}));
  return `<div ontouchstart="tx=event.touches[0].clientX" ontouchend="swp(event)" style="min-height:50vh"><div class=mnav><button onclick="shiftM(-1)">‹</button><b>${mlabel(m)}</b><button onclick="shiftM(1)">›</button></div>
 ${ts.map(t=>{const bs=db.bills.filter(b=>b.tenantId==t.id&&b.month==m);return `${pv!==t.propId?(pv=t.propId,`<h3>${E(P(t.propId)?.name)}</h3>`):''}<div class=card><div class=item style="padding:0 0 10px">${av(t.name)}<div class=gr>${ro?`<b class=fl>Flat ${E(t.flat)}</b><div class=nm>${E(t.name)}</div>`:`<b>Flat ${E(t.flat)}</b> · ${E(t.name)}`}<div class=m>${E(P(t.propId)?.name)}</div></div></div>${bs.map(b=>`<div class="item bi"><div class=gr style="font-size:15px">${bd(b)}</div>${ro?`<div class=bfoot>${roL(b)}${m==today().slice(0,7)?`<button class="badge sbig shr" onclick="go('sent','${b.id}')">शेयर करें</button>`:''}</div>`:segH(b)}</div>`).join('')||'<div class=m>No bill generated</div>'}</div>`}).join('')||'<div class=card>No flats yet</div>'}</div>`}
 function histRenter(){return db.tenants.filter(t=>tbills(t.id).length).map(t=>`<div class=card><b>${E(t.name)}</b> <span class=m>Flat ${E(t.flat)}</span>${tbills(t.id).map(b=>`<div class="item bi"><div class=gr><b>${mlabel(b.month)}</b><div style="font-size:15px">${bd(b)}</div></div>${segH(b)}</div>`).join('')}</div>`).join('')||'<div class=card>No bills yet</div>'}
@@ -486,7 +498,7 @@ async function shareBill(id){const b=db.bills.find(x=>x.id==id),t=T(b.tenantId),
  const blob=await new Promise(r=>qrPng(m).toBlob(r,'image/png')),f=new File([blob],'upi-qr.png',{type:'image/png'});
  if(navigator.canShare&&navigator.canShare({files:[f]})){try{await navigator.share({files:[f],text:tx});return}catch(e){if(e&&e.name=='AbortError')return}}
  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='upi-qr.png';document.body.appendChild(a);a.click();a.remove();
- alert('QR की फ़ोटो सेव हो गई। अब व्हाट्सऐप खुलेगा, उसमें फ़ोटो जोड़कर भेजें।');window.open(link,'_blank')}
+ await alert('QR की फ़ोटो सेव हो गई। अब व्हाट्सऐप खुलेगा, उसमें फ़ोटो जोड़कर भेजें।');window.open(link,'_blank')}
 function draw(){const y0=scrollY,nv=!!dir,rb=dir=='bck';$('#nb').disabled=!(cur().length);if(cur().length&&cur()[cur().length-1][0]=='addTen'){docs=[];photo=''}$('#n0').className=tab?'':'on';$('#n1').className=tab?'on':'';
  const s=cur(),[v,a]=s.length?s[s.length-1]:[tab?'profile':'menu'];
  $('#main').innerHTML=views[v](a);
@@ -539,13 +551,13 @@ function msg(b,sms){const t=T(b.tenantId),p=db.profile,mm=(d=>d.toLocaleString('
  if(p.name)L.push('',`– ${p.name}`);const bdt=billDate(b);if(bdt)L.push('',`बिल की तारीख: ${bdt}`);return L.join('\n')}
 function setPaid(x,v){const o=own(x);v=r2(Math.max(0,Math.min(v,o)));x.paid=String(v);x.status=v>=o?'paid':'pending';save('bills',x)}
 function payFull(id){const b=db.bills.find(x=>x.id==id),amt=r2(olderDue(b).reduce((q,x)=>q+dueOf(x),0)+dueOf(b));olderDue(b).forEach(x=>setPaid(x,own(x)));setPaid(b,own(b));if(amt>0)logPay(b.tenantId,amt);cur().pop();dir='bck';draw()}
-function recvPay(id,full){const dt=V('rdt'),
+async function recvPay(id,full){const dt=V('rdt'),
  ds=db.bills.filter(b=>b.tenantId==id&&dueOf(b)>0).sort((a,c)=>a.month.localeCompare(c.month)||String(a.date).localeCompare(String(c.date))),bal=r2(ds.reduce((q,x)=>q+dueOf(x),0)),amt=full?bal:r2(N(V('rcv')));
  if(!ds.length)return alert('इस किरायेदार का कोई बकाया नहीं');
  if(!(amt>0))return alert('सही रकम लिखें');
  if(!dt)return alert('भुगतान की तारीख चुनें');
  if(amt>bal)return alert('रकम बाकी बकाया ('+R(bal)+') से ज़्यादा नहीं हो सकती');
- if(full&&!confirm('पूरा भुगतान '+R(bal)+' दर्ज करें?'))return;
+ if(full&&!await modal('पूरा भुगतान '+R(bal)+' दर्ज करें?',1))return;
  let rem=amt;for(const x of ds){if(rem<=0)break;const a=Math.min(dueOf(x),rem);setPaid(x,paidAmt(x)+a);rem=r2(rem-a)}
  save('payments',{id:uid(),tenantId:id,amount:String(amt),pdate:dt,note:''});alert('भुगतान दर्ज हो गया ✅');draw()}
 function payNone(id){const b=db.bills.find(x=>x.id==id),pv=r2(paidAmt(b));if(pv>0)logPay(b.tenantId,-pv,'रद्द');b.paid='0';b.status='pending';save('bills',b);cur().pop();dir='bck';draw()}
@@ -589,6 +601,19 @@ function trNode(n){if(n.nodeType==3){const v=n.nodeValue;if(v.trim()){const r=hi
 {const _al=window.alert.bind(window);window.alert=m=>_al(trMsg(String(m)));
 new MutationObserver(ms=>ms.forEach(m=>m.addedNodes.forEach(trNode))).observe(document.getElementById('main'),{childList:true,subtree:true});trNode(document.querySelector('nav'))}
 addEventListener('online',()=>sync());
+const modal=(msg,ask)=>new Promise(res=>{const o=document.createElement('div');o.className='mdl';
+ o.innerHTML='<div class=mbx role=alertdialog aria-modal=true><div class=mtx></div><div class=mbt>'+(ask?'<button class="mb mc">Cancel</button>':'')+'<button class="mb mo">OK</button></div></div>';
+ o.querySelector('.mtx').textContent=String(msg);const c=v=>{o.remove();res(v)};
+ o.querySelector('.mo').onclick=()=>c(true);const k=o.querySelector('.mc');if(k)k.onclick=()=>c(false);
+ document.body.appendChild(o);o.querySelector('.mo').focus()});
+window.alert=m=>modal(m,0);
+let busy=0;
+const guard=f=>function(...a){if(busy)return;busy=1;document.body.classList.add('busy');
+ const rel=()=>setTimeout(()=>{busy=0;document.body.classList.remove('busy')},700);let r;
+ try{r=f.apply(this,a)}catch(e){rel();throw e}
+ if(r&&r.then)r.then(rel,rel);else rel();return r};
+addTen=guard(addTen);genBill=guard(genBill);bulkGen=guard(bulkGen);recvPay=guard(recvPay);applyPart=guard(applyPart);payFull=guard(payFull);payNone=guard(payNone);
+archive=guard(archive);restore=guard(restore);updPhone=guard(updPhone);updRent=guard(updRent);saveProf=guard(saveProf);addProp=guard(addProp);updProp=guard(updProp);saveUrl=guard(saveUrl);
 if('serviceWorker' in navigator){const had=!!navigator.serviceWorker.controller;let rl=false;
  navigator.serviceWorker.addEventListener('controllerchange',()=>{if(had&&!rl){rl=true;location.reload()}});
  addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(r=>r.update()).catch(()=>{}))}
