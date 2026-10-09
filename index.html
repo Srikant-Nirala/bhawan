@@ -319,14 +319,17 @@ return `<h2>Tenants Information</h2>`+(g.map(x=>`<h3>${E(x.p.name)}</h3>${x.ts.m
 tenant:id=>{const t=T(id),bs0=tbills(id),cut=(()=>{const d=new Date();d.setDate(1);d.setMonth(d.getMonth()-11);return d.getFullYear()+'-'+pd2(d.getMonth()+1)})(),bs=bs0.filter(b=>b.month>=cut),oldP=bs0.filter(b=>b.month<cut&&dueOf(b)>0),sec=s=>bs.filter(b=>b.status==s).map(b=>`<div class=item><div>${b.month} · ${typeName[b.type]}<div class=m>${b.status=='pending'?'बाकी '+R(dueOf(b))+(N(b.paid)>0?' · चुकाया '+R(b.paid):''):R(own(b))}</div></div>${b.status=='pending'?`<button class=badge style="border:0;background:var(--g)" onclick="pay('${b.id}')">Mark paid</button>`:badge(b)}</div>`).join('')||'<span class=m>None</span>';
 return `<h2>${E(t.name)}</h2><div class=card><div class=m>Flat ${E(t.flat)} · Rent ${R(t.rent)} · Deposit ${R(t.deposit)}<br>Entry ${E(t.entry)} · Aadhar ${E(t.aadhar)}</div>
 ${t.photo?`<a class=back target=_blank href="${E(t.photo)}">View Aadhar photo</a>`:''}${docLinks(t)}</div>
+<button class=tile onclick="go('updTen','${id}')"><span class=ic style="background:#ff9f0a">✏️</span><span class=tx><b>किरायेदार की जानकारी अपडेट करें</b><small>किराया, फ़ोन नंबर, डॉक्यूमेंट</small></span><span class=ch>›</span></button>
+<a class="btn" style="background:var(--g)" href="tel:${E(t.phone)}">📞 Call ${E(t.phone)}</a>
+<h3>बकाया · पिछले 12 महीने</h3><div class=card>${sec('pending')}${oldP.length?`<div class=m style="color:var(--r);margin-top:8px">12 महीने से पुराने ${oldP.length} बकाया बिल भी हैं · ${R(r2(oldP.reduce((q,b)=>q+dueOf(b),0)))}</div>`:''}</div><h3>चुकता · पिछले 12 महीने</h3><div class=card>${sec('paid')}</div>
+<button class="btn r" onclick="go('archiveForm','${id}')">Archive tenant</button>`},
+updTen:id=>{const t=T(id);return `<h2 style="white-space:nowrap;font-size:max(19px,min(26px,6vw))">किरायेदार की जानकारी अपडेट करें</h2><div class=m style="margin:-6px 2px 8px">${E(t.name)} · Flat ${E(t.flat)}</div>
 <div class=card id=rc><div class=item style="padding:0"><div class=gr><div class=m>Monthly rent</div><b style="font-size:20px">${R(t.rent)}</b></div><button class=badge style="border:0;color:var(--p);background:rgba(10,132,255,.12)" onclick="editRent('${id}')">Edit</button></div></div>
 <div class=card id=pc><div class=item style="padding:0"><div class=gr><div class=m>Phone number</div><b style="font-size:20px">${E(t.phone)}</b></div><button class=badge style="border:0;color:var(--p);background:rgba(10,132,255,.12)" onclick="editPhone('${id}')">Edit</button></div></div>
-<a class="btn" style="background:var(--g)" href="tel:${E(t.phone)}">📞 Call ${E(t.phone)}</a>
 <div class=card><b>डॉक्यूमेंट जोड़ें</b>${t.aadhar?'':'<label style="margin-top:10px">Aadhar number (12 digits)</label><input id=xa inputmode=numeric maxlength=12 oninput="this.value=this.value.replace(/\\D/g,\'\').slice(0,12)">'}${t.photo?'':'<label>Aadhar photo</label><input type=file accept="image/*" onchange="pickPhoto(this)">'}
 <label${t.aadhar&&t.photo?' style="margin-top:10px"':''}>Other documents (optional)</label><div id=dl></div><input type=file id=df multiple accept="image/*,application/pdf" onchange="addDocs(this)" hidden><button class="btn o" type=button onclick="$('#df').click()">+ Add document</button>
 <button class=btn style="margin-bottom:0" onclick="saveTenDocs('${id}')">डॉक्यूमेंट सेव करें</button></div>
-<h3>बकाया · पिछले 12 महीने</h3><div class=card>${sec('pending')}${oldP.length?`<div class=m style="color:var(--r);margin-top:8px">12 महीने से पुराने ${oldP.length} बकाया बिल भी हैं · ${R(r2(oldP.reduce((q,b)=>q+dueOf(b),0)))}</div>`:''}</div><h3>चुकता · पिछले 12 महीने</h3><div class=card>${sec('paid')}</div>
-<button class="btn r" onclick="go('archiveForm','${id}')">Archive tenant</button><script>docs=[];photo=''<\/script>`},
+<script>docs=[];photo=''<\/script>`},
 
 analytics:()=>{const bs=db.bills.filter(b=>T(b.tenantId)),ps=db.payments.filter(x=>T(x.tenantId)),pm=x=>String(x.pdate).slice(0,7),ok=k=>/^\d{4}-\d{2}$/.test(k),
 ks=[...bs.map(b=>b.month),...ps.map(pm)].filter(ok).sort();
