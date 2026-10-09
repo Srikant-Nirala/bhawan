@@ -133,6 +133,8 @@ nav button:active i{transform:scale(.82)}nav i{transition:transform .15s}
 @media(prefers-color-scheme:dark){.btn.lbtn{background:linear-gradient(135deg,#12294a,#0e2342);color:#6cb4ff;box-shadow:none}}
 #main{padding-top:calc(12px + env(safe-area-inset-top,0px))}
 .card.cp{padding:18px 19px;margin:20px 0}.cp .item.bi{padding:12px 0 0;gap:12px}.cp .bfoot .badge.sbig{width:110px;min-width:110px;padding:7px 3px;font-size:13.6px;display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.2}.cp .bfoot .shr{background:#2f7d4f;color:#fff}.cp .dkr{font-size:inherit}
+.badge.sbig:not(.paid):not(.org){color:#a8000e;font-weight:800}
+@media(prefers-color-scheme:dark){.badge.sbig:not(.paid):not(.org){color:#ff6b61}}
 .tile small{font-weight:600}
 .m[style*="margin:-6px 2px 8px"],.m[style*="margin:0 2px 8px"],.m[style*="margin:-6px 2px 8px"] *{font-weight:600}
 body.busy #main .btn,body.busy #main .badge{pointer-events:none;opacity:.55}
@@ -250,17 +252,17 @@ qrSend:()=>{const q=upiQr(),p=db.profile;return `<h2>QR code भेजें</h2
 payView:()=>{const m=PV.m,ps=db.payments.filter(x=>T(x.tenantId)&&String(x.pdate).slice(0,7)==m),tot=r2(ps.reduce((q,x)=>q+N(x.amount),0));
 const rows=db.props.map(p=>({p,ts:db.tenants.filter(t=>t.propId==p.id&&ps.some(x=>x.tenantId==t.id)).sort(byFlat)})).filter(x=>x.ts.length);
 return `<h2>पेमेंट देखें</h2><div ontouchstart="tx=event.touches[0].clientX" ontouchend="swpP(event)" style="min-height:50vh"><div class=mnav><button onclick="shiftPM(-1)">‹</button><b>${mlabel(m)}</b><button onclick="shiftPM(1)">›</button></div><div class=m style="margin:0 2px 8px">इस महीने कुल मिला ${R(tot)}</div>`+(rows.map(x=>`<h3>${E(x.p.name)}</h3><div class=card>${x.ts.map(t=>{const es=ps.filter(e=>e.tenantId==t.id).sort((u,v)=>String(u.pdate).localeCompare(String(v.pdate))),sum=r2(es.reduce((q,e)=>q+N(e.amount),0));
-return `<div class=item>${av(t.name)}<div class=gr><b class=fl>Flat ${E(t.flat)}</b><div class=nm>${E(t.name)}</div>${es.map(e=>`<div class=m>${fmtD(e.pdate)} · ${N(e.amount)<0?'− ':''}${R(Math.abs(N(e.amount)))}${N(e.amount)<0?' (रद्द)':''}</div>`).join('')}</div><b style="color:#1b8a3d">${R(sum)}</b></div>`}).join('')}</div>`).join('')||'<div class=card><span class=m>इस महीने कोई भुगतान दर्ज नहीं</span></div>')+`</div>`},
+return `<div class=item>${av(t.name)}<div class=gr><b class=fl>Flat ${E(t.flat)}</b><div class=nm>${E(t.name)}</div>${es.map(e=>`<div class=m>${fmtDL(e.pdate)}${es.length>1?' · '+(N(e.amount)<0?'− ':'')+R(Math.abs(N(e.amount))):''}${N(e.amount)<0?' (रद्द)':''}</div>`).join('')}</div><b style="color:#1b8a3d">${R(sum)}</b></div>`}).join('')}</div>`).join('')||'<div class=card><span class=m>इस महीने कोई भुगतान दर्ज नहीं</span></div>')+`</div>`},
 
 /* Tile4 list */ payRenter:()=>{const rows=db.props.map(p=>({p,ts:db.tenants.filter(t=>t.propId==p.id&&(t.active!='0'||db.bills.some(b=>b.tenantId==t.id&&dueOf(b)>0))).sort(byFlat)})).filter(x=>x.ts.length);
 return `<h2>पेमेंट नोट करें</h2><div class=m style="margin:-6px 2px 8px">किरायेदार चुनें</div>`+(rows.map(x=>`<h3>${E(x.p.name)}</h3><div class=card>${x.ts.map(t=>`<div class=item onclick="PT.t=0;go('payTenant','${t.id}')">${av(t.name)}<div class=gr><b class=fl>Flat ${E(t.flat)}</b>${t.active=='0'?' <span class=m>(पूर्व)</span>':''}<div class=nm>${E(t.name)}</div></div>›</div>`).join('')}</div>`).join('')||'<div class=card>कोई किरायेदार नहीं</div>')},
 
 payTenant:id=>{const t=T(id)||{},ps=db.payments.filter(x=>x.tenantId==id).sort((p,q)=>String(q.pdate).localeCompare(String(p.pdate))||String(q.id).localeCompare(String(p.id)));
 const hd=`<h2>${E(t.name)}</h2><div class=m style="margin:-6px 2px 8px">${E(P(t.propId)?.name)} · Flat ${E(t.flat)}</div><div class="seg big"><button class="${PT.t?'':'on'}" onclick="PT.t=0;draw()">रकम दर्ज करें</button><button class="${PT.t?'on':''}" onclick="PT.t=1;draw()">भुगतान इतिहास</button></div>`;
-if(PT.t)return hd+`<div class=card>${ps.map(x=>{const n=N(x.amount);return `<div class=item><div class=gr><b>${fmtD(x.pdate)}</b>${x.note?`<div class=m>${E(x.note)}</div>`:''}</div><b style="color:${n<0?'var(--r)':'#1b8a3d'}">${n<0?'− ':''}${R(Math.abs(n))}</b></div>`}).join('')||'<span class=m>अभी कोई भुगतान दर्ज नहीं</span>'}</div>`;
+if(PT.t)return hd+`<div class=card>${ps.map(x=>{const n=N(x.amount);return `<div class=item><div class=gr><b>${fmtDL(x.pdate)}</b>${x.note?`<div class=m>${E(x.note)}</div>`:''}</div><b style="color:${n<0?'var(--r)':'#1b8a3d'}">${n<0?'− ':''}${R(Math.abs(n))}</b></div>`}).join('')||'<span class=m>अभी कोई भुगतान दर्ज नहीं</span>'}</div>`;
 const bs=tbills(id).slice(0,12),due=r2(db.bills.filter(b=>b.tenantId==id).reduce((q,b)=>q+dueOf(b),0));
-return hd+`<div class=card style="text-align:center"><div style="font-size:18.7px;font-weight:800">कुल बकाया = ${R(due)}</div></div><div class=card><label>भुगतान की तारीख</label><input id=rdt type=date value="${today()}"><div class=duo style="margin:14px 0 0"><button class=tile style="background:var(--p);color:#fff" onclick="recvPay('${id}')"><span class=ic style="background:rgba(255,255,255,.25)">＋</span>अधूरा पेमेंट किया</button><button class=tile style="background:var(--g);color:#fff" onclick="recvPay('${id}',1)"><span class=ic style="background:rgba(255,255,255,.25)">✓</span>पूरा पेमेंट किया</button></div></div>
-<h3>पिछले 12 महीने के बिल की स्थिति</h3><div class=card>${bs.map(b=>`<div class="item bi"><div class=gr><b>${mlabel(b.month)}</b><div style="font-size:15px">${bd2(b)}</div></div>${roH(b)}</div>`).join('')||'<span class=m>अभी कोई बिल नहीं</span>'}</div>`},
+return hd+`<div class=card style="text-align:center;background:linear-gradient(135deg,#ffb340,#ff9500);color:#fff;box-shadow:0 6px 18px rgba(255,149,0,.35)"><div style="font-size:18.7px;font-weight:800">कुल बकाया = ${R(due)}</div></div><div class=card><label>भुगतान की तारीख</label><input id=rdt type=date value="${today()}"><div class=duo style="margin:14px 0 0"><button class=tile style="background:var(--p);color:#fff" onclick="recvPay('${id}')"><span class=ic style="background:rgba(255,255,255,.25)">＋</span>अधूरा पेमेंट किया</button><button class=tile style="background:var(--g);color:#fff" onclick="recvPay('${id}',1)"><span class=ic style="background:rgba(255,255,255,.25)">✓</span>पूरा पेमेंट किया</button></div></div>
+<h3 style="margin-top:44px">पिछले 12 महीने के बिल की स्थिति</h3><div class=card>${bs.map(b=>`<div class="item bi"><div class=gr><b style="display:block;margin-bottom:6px">${ML(b.month)}</b><div style="font-size:15px">${bd2(b)}</div></div>${roH(b)}</div>`).join('')||'<span class=m>अभी कोई बिल नहीं</span>'}</div>`},
 
 /* Tile6 */ billHist:()=>`<h2>बिल देखें व भेजें</h2>${histFlat(1)}`,
 
@@ -270,7 +272,7 @@ return `<h2>कुल किराया बकाया</h2><div class=m style=
 /* Tile2 list: payments received this month, per tenant */ rcvMonth:()=>{const m=today().slice(0,7),ps=db.payments.filter(x=>T(x.tenantId)&&String(x.pdate).slice(0,7)==m),tot=r2(ps.reduce((q,x)=>q+N(x.amount),0));
 const rows=db.props.map(p=>({p,ts:db.tenants.filter(t=>t.propId==p.id&&ps.some(x=>x.tenantId==t.id)).sort(byFlat)})).filter(x=>x.ts.length);
 return `<h2>${mname(m)} में किराया पाया</h2><div class=m style="margin:-6px 2px 8px">${mlabel(m)} · कुल मिला ${R(tot)}</div>`+(rows.map(x=>`<h3>${E(x.p.name)}</h3><div class=card>${x.ts.map(t=>{const es=ps.filter(e=>e.tenantId==t.id).sort((u,v)=>String(u.pdate).localeCompare(String(v.pdate))),sum=r2(es.reduce((q,e)=>q+N(e.amount),0));
-return `<div class=item>${av(t.name)}<div class=gr><b class=fl>Flat ${E(t.flat)}</b><div class=nm>${E(t.name)}</div>${es.map(e=>`<div class=m>${fmtD(e.pdate)} · ${N(e.amount)<0?'− ':''}${R(Math.abs(N(e.amount)))}${N(e.amount)<0?' (रद्द)':''}</div>`).join('')}</div><b style="color:#1b8a3d">${R(sum)}</b></div>`}).join('')}</div>`).join('')||'<div class=card><span class=m>इस महीने कोई भुगतान दर्ज नहीं</span></div>')},
+return `<div class=item>${av(t.name)}<div class=gr><b class=fl>Flat ${E(t.flat)}</b><div class=nm>${E(t.name)}</div>${es.map(e=>`<div class=m>${fmtDL(e.pdate)} · ${N(e.amount)<0?'− ':''}${R(Math.abs(N(e.amount)))}${N(e.amount)<0?' (रद्द)':''}</div>`).join('')}</div><b style="color:#1b8a3d">${R(sum)}</b></div>`}).join('')}</div>`).join('')||'<div class=card><span class=m>इस महीने कोई भुगतान दर्ज नहीं</span></div>')},
 
 /* (old Tile1 list, no longer on home) */ monthBills:(mode)=>{const all=mode=='all',mo=today().slice(0,7),mn=mname(mo),rows=db.props.map(p=>({p,ts:db.tenants.filter(t=>t.propId==p.id&&(t.active!='0'||db.bills.some(b=>b.tenantId==t.id&&b.month==mo))).sort(byFlat)})).filter(x=>x.ts.length);let tot=0,cnt=0;
 const cell='display:flex;flex-direction:column;align-items:center;gap:6px;width:104px';
@@ -417,14 +419,15 @@ readAt=(id,m)=>{const b=tbills(id).find(b=>b.type!='rent'&&b.month<m);return b?b
 const lastRead=id=>{const b=tbills(id).find(b=>b.type!='rent');return b?b.cur:T(id).meter};
 
 let NB={t:0},A={m:null,l:[]},H={t:0,m:today().slice(0,7)},tx=0,PT={t:0},PV={m:today().slice(0,7)},PRE=null;
-const fmtD=d=>{const x=new Date(String(d)+'T00:00');return isNaN(x)?String(d):x.toLocaleDateString('hi',{day:'numeric',month:'short',year:'numeric'})},
+const fmtDL=d=>{const x=new Date(String(d)+'T00:00');return isNaN(x)?String(d):x.toLocaleDateString('hi',{day:'numeric',month:'long',year:'numeric'})},
+fmtD=d=>{const x=new Date(String(d)+'T00:00');return isNaN(x)?String(d):x.toLocaleDateString('hi',{day:'numeric',month:'short',year:'numeric'})},
 logPay=(tid,amt,note)=>save('payments',{id:uid(),tenantId:tid,amount:String(amt),pdate:today(),note:note||''}),
 bd2=b=>{const pend=r2(olderDue(b).reduce((q,x)=>q+dueOf(x),0)),pd=paidAmt(b);return 'कुल बाकी '+R(r2(pend+own(b)-pd))+' = '+[pend>0?'पिछला बकाया '+R(pend):'',b.type!='elec'?'Rent '+R(b.rent):'',b.type!='rent'?'Electricity '+R(b.elec):''].filter(Boolean).join(' + ')+(pd>0?' − चुकाया '+R(pd):'')},
-roH=b=>{const pt=b.status!='paid'&&N(b.paid)>0;return `<span class="badge sbig ${b.status=='paid'?'paid':pt?'org':''}">${b.status=='paid'?'चुकाया ✓':pt?'अधूरा चुकाया':'बकाया'}</span>`},
+roH=b=>{const pt=b.status!='paid'&&N(b.paid)>0;return `<span class="badge sbig ${b.status=='paid'?'paid':pt?'org':''}">${b.status=='paid'?'पूरा चुकाया ✓':pt?'अधूरा चुकाया':'पूरा बकाया'}</span>`},
 mname=m=>new Date(m+'-01T00:00').toLocaleString('hi',{month:'long'}),
 mlabel=m=>new Date(m+'-01T00:00').toLocaleString('hi',{month:'long',year:'numeric'}),
-roL=b=>{const pt=b.status!='paid'&&N(b.paid)>0;return `<span class="badge sbig ${b.status=='paid'?'paid':pt?'org':''}">${b.status=='paid'?'चुकाया ✓':pt?'अधूरा चुकाया':'बकाया'}</span>`},
-segH=b=>{const pt=b.status!='paid'&&N(b.paid)>0;return `<button class="badge sbig ${b.status=='paid'?'paid':pt?'org':''}" onclick="go('payForm','${b.id}')">${b.status=='paid'?'चुकाया ✓':pt?'अधूरा चुकाया':'बकाया'} ›</button>`};
+roL=b=>{const pt=b.status!='paid'&&N(b.paid)>0;return `<span class="badge sbig ${b.status=='paid'?'paid':pt?'org':''}">${b.status=='paid'?'पूरा चुकाया ✓':pt?'अधूरा चुकाया':'पूरा बकाया'}</span>`},
+segH=b=>{const pt=b.status!='paid'&&N(b.paid)>0;return `<button class="badge sbig ${b.status=='paid'?'paid':pt?'org':''}" onclick="go('payForm','${b.id}')">${b.status=='paid'?'पूरा चुकाया ✓':pt?'अधूरा चुकाया':'पूरा बकाया'} ›</button>`};
 function shiftM(d){const[y,m]=H.m.split('-').map(Number),x=new Date(y,m-1+d,1),k=x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0');H.m=k;draw()}
 async function shareQrOnly(){const m=upiQr();if(!m)return alert('Profile में UPI ID डालें');const tx='UPI से भुगतान करने के लिए यह QR स्कैन करें।\nUPI ID: '+db.profile.upi,
  blob=await new Promise(r=>qrPng(m).toBlob(r,'image/png')),f=new File([blob],'upi-qr.png',{type:'image/png'});
