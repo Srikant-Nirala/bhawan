@@ -21,9 +21,5 @@
       "type": "image/png",
       "purpose": "any maskable"
     }
-  ],
-  "display_override": [
-    "fullscreen",
-    "standalone"
   ]
 }
