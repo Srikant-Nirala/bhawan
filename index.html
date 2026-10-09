@@ -126,6 +126,8 @@ nav button:active i{transform:scale(.82)}nav i{transition:transform .15s}
 .dkr{color:#b3000f;font-weight:800;font-size:16px}
 @media(prefers-color-scheme:dark){.dkr{color:#ff6259}}
 .tf input::placeholder{color:var(--m);opacity:.6}
+.tile.lb{background:linear-gradient(135deg,#e3f0ff,#cfe4ff);box-shadow:0 2px 10px rgba(10,132,255,.15)}.tile.lb b{color:#0a64d6}.tile.lb small{color:#3b7fd1}.tile.lb .ch{color:#7fb2ee}
+@media(prefers-color-scheme:dark){.tile.lb{background:linear-gradient(135deg,#12294a,#0e2342);box-shadow:none}.tile.lb b{color:#6cb4ff}.tile.lb small{color:#8ab8ea}}
 .tile small{font-weight:600}
 .m[style*="margin:-6px 2px 8px"],.m[style*="margin:0 2px 8px"],.m[style*="margin:-6px 2px 8px"] *{font-weight:600}
 body.busy #main .btn,body.busy #main .badge{pointer-events:none;opacity:.55}
@@ -316,11 +318,11 @@ ${q?`<div class=card style="text-align:center">${qrSvg(q)}<div class=m style="ma
 listTen:()=>{const g=db.props.slice().sort((a,b)=>String(a.name).localeCompare(String(b.name))).map(p=>({p,ts:active(p.id).sort(byFlat)})).filter(x=>x.ts.length);
 return `<h2>Tenants Information</h2>`+(g.map(x=>`<h3>${E(x.p.name)}</h3>${x.ts.map(t=>`<div class="tile tap" onclick="go('tenant','${t.id}')">${av(t.name)}<span class=tx><b class=fl>Flat ${E(t.flat)}</b><span class=nm>${E(t.name)}</span><small>${E(t.phone)}</small></span><a href="tel:${E(t.phone)}" class=call onclick="event.stopPropagation()">📞</a><span class=ch>›</span></div>`).join('')}`).join('')||'<div class=card>No tenants</div>')},
 
-tenant:id=>{const t=T(id),bs0=tbills(id),cut=(()=>{const d=new Date();d.setDate(1);d.setMonth(d.getMonth()-11);return d.getFullYear()+'-'+pd2(d.getMonth()+1)})(),bs=bs0.filter(b=>b.month>=cut),oldP=bs0.filter(b=>b.month<cut&&dueOf(b)>0),sec=s=>bs.filter(b=>b.status==s).map(b=>`<div class=item><div>${b.month}<div class=m>${b.status=='pending'?'बाकी '+R(dueOf(b))+(N(b.paid)>0?' · चुकाया '+R(b.paid):''):R(own(b))}</div></div>${b.status=='pending'?`<button class=badge style="border:0;background:var(--g)" onclick="pay('${b.id}')">Mark paid</button>`:badge(b)}</div>`).join('')||'<span class=m>None</span>';
-return `<h2>${E(t.name)}</h2><div class=card style="padding:22px 20px"><ul style="margin:0;padding-left:22px;font-size:15px;font-weight:700;line-height:1.55;opacity:.7"><li>फ्लैट: ${E(t.flat)}</li><li>किराया: ${R(t.rent)}</li><li>जमा राशि: ${R(t.deposit)}</li><li>प्रवेश: ${E(t.entry)}</li><li>आधार: ${E(t.aadhar)}</li></ul>
-${t.photo?`<a class=back target=_blank href="${E(t.photo)}">View Aadhar photo</a>`:''}${docLinks(t)}</div>
+tenant:id=>{const t=T(id),bs0=tbills(id),cut=(()=>{const d=new Date();d.setDate(1);d.setMonth(d.getMonth()-11);return d.getFullYear()+'-'+pd2(d.getMonth()+1)})(),bs=bs0.filter(b=>b.month>=cut),oldP=bs0.filter(b=>b.month<cut&&dueOf(b)>0),sec=s=>bs.filter(b=>b.status==s).map(b=>`<div class=item><div class=gr>${b.month}<div class=m>${b.status=='pending'?'बाकी '+R(dueOf(b))+(N(b.paid)>0?' · चुकाया '+R(b.paid):''):R(own(b))}</div></div>${b.status=='pending'?`<button class=badge style="border:0;background:var(--g)" onclick="pay('${b.id}')">Mark paid</button>`:badge(b)}</div>`).join('')||'<span class=m>None</span>';
+return `<h2>${E(t.name)}</h2><div class=card style="padding:22px 20px"><div style="font-size:18px;font-weight:800;margin-bottom:8px">किरायेदार की जानकारी</div><ul style="margin:0;padding-left:22px;font-size:15px;font-weight:700;line-height:1.55;opacity:.7"><li>फ्लैट: ${E(t.flat)}</li><li>किराया: ${R(t.rent)}</li><li>जमा राशि: ${R(t.deposit)}</li><li>प्रवेश: ${E(t.entry)}</li><li>आधार: ${E(t.aadhar)}</li></ul>
+<div style="text-align:center">${t.photo?`<a class=back target=_blank href="${E(t.photo)}">View Aadhar photo</a>`:''}${docLinks(t)}</div></div>
 <a class="btn" style="background:var(--g)" href="tel:${E(t.phone)}">📞 Call ${E(t.phone)}</a>
-<button class=tile style="margin-top:24px" onclick="go('updTen','${id}')"><span class=ic style="background:#ff9f0a">✏️</span><span class=tx><b>किरायेदार की जानकारी अपडेट करें</b><small>किराया, फ़ोन नंबर, डॉक्यूमेंट</small></span><span class=ch>›</span></button>
+<button class="tile lb" style="margin-top:24px" onclick="go('updTen','${id}')"><span class=ic style="background:#0a84ff">✏️</span><span class=tx><b>किरायेदार की जानकारी अपडेट करें</b><small>किराया, फ़ोन नंबर, डॉक्यूमेंट</small></span><span class=ch>›</span></button>
 <h3>बकाया · पिछले 12 महीने</h3><div class=card>${sec('pending')}${oldP.length?`<div class=m style="color:var(--r);margin-top:8px">12 महीने से पुराने ${oldP.length} बकाया बिल भी हैं · ${R(r2(oldP.reduce((q,b)=>q+dueOf(b),0)))}</div>`:''}</div><h3>चुकता · पिछले 12 महीने</h3><div class=card>${sec('paid')}</div>
 <button class="btn r" onclick="go('archiveForm','${id}')">Archive tenant</button>`},
 updTen:id=>{const t=T(id);return `<h2 style="white-space:nowrap;font-size:max(19px,min(26px,6vw))">किरायेदार की जानकारी अपडेट करें</h2><div class=m style="margin:-6px 2px 8px">${E(t.name)} · Flat ${E(t.flat)}</div>
