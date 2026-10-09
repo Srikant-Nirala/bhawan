@@ -135,6 +135,10 @@ nav button:active i{transform:scale(.82)}nav i{transition:transform .15s}
 .card.cp{padding:18px 19px;margin:20px 0}.cp .item.bi{padding:12px 0 0;gap:12px}.cp .bfoot .badge.sbig{width:110px;min-width:110px;padding:7px 3px;font-size:13.6px;display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.2}.cp .bfoot .badge.sbig.shr{background:#2f7d4f;color:#fff}.cp .dkr{font-size:inherit}
 .badge.sbig:not(.paid):not(.org):not(.shr){color:#a8000e;font-weight:800}
 @media(prefers-color-scheme:dark){.badge.sbig:not(.paid):not(.org):not(.shr){color:#ff6b61}}
+.card.ot{background:linear-gradient(135deg,#fff6ea,#ffeacc);color:#c25a00;box-shadow:0 2px 10px rgba(255,149,0,.15)}
+@media(prefers-color-scheme:dark){.card.ot{background:linear-gradient(135deg,#3a2508,#2f1d06);color:#ffa233;box-shadow:none}}
+.xp{display:grid;grid-template-rows:0fr;transition:grid-template-rows .32s ease}.xp.open{grid-template-rows:1fr}.xp>div{min-height:0;overflow:hidden}
+#xch{display:inline-block;font-size:22px;transition:transform .25s ease}#xch.open{transform:rotate(90deg)}
 .tile small{font-weight:600}
 .m[style*="margin:-6px 2px 8px"],.m[style*="margin:0 2px 8px"],.m[style*="margin:-6px 2px 8px"] *{font-weight:600}
 body.busy #main .btn,body.busy #main .badge{pointer-events:none;opacity:.55}
@@ -261,8 +265,8 @@ payTenant:id=>{const t=T(id)||{},ps=db.payments.filter(x=>x.tenantId==id).sort((
 const hd=`<h2>${E(t.name)}</h2><div class=m style="margin:-6px 2px 8px">${E(P(t.propId)?.name)} · Flat ${E(t.flat)}</div><div class="seg big"><button class="${PT.t?'':'on'}" onclick="PT.t=0;draw()">रकम दर्ज करें</button><button class="${PT.t?'on':''}" onclick="PT.t=1;draw()">भुगतान इतिहास</button></div>`;
 if(PT.t)return hd+`<div class=card>${ps.map(x=>{const n=N(x.amount);return `<div class=item><div class=gr><b>${fmtDL(x.pdate)}</b>${x.note?`<div class=m>${E(x.note)}</div>`:''}</div><b style="color:${n<0?'var(--r)':'#1b8a3d'}">${n<0?'− ':''}${R(Math.abs(n))}</b></div>`}).join('')||'<span class=m>अभी कोई भुगतान दर्ज नहीं</span>'}</div>`;
 const bs=tbills(id).slice(0,12),due=r2(db.bills.filter(b=>b.tenantId==id).reduce((q,b)=>q+dueOf(b),0));
-return hd+`<div class=card style="text-align:center;background:linear-gradient(135deg,#ff8a1f,#ff5e00);color:#fff;box-shadow:0 6px 18px rgba(255,94,0,.4)"><div style="font-size:18.7px;font-weight:800">कुल बकाया = ${R(due)}</div></div><div class=card><label>भुगतान की तारीख</label><input id=rdt type=date value="${today()}"><div class=duo style="margin:14px 0 0"><button class=tile style="background:var(--p);color:#fff" onclick="recvPay('${id}')"><span class=ic style="background:rgba(255,255,255,.25)">＋</span>अधूरा पेमेंट किया</button><button class=tile style="background:var(--g);color:#fff" onclick="recvPay('${id}',1)"><span class=ic style="background:rgba(255,255,255,.25)">✓</span>पूरा पेमेंट किया</button></div></div>
-<h3 style="margin-top:44px">पिछले 12 महीने के बिल की स्थिति</h3><div class=card>${bs.map(b=>`<div class="item bi"><div class=gr><b style="display:block;margin-bottom:6px">${ML(b.month)}</b><div style="font-size:15px">${bd2(b)}</div></div>${roH(b)}</div>`).join('')||'<span class=m>अभी कोई बिल नहीं</span>'}</div>`},
+return hd+`<div class="card ot" style="text-align:center"><div style="font-size:18.7px;font-weight:800">कुल बकाया = ${R(due)}</div></div><div class=card><label>भुगतान की तारीख</label><input id=rdt type=date value="${today()}"><div class=duo style="margin:14px 0 0"><button class=tile style="background:var(--p);color:#fff" onclick="recvPay('${id}')"><span class=ic style="background:rgba(255,255,255,.25)">＋</span>अधूरा पेमेंट किया</button><button class=tile style="background:var(--g);color:#fff" onclick="recvPay('${id}',1)"><span class=ic style="background:rgba(255,255,255,.25)">✓</span>पूरा पेमेंट किया</button></div></div>
+<h3 class=tap onclick="togBills()" style="margin-top:44px;display:flex;justify-content:space-between;align-items:center;cursor:pointer">पिछले 12 महीने के बिल की स्थिति<span id=xch>›</span></h3><div class=xp id=xbx><div><div class=card>${bs.map(b=>`<div class="item bi"><div class=gr><b style="display:block;margin-bottom:6px">${ML(b.month)}</b><div style="font-size:15px">${bd2(b)}</div></div>${roH(b)}</div>`).join('')||'<span class=m>अभी कोई बिल नहीं</span>'}</div></div></div>`},
 
 /* Tile6 */ billHist:()=>`<h2>बिल देखें व भेजें</h2>${histFlat(1)}`,
 
@@ -614,6 +618,7 @@ function editPhone(id){$('#pc').innerHTML=`<label>Phone number (10 digits)</labe
 function updPhone(id){const v=V('ep').replace(/\D/g,'');if(v.length!=10)return alert('Phone number must be exactly 10 digits.');const t=T(id);t.phone=v;save('tenants',t);alert('Phone number updated.');draw()}
 function updRent(id){const v=V('er');if(!(N(v)>0))return alert('Enter a valid rent amount.');const t=T(id);t.rent=String(N(v));save('tenants',t);alert('Rent updated to '+R(t.rent)+'. It applies to new bills from now on.');draw()}
 function pay(id){go('payForm',id)}
+function togBills(){const x=document.getElementById('xbx'),c=document.getElementById('xch');if(!x)return;x.classList.toggle('open');c.classList.toggle('open')}
 async function saveTenDocs(id){const t=T(id);let ch=0;
  if(docs.some(d=>!String(d.name||'').trim()))return alert('हर डॉक्यूमेंट का नाम लिखना ज़रूरी है');docs.forEach(d=>d.name=d.name.trim());
  const ad=V('xa').replace(/\D/g,'');
