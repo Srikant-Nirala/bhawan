@@ -56,7 +56,9 @@ nav i{font-style:normal;font-size:23px;filter:grayscale(1);opacity:.7}nav .on{co
 .badge.org{color:#ff9500;background:rgba(255,149,0,.16)}
 .seg:not(.big) button{width:80px;text-align:center}
 .card{overflow:hidden}
+.slim,.slim span,.slim.two>div{font-size:14px!important;font-weight:800!important;line-height:1.3}
 nav button:disabled{opacity:.35}
+nav button{position:relative}nav button+button::before{content:"";position:absolute;left:0;top:12%;bottom:12%;width:1px;background:var(--m);opacity:.4;border-radius:1px}
 #nb:not(:disabled){color:var(--p)}#nb:not(:disabled) i{filter:none;opacity:1}
 .tap{cursor:pointer;transition:.12s}.tap:active{transform:scale(.97);opacity:.85}
 #main{animation:none}
