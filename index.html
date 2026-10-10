@@ -254,7 +254,7 @@ return `<h2 style="margin-bottom:2px">Rent Manager</h2><div style="margin:0 2px 
 <div class="quad one">
 <div class=tap id=Tile1 onclick="go('totalDue')"><span>कुल किराया बकाया</span><b>${R(b1)}</b></div>
 <div class=tap id=Tile2 onclick="go('rcvMonth')"><span>${mn} में किराया पाया</span><b>${R(b3)}</b></div></div>
-<div class="slim${b4>0?'':' ok'}" id=Tile3s onclick="go('notBilled')"><span>${b4>0?'⚡ '+mn+' माह में '+b4+' किरायेदार का बिल भेजना बाकी':mn+' माह के सब बिल बन गए ✓'}</span></div>
+<div class="slim${b4>0?'':' ok'}" id=Tile3s onclick="go('notBilled')"><span>${b4>0?'⚡ '+mn+' माह में '+b4+' किरायेदार का बिल बनाना बाकी':mn+' माह के सब बिल बन गए ✓'}</span></div>
 <div class=duo><button class=tile id=Tile3 onclick="go('notBilled')"><span class=ic style="background:#ff9f0a">⚡</span>बिल बनाएँ</button><button class=tile id=Tile4 onclick="go('payRenter')"><span class=ic style="background:#30b858">💰</span>पेमेंट नोट करें</button></div>
 <div class=duo style="margin-bottom:28px"><button class=tile id=Tile6 onclick="go('billHist')"><span class=ic style="background:#5e5ce6">🧾</span>बिल देखें व भेजें</button><button class=tile id=Tile5 onclick="PV.m=today().slice(0,7);go('payView')"><span class=ic style="background:#0a84ff">👁</span>पेमेंट देखें</button></div>
 <div class="slim two" id=Tile7s><div onclick="go('occ')">🏠 ${oc} फ्लैट भरे हुए</div><i></i><div onclick="go('empty')">🔑 ${em} फ्लैट खाली</div></div>
