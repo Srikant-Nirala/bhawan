@@ -4,13 +4,16 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Rent Manager</title>
 <link rel="manifest" href="manifest.webmanifest">
-<meta name="color-scheme" content="light dark"><meta name="theme-color" id="tcm" content="#f2f2f7"><script>(function(){var q=matchMedia("(prefers-color-scheme: dark)"),f=function(){var c=q.matches?"#000000":"#f2f2f7",m=document.getElementById("tcm");m.setAttribute("content",c);document.documentElement.style.backgroundColor=c};f();(q.addEventListener?q.addEventListener("change",f):q.addListener(f))})()</script>
+<meta name="color-scheme" content="light dark" id="csm"><meta name="theme-color" id="tcm" content="#f2f2f7"><script>function applyTheme(t){var d=t=='dark',c=d?"#000000":"#f2f2f7";document.documentElement.setAttribute('data-theme',d?'dark':'light');document.documentElement.style.backgroundColor=c;var m=document.getElementById('tcm');if(m)m.setAttribute('content',c)}
+function getTheme(){try{return localStorage.getItem('rmTheme')=='dark'?'dark':'light'}catch(e){return 'light'}}
+function setTheme(t){try{localStorage.setItem('rmTheme',t)}catch(e){}applyTheme(t)}
+applyTheme(getTheme())</script>
 <meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Rent Manager"><meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="apple-touch-icon" href="icon-180.png"><link rel="icon" type="image/png" href="icon-192.png">
 <style>
-:root{color-scheme:light dark;--bg:#f2f2f7;--c:#fff;--t:#111827;--m:#8a8f9c;--p:#0a84ff;--g:#30b858;--r:#ff453a;--b:#ececf1;--sh:0 1px 2px rgba(0,0,0,.04),0 6px 20px rgba(20,30,60,.06);--f:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Helvetica Neue",Helvetica,Arial,sans-serif}
-@media(prefers-color-scheme:dark){:root{--bg:#000;--c:#1c1c1e;--t:#f5f5f7;--m:#98989f;--b:#2c2c2e;--sh:none}}
+:root{color-scheme:light;--bg:#f2f2f7;--c:#fff;--t:#111827;--m:#8a8f9c;--p:#0a84ff;--g:#30b858;--r:#ff453a;--b:#ececf1;--sh:0 1px 2px rgba(0,0,0,.04),0 6px 20px rgba(20,30,60,.06);--f:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Helvetica Neue",Helvetica,Arial,sans-serif}
+html[data-theme=dark]{color-scheme:dark;--bg:#000;--c:#1c1c1e;--t:#f5f5f7;--m:#98989f;--b:#2c2c2e;--sh:none}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html{background:var(--bg);overscroll-behavior:none;min-height:100%}
 input[type=date],input[type=month]{min-height:50px}
@@ -25,6 +28,7 @@ h2{white-space:nowrap;font-size:32px;font-weight:700;letter-spacing:-.035em;marg
 .bki::placeholder{font-size:14px;color:var(--m);opacity:1;letter-spacing:-.01em}
 .card .badge.sbig.shr{background:rgba(10,132,255,.14);color:#0a84ff;font-weight:600}
 .cp .badge.sbig{box-sizing:border-box;width:110px;min-width:110px;max-width:110px;height:34px;padding:0 3px;margin:0;font-size:13.6px!important;font-weight:700!important;line-height:1.2;display:flex;align-items:center;justify-content:center;text-align:center;white-space:nowrap;flex:0 0 110px}
+.sw{position:relative;width:54px;height:32px;border-radius:99px;border:0;background:#c7c7cc;padding:0;flex:none;transition:background .2s}.sw i{position:absolute;top:3px;left:3px;width:26px;height:26px;border-radius:50%;background:#fff;box-shadow:0 2px 5px rgba(0,0,0,.3);transition:transform .2s}.sw.on{background:#30b858}.sw.on i{transform:translateX(22px)}
 h3{margin:22px 6px 8px;font-size:13px;font-weight:800;color:var(--m);text-transform:uppercase;letter-spacing:.04em}
 .card{background:var(--c);border-radius:18px;padding:16px;margin:10px 0;box-shadow:var(--sh)}
 label{display:block;font-size:13px;font-weight:500;color:var(--m);margin:2px 2px 0}
@@ -55,14 +59,14 @@ nav i{font-style:normal;font-size:23px;filter:grayscale(1);opacity:.7}nav .on{co
 .stat.warn b{color:var(--r)}
 .stat.org{background:linear-gradient(rgba(255,149,0,.34),rgba(255,149,0,.34)),var(--c)}.stat.org b{color:#c76a00}
 .stat.lg{background:linear-gradient(rgba(52,199,89,.34),rgba(52,199,89,.34)),var(--c)}.stat.lg b{color:#1b8a3d}
-@media(prefers-color-scheme:dark){.stat.org{background:linear-gradient(rgba(255,149,0,.16),rgba(255,149,0,.16)),var(--c)}.stat.org b{color:#ff9500}.stat.lg{background:linear-gradient(rgba(52,199,89,.16),rgba(52,199,89,.16)),var(--c)}.stat.lg b{color:#34c759}}
+html[data-theme=dark] .stat.org{background:linear-gradient(rgba(255,149,0,.16),rgba(255,149,0,.16)),var(--c)}html[data-theme=dark] .stat.org b{color:#ff9500}html[data-theme=dark] .stat.lg{background:linear-gradient(rgba(52,199,89,.16),rgba(52,199,89,.16)),var(--c)}html[data-theme=dark] .stat.lg b{color:#34c759}
 .seg.big{display:flex;background:rgba(120,120,128,.16);margin:4px 0 14px}.seg.big button{flex:1;padding:9px;font-size:15px}.seg .on{background:var(--c);color:var(--t);box-shadow:0 1px 3px rgba(0,0,0,.15)}
 .mnav{display:flex;align-items:center;justify-content:space-between;margin:4px 0 6px}.mnav b{font-size:18px}.mnav button{width:40px;height:40px;border-radius:50%;border:0;background:var(--c);color:var(--p);font-size:24px;box-shadow:var(--sh)}.mnav button:disabled{opacity:.3}
 .badge.org{color:#ff9500;background:rgba(255,149,0,.16)}
 .seg:not(.big) button{width:80px;text-align:center}
 .card{overflow:hidden}
 .slim,.slim.ok,.slim span,.slim.two>div{color:#3a3a3c!important}
-@media(prefers-color-scheme:dark){.slim,.slim.ok,.slim span,.slim.two>div{color:#1c1c1e!important}}
+html[data-theme=dark] .slim,html[data-theme=dark] .slim.ok,html[data-theme=dark] .slim span,html[data-theme=dark] .slim.two>div{color:#1c1c1e!important}
 .slim,.slim span,.slim.two>div{font-size:14px!important;font-weight:800!important;line-height:1.3}
 nav button:disabled{opacity:.35}
 nav button{position:relative}nav{display:grid!important;grid-template-columns:1fr 1px 1fr 1px 1fr;align-items:stretch}nav .dv{background:var(--m);opacity:.4;margin:4px 0;width:1px}
@@ -99,7 +103,7 @@ nav button:active i{transform:scale(.82)}nav i{transition:transform .15s}
 .quad.one{margin-bottom:28px}.quad.one>div{border-bottom:0!important;min-height:168px;padding:22px 12px;justify-content:center;gap:10px}.quad.one span{font-size:16px;font-weight:700;min-height:2.6em}#Tile1 b{color:#ff9500;text-shadow:0 0 1px rgba(255,255,255,.9),0 1px 6px rgba(0,0,40,.18)}#Tile2 b{color:#34c759;text-shadow:0 0 1px rgba(255,255,255,.9),0 1px 6px rgba(0,0,40,.18)}.quad.one b{font-size:28px}.quad.one small{font-size:15px}
 .pb{height:12px;border-radius:7px;background:var(--r);overflow:hidden;margin:12px 0 10px}.pb i{display:block;height:100%;background:var(--g);border-radius:7px 0 0 7px;transition:width .4s}
 .duo{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0}
-.slim{display:flex;align-items:center;justify-content:center;text-align:center;background:#d1d1d6;color:#3a3a3c;border-radius:12px;padding:5px 14px;min-height:28px;margin:0 0 28px;font-size:14px;font-weight:800;box-shadow:var(--sh);cursor:pointer;transition:.12s}.slim:active{transform:scale(.98);opacity:.85}.slim.ok{color:#636366}.slim.two{padding:0;overflow:hidden;margin-bottom:28px;cursor:default}.slim.two:active{transform:none;opacity:1}.slim.two>div{flex:1;padding:5px 8px;cursor:pointer;transition:background .15s}.slim.two>div:active{background:rgba(0,0,0,.1)}.slim.two>i{width:1px;align-self:stretch;margin:5px 0;background:#8e8e93}@media(prefers-color-scheme:dark){.slim{background:#aeaeb2;color:#1c1c1e}.slim.ok{color:#48484a}}
+.slim{display:flex;align-items:center;justify-content:center;text-align:center;background:#d1d1d6;color:#3a3a3c;border-radius:12px;padding:5px 14px;min-height:28px;margin:0 0 28px;font-size:14px;font-weight:800;box-shadow:var(--sh);cursor:pointer;transition:.12s}.slim:active{transform:scale(.98);opacity:.85}.slim.ok{color:#636366}.slim.two{padding:0;overflow:hidden;margin-bottom:28px;cursor:default}.slim.two:active{transform:none;opacity:1}.slim.two>div{flex:1;padding:5px 8px;cursor:pointer;transition:background .15s}.slim.two>div:active{background:rgba(0,0,0,.1)}.slim.two>i{width:1px;align-self:stretch;margin:5px 0;background:#8e8e93}html[data-theme=dark] .slim{background:#aeaeb2;color:#1c1c1e}html[data-theme=dark] .slim.ok{color:#48484a}
 .duo .tile{flex-direction:column;justify-content:center;min-height:104px;margin:0;padding:18px 10px;text-align:center;gap:10px;font-weight:700;font-size:16px}
 
 #lk{position:fixed;inset:0;z-index:99999;background:var(--bg);display:flex;align-items:center;justify-content:center;font-family:var(--f);color:var(--t)}
@@ -114,7 +118,7 @@ nav button:active i{transform:scale(.82)}nav i{transition:transform .15s}
 #lkc{margin-top:20px;background:none;border:0;color:var(--p);font-size:16px;font-weight:600;box-shadow:none}
 .locked #main,.locked nav,.cov #main,.cov nav{visibility:hidden}
 .nm{font-weight:800;color:#000;font-size:16px;line-height:1.3}.fl{color:#4b5563}
-@media(prefers-color-scheme:dark){.nm{color:#fff}.fl{color:#aeaeb2}}
+html[data-theme=dark] .nm{color:#fff}html[data-theme=dark] .fl{color:#aeaeb2}
 .bfoot{display:flex;align-items:center;justify-content:space-between;gap:10px}
 .bfoot .badge.sbig{width:124px;min-width:124px;align-self:auto;padding:9px 4px;margin:0;text-align:center;white-space:nowrap}
 .bfoot .shr{color:var(--p);background:rgba(10,132,255,.12);cursor:pointer}
@@ -129,19 +133,19 @@ nav button:active i{transform:scale(.82)}nav i{transition:transform .15s}
 .mb.mo{background:var(--p);color:#fff}.mb.mc{background:var(--bg);color:var(--t)}
 .tf label{font-weight:700;color:var(--t);opacity:.62;font-size:14px}
 .dkr{color:#b3000f;font-weight:800;font-size:16px}
-@media(prefers-color-scheme:dark){.dkr{color:#ff6259}}
+html[data-theme=dark] .dkr{color:#ff6259}
 .tf input::placeholder{color:var(--m);opacity:.6}
 .tile.lb{background:linear-gradient(135deg,#e3f0ff,#cfe4ff);box-shadow:0 2px 10px rgba(10,132,255,.15)}.tile.lb b{color:#0a64d6;white-space:nowrap;font-size:clamp(12px,3.8vw,17px)}.tile.lb small{color:#3b7fd1}.tile.lb .ch{color:#7fb2ee;width:42px;text-align:right}.tile.lb .tx{align-items:center;text-align:center}
-@media(prefers-color-scheme:dark){.tile.lb{background:linear-gradient(135deg,#12294a,#0e2342);box-shadow:none}.tile.lb b{color:#6cb4ff}.tile.lb small{color:#8ab8ea}}
+html[data-theme=dark] .tile.lb{background:linear-gradient(135deg,#12294a,#0e2342);box-shadow:none}html[data-theme=dark] .tile.lb b{color:#6cb4ff}html[data-theme=dark] .tile.lb small{color:#8ab8ea}
 .ib li::marker{color:var(--m)}.ib .iv{color:color-mix(in srgb,var(--t) 70%,transparent)}
 .btn.lbtn{background:linear-gradient(135deg,#e3f0ff,#cfe4ff);color:#0a64d6;font-size:18px;font-weight:800;box-shadow:0 2px 10px rgba(10,132,255,.15)}
-@media(prefers-color-scheme:dark){.btn.lbtn{background:linear-gradient(135deg,#12294a,#0e2342);color:#6cb4ff;box-shadow:none}}
+html[data-theme=dark] .btn.lbtn{background:linear-gradient(135deg,#12294a,#0e2342);color:#6cb4ff;box-shadow:none}
 #main{padding-top:calc(12px + env(safe-area-inset-top,0px))}
 .card.cp{padding:18px 19px;margin:20px 0}.cp .item.bi{padding:12px 0 0;gap:12px}.cp .bfoot .badge.sbig{width:110px;min-width:110px;padding:7px 3px;font-size:13.6px;display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.2}.cp .bfoot .badge.sbig.shr{background:#0a84ff;color:#fff}.cp .dkr{font-size:inherit}
 .badge.sbig:not(.paid):not(.org):not(.shr){color:#a8000e;font-weight:800}
-@media(prefers-color-scheme:dark){.badge.sbig:not(.paid):not(.org):not(.shr){color:#ff6b61}}
+html[data-theme=dark] .badge.sbig:not(.paid):not(.org):not(.shr){color:#ff6b61}
 .card.ot{background:linear-gradient(135deg,#fff6ea,#ffeacc);color:#c25a00;box-shadow:0 2px 10px rgba(255,149,0,.15)}
-@media(prefers-color-scheme:dark){.card.ot{background:linear-gradient(135deg,#3a2508,#2f1d06);color:#ffa233;box-shadow:none}}
+html[data-theme=dark] .card.ot{background:linear-gradient(135deg,#3a2508,#2f1d06);color:#ffa233;box-shadow:none}
 .xp{display:grid;grid-template-rows:0fr;transition:grid-template-rows .32s ease}.xp.open{grid-template-rows:1fr}.xp>div{min-height:0;overflow:hidden}
 #xch{display:inline-block;font-size:22px;transition:transform .25s ease}#xch.open{transform:rotate(90deg)}
 .ph{display:inline-block;color:var(--m);background:rgba(142,142,147,.16);font-size:16px;font-weight:800;text-transform:none;letter-spacing:0;padding:6px 14px;border-radius:10px;margin:18px 6px 4px}
@@ -379,7 +383,9 @@ savedProfile:()=>{const p=db.profile;return `<h2>Profile</h2><div class=card>
 <label>UPI ID</label><input id=pu value="${E(p.upi)}"><label>UPI name</label><input id=pun value="${E(p.upiName)}">
 <button class=btn onclick="saveProf()">Save profile</button></div>`},
 advance:()=>`<h2>Advance</h2><button class=tile onclick="changePin()"><span class=ic style="background:#ff9f0a">🔒</span><span class=tx><b>ऐप लॉक कोड</b><small>6 अंकों का कोड बदलें</small></span><span class=ch>›</span></button>
+<button class=tile onclick="go('appearance')"><span class=ic style="background:#5e5ce6">🌓</span><span class=tx><b>ऐप अपीयरेंस मोड</b><small>लाइट / डार्क मोड बदलें</small></span><span class=ch>›</span></button>
 <button class=tile onclick="go('keys')"><span class=ic style="background:#636366">🔑</span><span class=tx><b>कीज़ डालें</b><small>Google Sheets सिंक की कीज़</small></span><span class=ch>›</span></button>`,
+appearance:()=>{const d=getTheme()=='dark';return `<h2>ऐप अपीयरेंस मोड</h2><div class=card><div class=item style="border:0;padding:6px 0"><div class=gr><b>डार्क मोड</b><div class=m>${d?'अभी डार्क मोड चालू है':'अभी लाइट मोड चालू है'}</div></div><button class="sw${d?' on':''}" aria-label="डार्क मोड" onclick="setTheme(getTheme()=='dark'?'light':'dark');draw()"><i></i></button></div></div>`},
 keys:()=>`<h2>कीज़ डालें</h2><div class=card><label>Keys</label><input id=su value="${E(url)}" placeholder="Paste Google Apps Script URL (ends with /exec)" autocapitalize=off autocorrect=off>
 <button class="btn o" onclick="saveUrl()" style="margin-bottom:0">Save & sync</button></div>`,
 editProp:id=>{const p=P(id);return `<h2>Edit property</h2><div class=card><label>Property name *</label><input id=pn value="${E(p.name)}"><label>Address (optional)</label><input id=pa value="${E(p.address)}"><label>Total number of flats</label><input id=pfl type=number inputmode=numeric min=0 max=100 value="${E(p.flats)}" oninput="flatInputs()"><div id=fn></div><button class=btn onclick="updProp('${id}')">Update property</button></div><script>flatInputs(${JSON.stringify(flatList(p))})<\/script>`},
