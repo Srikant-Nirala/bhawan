@@ -212,7 +212,23 @@ const $=s=>document.querySelector(s),E=s=>String(s??'').replace(/[&<>"]/g,c=>({'
 uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,5),N=x=>Number(x)||0,R=x=>'₹'+N(x).toLocaleString('en-IN'),
 V=id=>document.getElementById(id)?.value||'',pd2=n=>String(n).padStart(2,'0'),today=()=>{const d=new Date();return d.getFullYear()+'-'+pd2(d.getMonth()+1)+'-'+pd2(d.getDate())};
 let db={props:[],tenants:[],bills:[],profile:{}},url='',tab=0,st=[[],[]],photo='';
-try{db=JSON.parse(localStorage.db||'null')||db;url=localStorage.url||''}catch(e){}
+try{db=JSON.parse(localStorage.db||'null')||db}catch(e){}
+/* The Apps Script link is kept ENCRYPTED (AES-GCM). The encryption key is a non-extractable key held in IndexedDB,
+   so the link cannot be read or copied from localStorage or from the Keys screen. */
+let KE=0;
+const b64=b=>btoa(String.fromCharCode(...new Uint8Array(b))),unb64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+const kdb=()=>new Promise((res,rej)=>{const r=indexedDB.open('rmk',1);r.onupgradeneeded=()=>r.result.createObjectStore('k');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});
+async function cKey(){const d=await kdb();const get=()=>new Promise((res,rej)=>{const q=d.transaction('k').objectStore('k').get('main');q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error)});
+ let k=await get();if(k)return k;k=await crypto.subtle.generateKey({name:'AES-GCM',length:256},false,['encrypt','decrypt']);
+ await new Promise((res,rej)=>{const t=d.transaction('k','readwrite');t.objectStore('k').put(k,'main');t.oncomplete=res;t.onerror=()=>rej(t.error)});return k}
+async function storeUrl(u){
+ try{if(!(window.crypto&&crypto.subtle&&window.indexedDB))throw 0;const k=await cKey(),iv=crypto.getRandomValues(new Uint8Array(12)),ct=await crypto.subtle.encrypt({name:'AES-GCM',iv},k,new TextEncoder().encode(u));
+  const o=new Uint8Array(12+ct.byteLength);o.set(iv);o.set(new Uint8Array(ct),12);localStorage.urlE=b64(o);localStorage.removeItem('url')}
+ catch(e){try{localStorage.url=u}catch(x){}}}
+async function loadUrl(){
+ try{if(localStorage.urlE){const k=await cKey(),o=unb64(localStorage.urlE);url=new TextDecoder().decode(await crypto.subtle.decrypt({name:'AES-GCM',iv:o.slice(0,12)},k,o.slice(12)))}
+  else if(localStorage.url){url=localStorage.url;await storeUrl(url)} /* upgrade an old plain-text link */}
+ catch(e){url=''}}
 db.payments=db.payments||[];
 const persist=()=>{try{localStorage.db=JSON.stringify(db)}catch(e){alert('Local storage full')}};
 let Q=[];try{Q=JSON.parse(localStorage.q||'[]')}catch(e){}
@@ -389,8 +405,9 @@ advance:()=>`<h2>Advance</h2><button class=tile onclick="changePin()"><span clas
 <button class=tile onclick="go('appearance')"><span class=ic style="background:#5e5ce6">🌓</span><span class=tx><b>ऐप अपीयरेंस मोड</b><small>लाइट / डार्क मोड बदलें</small></span><span class=ch>›</span></button>
 <button class=tile onclick="go('keys')"><span class=ic style="background:#636366">🔑</span><span class=tx><b>कीज़ डालें</b><small>Google Sheets सिंक की कीज़</small></span><span class=ch>›</span></button>`,
 appearance:()=>{const d=getTheme()=='dark';return `<h2>ऐप अपीयरेंस मोड</h2><div class=card><div class=item style="border:0;padding:6px 0"><div class=gr><b>डार्क मोड</b><div class=m>${d?'अभी डार्क मोड चालू है':'अभी लाइट मोड चालू है'}</div></div><button class="sw${d?' on':''}" aria-label="डार्क मोड" onclick="setTheme(getTheme()=='dark'?'light':'dark');draw()"><i></i></button></div></div>`},
-keys:()=>`<h2>कीज़ डालें</h2><div class=card><label>Keys</label><input id=su value="${E(url)}" placeholder="Paste Google Apps Script URL (ends with /exec)" autocapitalize=off autocorrect=off>
-<button class="btn o" onclick="saveUrl()" style="margin-bottom:0">Save & sync</button></div>`,
+keys:()=>url&&!KE?`<h2>कीज़ डालें</h2><div class=card><label>Keys</label><div style="font-size:22px;letter-spacing:.18em;padding:10px 2px;user-select:none;-webkit-user-select:none">●●●●●●●●●●●●●●●●●●●●</div><div class=m style="margin-bottom:12px">कीज़ सुरक्षित (एन्क्रिप्टेड) सेव है और दिखाई या कॉपी नहीं की जा सकती।</div>
+<button class="btn o" onclick="KE=1;draw()" style="margin-bottom:0">नई की डालें / बदलें</button></div>`:`<h2>कीज़ डालें</h2><div class=card><label>Keys</label><input id=su type=password value="" placeholder="Paste Google Apps Script URL (ends with /exec)" autocomplete=off autocapitalize=off autocorrect=off spellcheck=false>
+<button class="btn o" onclick="saveUrl()" style="margin-bottom:0">Save & sync</button>${url?'<button class="btn" style="background:none;color:var(--m);margin-bottom:0" onclick="KE=0;draw()">Cancel</button>':''}</div>`,
 editProp:id=>{const p=P(id);return `<h2>Edit property</h2><div class=card><label>Property name *</label><input id=pn value="${E(p.name)}"><label>Address (optional)</label><input id=pa value="${E(p.address)}"><label>Total number of flats</label><input id=pfl type=number inputmode=numeric min=0 max=100 value="${E(p.flats)}" oninput="flatInputs()"><div id=fn></div><button class=btn onclick="updProp('${id}')">Update property</button></div><script>flatInputs(${JSON.stringify(flatList(p))})<\/script>`},
 occ:()=>{const g=db.props.map(p=>({p,ts:active(p.id).sort(byFlat)})).filter(x=>x.ts.length);
 return `<h2>Flats occupied</h2>`+(g.map(x=>`<h3>${E(x.p.name)}</h3><div class=card>${x.ts.map(t=>`<div class=item onclick="go('tenant','${t.id}')">${av(t.name)}<div class=gr><b>Flat ${E(t.flat)}</b><div class=m>${E(t.name)}</div></div>›</div>`).join('')}</div>`).join('')||'<div class=card>No occupied flats</div>')},
@@ -677,7 +694,7 @@ async function saveUrl(){const u=V('su').trim();
  if(!u)return alert('Paste your Apps Script URL first (it ends with /exec).');
  if(!/^https:\/\/script\.google\.com\/.+\/exec$/.test(u))return alert('This does not look right. The URL must start with https://script.google.com and end with /exec (not /dev, not the editor link).');
  try{const r=await fetch(u,{method:'POST',body:JSON.stringify({a:'all'})}),d=await r.json();if(!d.props)throw 0;
-  url=u;try{localStorage.url=u}catch(e){};
+  url=u;await storeUrl(u);KE=0;
   if(!d.props.length&&!d.tenants.length&&(db.props.length||db.tenants.length)){
    for(const p of db.props)await post({a:'upsert',s:'props',r:p});
    for(const t of db.tenants){if(t.photo&&t.photo.startsWith('data:')){const x=await post({a:'upload',name:t.name+'_'+t.id,data:t.photo});if(x.url)t.photo=x.url}await upDocs(t);await post({a:'upsert',s:'tenants',r:t})}
@@ -722,5 +739,5 @@ saveTenDocs=guard(saveTenDocs);archive=guard(archive);restore=guard(restore);upd
 if('serviceWorker' in navigator){const had=!!navigator.serviceWorker.controller;let rl=false;
  navigator.serviceWorker.addEventListener('controllerchange',()=>{if(had&&!rl){rl=true;location.reload()}});
  addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(r=>r.update()).catch(()=>{}))}
-draw();sync();
+draw();loadUrl().then(()=>{if(url&&cur().length&&cur()[cur().length-1][0]=='keys')draw();sync()});
 </script></body></html>
