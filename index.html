@@ -697,7 +697,7 @@ function archive(id){if(!V('xd'))return alert('Select exit date');const t=T(id);
 async function permDelete(id){const t=T(id);if(!t)return;
  if(!url)return alert('पहले Profile → Advance → कीज़ डालें में Google Sheets जोड़ें, ताकि जानकारी का बैकअप हो सके।');
  const pend=r2(db.bills.filter(b=>b.tenantId==id).reduce((q,b)=>q+dueOf(b),0));
- if(!await modal('क्या आप "'+t.name+'" को Permanent Delete करना चाहते हैं?'+(pend>0?'\n\n⚠️ इनका '+R(pend)+' बकाया बाकी है।':'')+'\n\nकिरायेदार की जानकारी Google Sheet के "deleted_tenants" टैब में, और आधार फ़ोटो/डॉक्यूमेंट Drive के "deleted_tenants" फ़ोल्डर में सेव हो जाएँगे।',1,{y:'हाँ, Delete करें',n:'रद्द करें'}))return;
+ if(!await modal('क्या आप "'+t.name+'" को Permanent Delete करना चाहते हैं?'+(pend>0?'\n\n⚠️ इनका '+R(pend)+' बकाया बाकी है।':''),1,{y:'हाँ, Delete करें',n:'रद्द करें'}))return;
  await flushQ();
  const r=await post({a:'deleteTenant',r:t});
  if(!r||!r.ok)return alert('डिलीट नहीं हो सका। इंटरनेट जाँचकर दोबारा कोशिश करें।');
