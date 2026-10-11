@@ -73,7 +73,10 @@ nav button{position:relative}nav{display:grid!important;grid-template-columns:1f
 
 .tap{cursor:pointer;transition:.12s}.tap:active{transform:scale(.97);opacity:.85}
 #main{animation:none}
-#main.fwd,#main.bck,#main.fade{animation:fd .22s ease}
+#main.fade{animation:fd .22s ease}#main.fwd{animation:inL .3s cubic-bezier(.22,.8,.3,1)}#main.bck{animation:none}@keyframes inL{from{transform:translateX(-100%)}to{transform:none}}@keyframes outR{from{transform:none}to{transform:translateX(100%)}}
+.ovr{position:fixed;inset:0;z-index:50;overflow:hidden;background:var(--bg);pointer-events:none;animation:outR .3s cubic-bezier(.22,.8,.3,1) forwards}.ovr>div{position:absolute;left:0;right:0;margin:0 auto;max-width:560px;padding:calc(12px + env(safe-area-inset-top,0px)) 16px 12px}
+html,body{overflow-x:clip}
+nav{transition:transform .28s ease}nav.hide{transform:translateY(110%)}body.nonav nav{display:none!important}body.nonav{padding-bottom:30px}
 @keyframes fd{from{opacity:0}to{opacity:1}}
 .item[onclick]{margin:0 -8px;padding-left:8px;padding-right:8px;border-radius:10px;transition:background .15s,transform .12s}
 .item[onclick]:active{background:rgba(120,120,128,.16);transform:scale(.985)}
@@ -560,9 +563,16 @@ async function shareBill(id){const b=db.bills.find(x=>x.id==id),t=T(b.tenantId),
 function fitH2(){const h=document.querySelector('#main h2');if(!h)return;h.style.fontSize='';let f=+h.dataset.fs||32;h.style.fontSize=f+'px';const w=h.parentElement.clientWidth-4;while(h.scrollWidth>w&&f>16){f-=1;h.style.fontSize=f+'px'}}
 function draw(){const y0=scrollY,nv=!!dir,rb=dir=='bck';if(cur().length&&cur()[cur().length-1][0]=='addTen'){docs=[];photo=''}$('#n0').className=tab?'':'on';$('#n1').className=tab?'on':'';
  const s=cur(),[v,a]=s.length?s[s.length-1]:[tab?'profile':'menu'];
- $('#main').innerHTML=views[v](a);
+ document.body.classList.toggle('nonav',s.length>0);const ov=rb?mkOv(y0):null;$('#main').innerHTML=views[v](a);
  if(dir){const M=$('#main');M.className='';void M.offsetWidth;M.className=dir;dir=''}
- $('#main').querySelectorAll('script').forEach(x=>{eval(x.textContent)});fitH2();scrollTo(0,rb?topSY():nv?0:y0);syncHist()}
+ $('#main').querySelectorAll('script').forEach(x=>{eval(x.textContent)});fitH2();scrollTo(0,rb?topSY():nv?0:y0);navShow();if(ov)runOv(ov);syncHist()}
+/* page transitions: forward = new page slides in from the left; back = current page slides out to the right */
+function mkOv(y){const M=$('#main'),o=document.createElement('div'),c=M.cloneNode(true);o.className='ovr';c.removeAttribute('id');c.removeAttribute('class');c.removeAttribute('style');c.querySelectorAll('[id]').forEach(x=>x.removeAttribute('id'));c.querySelectorAll('script').forEach(x=>x.remove());c.style.top=(-y)+'px';o.appendChild(c);return o}
+function runOv(o){document.body.appendChild(o);const rm=()=>o.remove();o.addEventListener('animationend',rm);setTimeout(rm,600)}
+/* bottom bar: hides while scrolling down the page, returns when scrolling back up */
+let ly=0;const navEl=()=>document.querySelector('nav');
+function navShow(){const n=navEl();if(n)n.classList.remove('hide');ly=scrollY}
+addEventListener('scroll',()=>{const y=scrollY,d=y-ly;if(Math.abs(d)<8)return;ly=y;const n=navEl();if(!n)return;if(y<=40||d<0)n.classList.remove('hide');else n.classList.add('hide')},{passive:true});
 /* NATIVE BACK: browser history mirrors the screen stack, so the phone's back button / swipe-back works like the in-app Back button.
    depth = screens open on the current tab (+1 when on the Profile tab, so back from Profile returns to Manage). */
 let hd=0,skipPop=0;
