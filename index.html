@@ -157,6 +157,9 @@ html[data-theme=dark] .card.ot{background:linear-gradient(135deg,#3a2508,#2f1d06
 .tile small{font-weight:600}
 .m[style*="margin:-6px 2px 8px"],.m[style*="margin:0 2px 8px"],.m[style*="margin:-6px 2px 8px"] *{font-weight:600}
 body.busy #main .btn,body.busy #main .badge{pointer-events:none;opacity:.55}
+.bki.sm::placeholder{font-size:12px}
+.cam{flex:none;width:38px;height:38px;border-radius:11px;border:0;background:var(--p);color:#fff;font-size:19px;padding:0;display:grid;place-items:center;transition:transform .12s,opacity .2s}.cam:active{transform:scale(.9)}.cam:disabled{opacity:.6}
+input.ok{border-color:var(--g)!important;box-shadow:0 0 0 3px rgba(48,184,88,.25)}
 </style></head><body>
 <div id="lk"><div class="lkb"><div class="lkt" id="lkt"></div><div class="lkd" id="lkd"></div><div class="lke" id="lke"></div><div class="lkp" id="lkp"></div><button id="lkc" style="display:none" onclick="lkCancel()">रद्द करें</button></div></div>
 <div id="main"></div>
@@ -324,7 +327,7 @@ return `<h2>पुराना बकाया</h2><div class=m style="margin:-6
 /* Tile3 list */ notBilled:()=>{const mo=today().slice(0,7),rows=db.props.map(p=>({p,ts:active(p.id).filter(t=>!db.bills.some(b=>b.tenantId==t.id&&b.month==mo)).sort(byFlat)})).filter(x=>x.ts.length),n=rows.reduce((a,x)=>a+x.ts.length,0);
 const head=`<h2>बिल भेजना बाकी</h2><div class=m style="margin:-6px 2px 8px">${mname(mo)} · ${n} किरायेदार</div><div class="seg big"><button class="${NB.t?'':'on'}" onclick="NB.t=0;draw()">बिल बनाएँ</button><button class="${NB.t?'on':''}" onclick="NB.t=1;draw()">अलग बिल बनाएँ</button></div>`;
 if(NB.t)return head+(rows.map(x=>`<h3>${E(x.p.name)}</h3><div class=card>${x.ts.map(t=>`<div class=item>${av(t.name)}<div class=gr><b class=fl>Flat ${E(t.flat)}</b><div class=nm>${E(t.name)}</div></div><button class="badge org chip" style="border:0" onclick="go('billForm',['${t.id}','${t.btype||'both'}'])">बिल बनाएँ</button></div>`).join('')}</div>`).join('')||'<div class=card>सभी का बिल बन चुका 🎉</div>');
-return head+(rows.map(x=>`<h3>${E(x.p.name)}</h3><div class=card>${x.ts.map(t=>{const ty=t.btype||'both';return `<div class=item style="display:grid;grid-template-columns:1fr 150px;align-items:center;gap:6px 10px"><b class=fl>${E(t.name)}</b>${ty=='rent'?`<div class=m style="padding-left:15.5px">सिर्फ़ किराया · ${R(t.rent)}</div>`:`<div class=m style="padding-left:15.5px">पिछली रीडिंग ${E(lastRead(t.id)??'')}</div>`}<b class="fl glw">Flat ${E(t.flat)}</b>${ty=='rent'?'<span></span>':`<input id=bk_${t.id} type=number inputmode=decimal class=bki placeholder="मीटर रीडिंग डालें" style="width:150px;margin:0">`}</div>`}).join('')}</div>`).join('')||'<div class=card>सभी का बिल बन चुका 🎉</div>')+(n?`<button class=btn onclick="bulkGen()" style="background:var(--g)">सभी बिल बनाएँ</button>`:'')},
+return head+(rows.map(x=>`<h3>${E(x.p.name)}</h3><div class=card>${x.ts.map(t=>{const ty=t.btype||'both';return `<div class=item style="display:grid;grid-template-columns:1fr 150px;align-items:center;gap:6px 10px"><b class=fl>${E(t.name)}</b>${ty=='rent'?`<div class=m style="padding-left:15.5px">सिर्फ़ किराया · ${R(t.rent)}</div>`:`<div class=m style="padding-left:15.5px">पिछली रीडिंग ${E(lastRead(t.id)??'')}</div>`}<b class="fl glw">Flat ${E(t.flat)}</b>${ty=='rent'?'<span></span>':`<div style="display:flex;align-items:center;gap:6px;width:150px"><input id=bk_${t.id} type=number inputmode=decimal class="bki sm" placeholder="मीटर रीडिंग डालें" style="flex:1;min-width:0;width:auto;margin:0;padding:9px 8px;font-size:15px"><button type=button class=cam id=cb_${t.id} aria-label="कैमरा" onclick="document.getElementById('cf_${t.id}').click()">📷</button><input type=file id=cf_${t.id} accept="image/*" capture=environment hidden onchange="meterOcr('${t.id}',this)"></div>`}</div>`}).join('')}</div>`).join('')||'<div class=card>सभी का बिल बन चुका 🎉</div>')+(n?`<button class=btn onclick="bulkGen()" style="background:var(--g)">सभी बिल बनाएँ</button>`:'')},
 
 addProp:()=>`<h2>Properties</h2><div class=card>${db.props.map(p=>`<div class=item><div class=gr>${E(p.name)}<div class=m>${E(p.address)}${p.flats?' · '+E(p.flats)+' flats':''}</div></div><button class=badge style="border:0;color:var(--p);background:rgba(10,132,255,.12)" onclick="go('editProp','${p.id}')">Edit</button></div>`).join('')||'<span class=m>None yet</span>'}</div><h3>Add new property</h3><div class=card><label>Property name *</label><input id=pn><label>Address (optional)</label><input id=pa>${roBox(0)}<label>Total number of flats</label><input id=pfl type=number inputmode=numeric min=0 max=100 oninput="flatInputs()"><div id=fn></div>
 <button class=btn onclick="addProp()">Save property</button></div>`,
@@ -345,7 +348,7 @@ billTen:pid=>`<h2>${E(P(pid)?.name)}</h2><div class=card>${active(pid).map(t=>{c
 billType:id=>`<h2>${E(T(id).name)}</h2><p class=m>Choose bill type</p>${Object.entries(typeName).map(([k,v])=>`<button class=tile onclick="go('billForm',['${id}','${k}'])"><span class=ic style="background:${k=='rent'?'#0a84ff':k=='elec'?'#ff9f0a':'#5e5ce6'}">${k=='rent'?'🏠':k=='elec'?'⚡':'🧾'}</span><span class=tx><b>${v}</b></span><span class=ch>›</span></button>`).join('')}`,
 billForm:([id,type])=>{const t=T(id),prev=lastRead(id);return `<h2>Rent - ${E(t.name)}</h2><div class=card>
 <label>Month</label><input id=bm type=month value="${today().slice(0,7)}" oninput="calc()">
-${type!='rent'?`<label>Previous reading</label><input id=bp type=number value="${prev}" oninput="calc()"><label>Current reading</label><input id=bc type=number inputmode=decimal oninput="calc()">`:''}
+${type!='rent'?`<label>Previous reading</label><input id=bp type=number value="${prev}" oninput="calc()"><label>Current reading</label><div style="display:flex;align-items:center;gap:8px;margin:5px 0 14px"><input id=bc type=number inputmode=decimal oninput="calc()" style="flex:1;min-width:0;margin:0"><button type=button class=cam id=cb_${id} aria-label="कैमरा" style="width:50px;height:50px;font-size:24px" onclick="document.getElementById('cf_${id}').click()">📷</button><input type=file id=cf_${id} accept="image/*" capture=environment hidden onchange="meterOcr('${id}',this)"></div>`:''}
 <div id=arr></div></div><div class=card id=sum></div><button class=btn onclick="genBill('${id}','${type}')" style="background:var(--g)">Generate bill</button><script>calc()<\/script>`},
 
 bulkDone:ids=>{const bs=ids.map(i=>db.bills.find(b=>b.id==i)).filter(Boolean).sort((a,c)=>String(T(a.tenantId)?.propId).localeCompare(String(T(c.tenantId)?.propId))||byFlat(T(a.tenantId),T(c.tenantId)));
@@ -683,6 +686,23 @@ function updRent(id){const v=V('er');if(!(N(v)>0))return alert('Enter a valid re
 function pay(id){go('payForm',id)}
 function roBox(c){return `<label style="display:flex;align-items:center;gap:10px;margin:6px 2px 16px;font-size:13px;font-weight:800;color:var(--t);cursor:pointer"><input id=pro type=checkbox${c?' checked':''} style="width:22px;height:22px;min-height:0;margin:0;padding:0;flex:none;-webkit-appearance:checkbox;appearance:auto;accent-color:var(--p)"><span>इस मकान में सिर्फ़ किराया लें, अलग से बिजली नहीं</span></label>`}
 const isRO=pid=>P(pid)?.rentOnly=='1';
+/* Meter photo -> reading (OCR runs on the phone with Tesseract.js, loaded the first time the camera is used; needs internet that first time) */
+let tessP=null,tessW=null;
+const loadTess=()=>window.Tesseract?Promise.resolve():tessP||(tessP=new Promise((res,rej)=>{const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';s.onload=res;s.onerror=()=>{tessP=null;rej(new Error('load'))};document.head.appendChild(s)}));
+const prepImg=f=>new Promise((res,rej)=>{const im=new Image;im.onload=()=>{const k=Math.min(1,1400/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);const x=c.getContext('2d');x.drawImage(im,0,0,c.width,c.height);
+ const d=x.getImageData(0,0,c.width,c.height),p=d.data;let lo=255,hi=0;for(let i=0;i<p.length;i+=4){const g=(p[i]*.3+p[i+1]*.59+p[i+2]*.11)|0;p[i]=g;if(g<lo)lo=g;if(g>hi)hi=g}
+ const r=Math.max(1,hi-lo);for(let i=0;i<p.length;i+=4){const v=Math.min(255,Math.max(0,((p[i]-lo)*255/r)|0));p[i]=p[i+1]=p[i+2]=v}x.putImageData(d,0,0);URL.revokeObjectURL(im.src);res(c)};im.onerror=rej;im.src=URL.createObjectURL(f)});
+async function meterOcr(id,inp){const f=inp.files[0];inp.value='';if(!f)return;
+ const btn=document.getElementById('cb_'+id),box=document.getElementById('bk_'+id)||document.getElementById('bc');if(!btn||!box)return;btn.textContent='⏳';btn.disabled=true;
+ try{await loadTess();const cv=await prepImg(f);
+  if(!tessW){tessW=await Tesseract.createWorker('eng');await tessW.setParameters({tessedit_char_whitelist:'0123456789.',tessedit_pageseg_mode:'11'})}
+  const out=(await tessW.recognize(cv)).data.text||'',c=(out.match(/\d+(?:\.\d+)?/g)||[]).map(s=>s.replace(/^0+(?=\d)/,'')).filter(s=>s.replace('.','').length>=2),
+  t=T(id),pv=N(lastRead(id)),up=c.filter(s=>N(s)>=pv),pool=up.length?up:c;
+  pool.sort((a,b)=>b.replace('.','').length-a.replace('.','').length||N(a)-N(b));
+  if(!pool.length)await alert('फ़ोटो से रीडिंग नहीं पढ़ी जा सकी। मीटर के अंक साफ़ और सीधे रखकर दोबारा फ़ोटो लें, या हाथ से डालें।');
+  else{box.value=pool[0];if(box.id=='bc')calc();box.classList.add('ok');setTimeout(()=>box.classList.remove('ok'),2500)}}
+ catch(e){await alert('रीडिंग पढ़ने में दिक्कत आई। इंटरनेट जाँचें (पहली बार ज़रूरी है) या हाथ से डालें।')}
+ btn.textContent='📷';btn.disabled=false}
 function togX(k){const x=document.getElementById('xp_'+k),c=document.getElementById('xc_'+k);if(!x)return;x.classList.toggle('open');c.classList.toggle('open')}
 function togBills(){const x=document.getElementById('xbx'),c=document.getElementById('xch');if(!x)return;x.classList.toggle('open');c.classList.toggle('open')}
 async function saveTenDocs(id){const t=T(id);let ch=0;
