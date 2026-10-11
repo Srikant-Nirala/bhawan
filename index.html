@@ -152,9 +152,12 @@ html[data-theme=dark] .card.ot{background:linear-gradient(135deg,#3a2508,#2f1d06
 .tile small{font-weight:600}
 .m[style*="margin:-6px 2px 8px"],.m[style*="margin:0 2px 8px"],.m[style*="margin:-6px 2px 8px"] *{font-weight:600}
 body.busy #main .btn,body.busy #main .badge{pointer-events:none;opacity:.55}
+#ck{display:none;position:fixed;top:calc(env(safe-area-inset-top,0px) + 4px);left:12px;z-index:50;font-size:12px;font-weight:700;color:var(--m);pointer-events:none;letter-spacing:0}
+body.fs #ck{display:block}body.fs #main{padding-top:calc(30px + env(safe-area-inset-top,0px))}
+.locked #ck,.cov #ck{visibility:hidden}
 </style></head><body>
 <div id="lk"><div class="lkb"><div class="lkt" id="lkt"></div><div class="lkd" id="lkd"></div><div class="lke" id="lke"></div><div class="lkp" id="lkp"></div><button id="lkc" style="display:none" onclick="lkCancel()">रद्द करें</button></div></div>
-<div id="main"></div>
+<div id="ck"></div><div id="main"></div>
 <nav><button id="n0" onclick="tabTo(0)"><i>🏠</i>Manage</button><i class=dv></i><button id="nb" onclick="back()"><i>⬅️</i>Back</button><i class=dv></i><button id="n1" onclick="tabTo(1)"><i><svg viewBox="0 0 24 24" width="25" height="25" fill="currentColor" aria-hidden="true" style="display:block"><circle cx="12" cy="7.5" r="4.4"/><path d="M3.8 20.6c0-4.2 3.6-6.9 8.2-6.9s8.2 2.7 8.2 6.9c0 .6-.4 1-1 1H4.8c-.6 0-1-.4-1-1z"/></svg></i>Profile</button></nav>
 <script>
 /* APP LOCK: the 4-digit code is chosen by you on first open and is NOT stored in this file.
@@ -384,8 +387,10 @@ savedProfile:()=>{const p=db.profile;return `<h2>Profile</h2><div class=card>
 <button class=btn onclick="saveProf()">Save profile</button></div>`},
 advance:()=>`<h2>Advance</h2><button class=tile onclick="changePin()"><span class=ic style="background:#ff9f0a">🔒</span><span class=tx><b>ऐप लॉक कोड</b><small>6 अंकों का कोड बदलें</small></span><span class=ch>›</span></button>
 <button class=tile onclick="go('appearance')"><span class=ic style="background:#5e5ce6">🌓</span><span class=tx><b>ऐप अपीयरेंस मोड</b><small>लाइट / डार्क मोड बदलें</small></span><span class=ch>›</span></button>
+<button class=tile onclick="go('fullscreen')"><span class=ic style="background:#30b858">⛶</span><span class=tx><b>फुल स्क्रीन मोड</b><small>बटन नेविगेशन के लिए · समय व तारीख दिखाएँ</small></span><span class=ch>›</span></button>
 <button class=tile onclick="go('keys')"><span class=ic style="background:#636366">🔑</span><span class=tx><b>कीज़ डालें</b><small>Google Sheets सिंक की कीज़</small></span><span class=ch>›</span></button>`,
 appearance:()=>{const d=getTheme()=='dark';return `<h2>ऐप अपीयरेंस मोड</h2><div class=card><div class=item style="border:0;padding:6px 0"><div class=gr><b>डार्क मोड</b><div class=m>${d?'अभी डार्क मोड चालू है':'अभी लाइट मोड चालू है'}</div></div><button class="sw${d?' on':''}" aria-label="डार्क मोड" onclick="setTheme(getTheme()=='dark'?'light':'dark');draw()"><i></i></button></div></div>`},
+fullscreen:()=>{const f=fsOn();return `<h2>फुल स्क्रीन मोड</h2><div class=card><div class=item style="border:0;padding:6px 0"><div class=gr><b>फुल स्क्रीन</b><div class=m>${f?'चालू है — ऊपर बाईं ओर समय व तारीख दिख रही है':'बंद है'}</div></div><button class="sw${f?' on':''}" aria-label="फुल स्क्रीन" onclick="setFs(!fsOn())"><i></i></button></div></div><div class=m style="margin:10px 6px">यह सुविधा Android फ़ोन पर काम करती है (जिनमें नेविगेशन बटन हैं)। ऐप दोबारा खोलने पर स्क्रीन पर एक बार टच करते ही फुल स्क्रीन फिर से लग जाएगी।</div>`},
 keys:()=>`<h2>कीज़ डालें</h2><div class=card><label>Keys</label><input id=su value="${E(url)}" placeholder="Paste Google Apps Script URL (ends with /exec)" autocapitalize=off autocorrect=off>
 <button class="btn o" onclick="saveUrl()" style="margin-bottom:0">Save & sync</button></div>`,
 editProp:id=>{const p=P(id);return `<h2>Edit property</h2><div class=card><label>Property name *</label><input id=pn value="${E(p.name)}"><label>Address (optional)</label><input id=pa value="${E(p.address)}"><label>Total number of flats</label><input id=pfl type=number inputmode=numeric min=0 max=100 value="${E(p.flats)}" oninput="flatInputs()"><div id=fn></div><button class=btn onclick="updProp('${id}')">Update property</button></div><script>flatInputs(${JSON.stringify(flatList(p))})<\/script>`},
@@ -673,6 +678,14 @@ function trMsg(m){if(D[m])return D[m];for(const[r,t]of RX)if(r.test(m))return m.
 function trNode(n){if(n.nodeType==3){const v=n.nodeValue;if(v.trim()){const r=hiT(v);if(r!==v)n.nodeValue=r}}else if(n.nodeType==1&&!['SCRIPT','STYLE','PRE'].includes(n.tagName)){const p=n.getAttribute('placeholder');if(p)n.setAttribute('placeholder',hiT(p));n.childNodes.forEach(trNode)}}
 {const _al=window.alert.bind(window);window.alert=m=>_al(trMsg(String(m)));
 new MutationObserver(ms=>ms.forEach(m=>m.addedNodes.forEach(trNode))).observe(document.getElementById('main'),{childList:true,subtree:true});trNode(document.querySelector('nav'))}
+const fsOn=()=>{try{return localStorage.rmFs=='1'}catch(e){return false}};
+function tickClock(){const d=new Date(),el=document.getElementById('ck');if(!el)return;el.textContent=d.toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short'})+' · '+d.toLocaleTimeString('en-IN',{hour:'numeric',minute:'2-digit',hour12:true}).toUpperCase()}
+function enterFs(){const e=document.documentElement;if(!document.fullscreenElement&&e.requestFullscreen)try{const r=e.requestFullscreen({navigationUI:'hide'});if(r&&r.catch)r.catch(()=>{})}catch(x){}}
+function applyFs(){document.body.classList.toggle('fs',fsOn());tickClock()}
+function setFs(v){try{localStorage.rmFs=v?'1':'0'}catch(e){}applyFs();if(v)enterFs();else if(document.fullscreenElement&&document.exitFullscreen)document.exitFullscreen().catch(()=>{});draw()}
+document.addEventListener('click',()=>{if(fsOn())enterFs()},true);
+document.addEventListener('touchend',()=>{if(fsOn())enterFs()},true);
+setInterval(tickClock,20000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)tickClock()});applyFs();
 addEventListener('online',()=>sync());
 const modal=(msg,ask,op)=>new Promise(res=>{const o=document.createElement('div');o.className='mdl';op=op||{};
  o.innerHTML='<div class=mbx role=alertdialog aria-modal=true><div class=mtx></div><div class=mbt>'+(ask?'<button class="mb mc">'+(op.n||'Cancel')+'</button>':'')+'<button class="mb mo">'+(op.y||'OK')+'</button></div></div>';
