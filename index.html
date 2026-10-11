@@ -295,8 +295,8 @@ const rows=db.props.map(p=>({p,ts:db.tenants.filter(t=>t.propId==p.id&&ps.some(x
 return `<h2>पेमेंट डिटेल्स</h2><div ontouchstart="tx=event.touches[0].clientX" ontouchend="swpP(event)" style="min-height:50vh"><div class=mnav><button onclick="shiftPM(-1)">‹</button><b>${mlabel(m)}</b><button onclick="shiftPM(1)" ${m>=today().slice(0,7)?'disabled':''}>›</button></div><div class=m style="margin:18px 2px 12px;font-weight:900;font-size:18px">इस महीने कुल मिला <span style="color:#1b8a3d">${R(tot)}</span></div>`+(rows.map(x=>`<h3>${E(x.p.name)}</h3><div class=card>${x.ts.map(t=>{const es=ps.filter(e=>e.tenantId==t.id).sort((u,v)=>String(u.pdate).localeCompare(String(v.pdate))),sum=r2(es.reduce((q,e)=>q+N(e.amount),0));
 return `<div class=item style="cursor:pointer" onclick="PT.t=1;go('payTenant','${t.id}')">${av(t.name)}<div class=gr><b class=fl>Flat ${E(t.flat)}</b><div class=nm>${E(t.name)}</div>${es.map(e=>`<div class=m>${fmtDL(e.pdate)}${es.length>1?' · '+(N(e.amount)<0?'− ':'')+R(Math.abs(N(e.amount))):''}${N(e.amount)<0?' (रद्द)':''}</div>`).join('')}</div><b style="color:#1b8a3d">${R(sum)}</b></div>`}).join('')}</div>`).join('')||'<div class=card><span class=m>इस महीने कोई भुगतान दर्ज नहीं</span></div>')+`</div>`},
 
-/* Tile4 list */ payRenter:()=>{const rows=db.props.map(p=>({p,ts:db.tenants.filter(t=>t.propId==p.id&&(t.active!='0'||db.bills.some(b=>b.tenantId==t.id&&dueOf(b)>0))).sort(byFlat)})).filter(x=>x.ts.length);
-return `<h2>किरायेदार चुनें</h2>`+(rows.map(x=>`<h3>${E(x.p.name)}</h3><div class=card>${x.ts.map(t=>`<div class=item onclick="PT.t=0;go('payTenant','${t.id}')">${av(t.name)}<div class=gr><b class=fl>Flat ${E(t.flat)}</b>${t.active=='0'?' <span class=m>(पूर्व)</span>':''}<div class=nm>${E(t.name)}</div></div>›</div>`).join('')}</div>`).join('')||'<div class=card>कोई किरायेदार नहीं</div>')},
+/* Tile4 list */ payRenter:()=>{const rows=db.props.map(p=>({p,ts:db.tenants.filter(t=>t.propId==p.id&&db.bills.some(b=>b.tenantId==t.id&&dueOf(b)>0)).sort(byFlat)})).filter(x=>x.ts.length);
+return `<h2>किरायेदार चुनें</h2>`+(rows.map(x=>`<h3>${E(x.p.name)}</h3><div class=card>${x.ts.map(t=>`<div class=item onclick="PT.t=0;go('payTenant','${t.id}')">${av(t.name)}<div class=gr><b class=fl>Flat ${E(t.flat)}</b>${t.active=='0'?' <span class=m>(पूर्व)</span>':''}<div class=nm>${E(t.name)}</div></div>›</div>`).join('')}</div>`).join('')||'<div class=card>सभी का भुगतान चुकता है 🎉</div>')},
 
 payTenant:id=>{const t=T(id)||{},ps=db.payments.filter(x=>x.tenantId==id).sort((p,q)=>String(q.pdate).localeCompare(String(p.pdate))||String(q.id).localeCompare(String(p.id)));
 const hd=`<h2>${E(t.name)}</h2><div class=m style="margin:-6px 2px 8px">${E(P(t.propId)?.name)} · Flat ${E(t.flat)}</div><div class="seg big"><button class="${PT.t?'':'on'}" onclick="PT.t=0;draw()">पेमेंट नोट करें</button><button class="${PT.t?'on':''}" onclick="PT.t=1;draw()">पेमेंट हिस्ट्री</button></div>`;
@@ -327,7 +327,7 @@ return `<h2>पुराना बकाया</h2><div class=m style="margin:-6
 /* Tile3 list */ notBilled:()=>{const mo=today().slice(0,7),rows=db.props.map(p=>({p,ts:active(p.id).filter(t=>!db.bills.some(b=>b.tenantId==t.id&&b.month==mo)).sort(byFlat)})).filter(x=>x.ts.length),n=rows.reduce((a,x)=>a+x.ts.length,0);
 const head=`<h2>बिल भेजना बाकी</h2><div class=m style="margin:-6px 2px 8px">${mname(mo)} · ${n} किरायेदार</div><div class="seg big"><button class="${NB.t?'':'on'}" onclick="NB.t=0;draw()">बिल बनाएँ</button><button class="${NB.t?'on':''}" onclick="NB.t=1;draw()">अलग बिल बनाएँ</button></div>`;
 if(NB.t)return head+(rows.map(x=>`<h3>${E(x.p.name)}</h3><div class=card>${x.ts.map(t=>`<div class=item>${av(t.name)}<div class=gr><b class=fl>Flat ${E(t.flat)}</b><div class=nm>${E(t.name)}</div></div><button class="badge org chip" style="border:0" onclick="go('billForm',['${t.id}','${t.btype||'both'}'])">बिल बनाएँ</button></div>`).join('')}</div>`).join('')||'<div class=card>सभी का बिल बन चुका 🎉</div>');
-return head+(rows.map(x=>`<h3>${E(x.p.name)}</h3><div class=card>${x.ts.map(t=>{const ty=t.btype||'both';return `<div class=item style="display:grid;grid-template-columns:1fr 150px;align-items:center;gap:6px 10px"><b class=fl>${E(t.name)}</b>${ty=='rent'?`<div class=m style="padding-left:15.5px">सिर्फ़ किराया · ${R(t.rent)}</div>`:`<div class=m style="padding-left:15.5px">पिछली रीडिंग ${E(lastRead(t.id)??'')}</div>`}<b class="fl glw">Flat ${E(t.flat)}</b>${ty=='rent'?'<span></span>':`<div style="display:flex;align-items:center;gap:6px;width:150px"><input id=bk_${t.id} type=number inputmode=decimal class="bki sm" placeholder="मीटर रीडिंग डालें" style="flex:1;min-width:0;width:auto;margin:0;padding:9px 8px;font-size:15px"><button type=button class=cam id=cb_${t.id} aria-label="कैमरा" onclick="document.getElementById('cf_${t.id}').click()">📷</button><input type=file id=cf_${t.id} accept="image/*" capture=environment hidden onchange="meterOcr('${t.id}',this)"></div>`}</div>`}).join('')}</div>`).join('')||'<div class=card>सभी का बिल बन चुका 🎉</div>')+(n?`<button class=btn onclick="bulkGen()" style="background:var(--g)">सभी बिल बनाएँ</button>`:'')},
+return head+(rows.map(x=>`<h3>${E(x.p.name)}</h3><div class=card>${x.ts.map(t=>{const ty=t.btype||'both';return `<div class=item style="display:grid;grid-template-columns:1fr 150px;align-items:center;gap:6px 10px"><b class=fl>${E(t.name)}</b>${ty=='rent'?`<div class=m>सिर्फ़ किराया · ${R(t.rent)}</div>`:`<div class=m>पिछली रीडिंग ${E(lastRead(t.id)??'')}</div>`}<b class="fl glw">Flat ${E(t.flat)}</b>${ty=='rent'?'<span></span>':`<div style="display:flex;align-items:center;gap:6px;width:150px"><input id=bk_${t.id} type=number inputmode=decimal class="bki sm" placeholder="मीटर रीडिंग डालें" style="flex:1;min-width:0;width:auto;margin:0;padding:9px 8px;font-size:15px"><button type=button class=cam id=cb_${t.id} aria-label="कैमरा" onclick="document.getElementById('cf_${t.id}').click()">📷</button><input type=file id=cf_${t.id} accept="image/*" capture=environment hidden onchange="meterOcr('${t.id}',this)"></div>`}</div>`}).join('')}</div>`).join('')||'<div class=card>सभी का बिल बन चुका 🎉</div>')+(n?`<button class=btn onclick="bulkGen()" style="background:var(--g)">सभी बिल बनाएँ</button>`:'')},
 
 addProp:()=>`<h2>Properties</h2><div class=card>${db.props.map(p=>`<div class=item><div class=gr>${E(p.name)}<div class=m>${E(p.address)}${p.flats?' · '+E(p.flats)+' flats':''}</div></div><button class=badge style="border:0;color:var(--p);background:rgba(10,132,255,.12)" onclick="go('editProp','${p.id}')">Edit</button></div>`).join('')||'<span class=m>None yet</span>'}</div><h3>Add new property</h3><div class=card><label>Property name *</label><input id=pn><label>Address (optional)</label><input id=pa>${roBox(0)}<label>Total number of flats</label><input id=pfl type=number inputmode=numeric min=0 max=100 oninput="flatInputs()"><div id=fn></div>
 <button class=btn onclick="addProp()">Save property</button></div>`,
@@ -686,61 +686,133 @@ function updRent(id){const v=V('er');if(!(N(v)>0))return alert('Enter a valid re
 function pay(id){go('payForm',id)}
 function roBox(c){return `<label style="display:flex;align-items:center;gap:10px;margin:6px 2px 16px;font-size:13px;font-weight:800;color:var(--t);cursor:pointer"><input id=pro type=checkbox${c?' checked':''} style="width:22px;height:22px;min-height:0;margin:0;padding:0;flex:none;-webkit-appearance:checkbox;appearance:auto;accent-color:var(--p)"><span>इस मकान में सिर्फ़ किराया लें, अलग से बिजली नहीं</span></label>`}
 const isRO=pid=>P(pid)?.rentOnly=='1';
-/* Meter photo -> reading (OCR runs on the phone with Tesseract.js, loaded the first time the camera is used; needs internet that first time) */
-let tessP=null,tessW=null;
-const loadTess=()=>window.Tesseract?Promise.resolve():tessP||(tessP=new Promise((res,rej)=>{const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';s.onload=res;s.onerror=()=>{tessP=null;rej(new Error('load'))};document.head.appendChild(s)}));
-/* Finds the GREEN highlighted box in the photo, crops to it and cleans it up for reading. Returns [normal, inverted] canvases, or null if no green box is visible. */
-const isGreen=(r,g,b)=>g>=r&&g>=b&&g>=70&&g-r>25&&g-b>20&&(g-Math.min(r,b))/g>.3;
-const prepImg=f=>new Promise((res,rej)=>{const im=new Image;im.onload=()=>{try{
- const k=Math.min(1,1600/Math.max(im.naturalWidth,im.naturalHeight)),W=Math.round(im.naturalWidth*k),H=Math.round(im.naturalHeight*k),c=document.createElement('canvas');c.width=W;c.height=H;
- const x=c.getContext('2d',{willReadFrequently:true});x.drawImage(im,0,0,W,H);URL.revokeObjectURL(im.src);
- const px=x.getImageData(0,0,W,H).data,s=Math.max(1,Math.round(Math.max(W,H)/240)),gw=Math.ceil(W/s),gh=Math.ceil(H/s),cnt=new Uint16Array(gw*gh);
- for(let y=0;y<H;y++)for(let xx=0;xx<W;xx++){const i=(y*W+xx)*4;if(isGreen(px[i],px[i+1],px[i+2]))cnt[((y/s)|0)*gw+((xx/s)|0)]++}
- const thr=s*s*.15,m0=new Uint8Array(gw*gh),m=new Uint8Array(gw*gh);for(let i=0;i<m0.length;i++)m0[i]=cnt[i]>=thr?1:0;
- for(let y=0;y<gh;y++)for(let xx=0;xx<gw;xx++){let v=0;for(let dy=-1;dy<=1&&!v;dy++)for(let dx=-1;dx<=1;dx++){const a=xx+dx,b=y+dy;if(a>=0&&b>=0&&a<gw&&b<gh&&m0[b*gw+a]){v=1;break}}m[y*gw+xx]=v} /* join broken outlines */
- const seen=new Uint8Array(gw*gh);let best=null;
- for(let st=0;st<m.length;st++){if(!m[st]||seen[st])continue;const stack=[st];seen[st]=1;let n=0,x0=gw,y0=gh,x1=0,y1=0;
-  while(stack.length){const p=stack.pop(),px_=p%gw,py=(p/gw)|0;n++;if(px_<x0)x0=px_;if(px_>x1)x1=px_;if(py<y0)y0=py;if(py>y1)y1=py;
-   for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){const a=px_+dx,b=py+dy;if(a>=0&&b>=0&&a<gw&&b<gh){const q=b*gw+a;if(m[q]&&!seen[q]){seen[q]=1;stack.push(q)}}}}
-  const bw=x1-x0+1,bh=y1-y0+1,asp=bw/bh,area=bw*bh;
-  if(n<12||asp<.8||asp>10||(bw>gw*.92&&bh>gh*.92))continue;
-  if(!best||area>best.area)best={x0,y0,x1,y1,area}}
- if(!best){res(null);return}
- let bx=Math.max(0,best.x0*s),by=Math.max(0,best.y0*s),bw=Math.min(W,(best.x1+1)*s)-bx,bh=Math.min(H,(best.y1+1)*s)-by,g=0;
- for(let y=by;y<by+bh;y++)for(let xx=bx;xx<bx+bw;xx++){const i=(y*W+xx)*4;if(isGreen(px[i],px[i+1],px[i+2]))g++}
- const outline=g/(bw*bh)<.45; /* thin green frame around the digits vs. a solid green display */
- if(outline){const ins=Math.max(2,Math.round(Math.min(bw,bh)*.04));bx+=ins;by+=ins;bw-=2*ins;bh-=2*ins}
- if(bw<10||bh<8){res(null);return}
- const cr=x.getImageData(bx,by,bw,bh),d=cr.data;
- if(outline)for(let i=0;i<d.length;i+=4)if(isGreen(d[i],d[i+1],d[i+2])){d[i]=d[i+1]=d[i+2]=255} /* erase the green frame lines */
- const tmp=document.createElement('canvas');tmp.width=bw;tmp.height=bh;tmp.getContext('2d').putImageData(cr,0,0);
- const sc=Math.min(4,Math.max(.5,170/bh)),pad=28,ow=Math.round(bw*sc)+pad*2,oh=Math.round(bh*sc)+pad*2,o=document.createElement('canvas');o.width=ow;o.height=oh;
- const ox=o.getContext('2d',{willReadFrequently:true});ox.fillStyle='#fff';ox.fillRect(0,0,ow,oh);ox.imageSmoothingQuality='high';ox.drawImage(tmp,pad,pad,Math.round(bw*sc),Math.round(bh*sc));
- const od=ox.getImageData(0,0,ow,oh),q=od.data,gray=new Uint8Array(ow*oh),hist=new Array(256).fill(0);
- for(let i=0,j=0;i<q.length;i+=4,j++){const v=(q[i]*.3+q[i+1]*.59+q[i+2]*.11)|0;gray[j]=v;hist[v]++}
- let tot=gray.length,sum=0;for(let i=0;i<256;i++)sum+=i*hist[i];let sB=0,wB=0,mx=0,th=127;
- for(let i=0;i<256;i++){wB+=hist[i];if(!wB)continue;const wF=tot-wB;if(!wF)break;sB+=i*hist[i];const mB=sB/wB,mF=(sum-sB)/wF,v=wB*wF*(mB-mF)*(mB-mF);if(v>mx){mx=v;th=i}} /* Otsu threshold */
- let dark=0;for(let j=0;j<gray.length;j++)if(gray[j]<=th)dark++;
- const mk=inv=>{const cv=document.createElement('canvas');cv.width=ow;cv.height=oh;const cx=cv.getContext('2d'),id=cx.createImageData(ow,oh),dd=id.data;
-  for(let j=0;j<gray.length;j++){let b=gray[j]>th;if(inv)b=!b;const v=b?255:0;dd[j*4]=dd[j*4+1]=dd[j*4+2]=v;dd[j*4+3]=255}cx.putImageData(id,0,0);return cv};
- /* text should end up dark on light: if most pixels are dark, flip */
- const first=dark>tot/2;res([mk(first),mk(!first)])}catch(e){rej(e)}};im.onerror=rej;im.src=URL.createObjectURL(f)});
+/* Meter photo -> reading. The photo is read on the phone (no internet needed): find the green LCD glass, straighten it, and decode the seven-segment digits and the decimal point. */
+/* Seven-segment LCD reader. readLcd(px,W,H) -> {text, dbg}. px = RGBA bytes. */
+function readLcd(px,W,H,DBG){
+ const dbg=[];const log=(...a)=>{if(DBG)dbg.push(a.join(' '))};
+ const grn=i=>{const r=px[i],g=px[i+1],b=px[i+2];return g>=r&&g>=b&&g>=90&&g-r>=22&&g-b>=10};
+ /* ---- 1. find the glowing green LCD glass: the brightest sizeable green region ---- */
+ const s=Math.max(1,Math.round(Math.max(W,H)/240)),gw=Math.ceil(W/s),gh=Math.ceil(H/s),cnt=new Uint16Array(gw*gh),sg=new Float32Array(gw*gh);
+ for(let y=0;y<H;y++)for(let x=0;x<W;x++){const i=(y*W+x)*4;if(grn(i)){const c=((y/s)|0)*gw+((x/s)|0);cnt[c]++;sg[c]+=px[i+1]}}
+ const m=new Uint8Array(gw*gh);for(let i=0;i<m.length;i++)m[i]=cnt[i]>=s*s*.3?1:0;
+ const seen=new Uint8Array(gw*gh),cands=[];
+ for(let st=0;st<m.length;st++){if(!m[st]||seen[st])continue;const stack=[st];seen[st]=1;let n=0,sum=0,x0=gw,y0=gh,x1=0,y1=0;
+  while(stack.length){const p=stack.pop(),cx=p%gw,cy=(p/gw)|0;n++;sum+=sg[p]/cnt[p];if(cx<x0)x0=cx;if(cx>x1)x1=cx;if(cy<y0)y0=cy;if(cy>y1)y1=cy;
+   for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){const a=cx+dx,b=cy+dy;if(a>=0&&b>=0&&a<gw&&b<gh){const q=b*gw+a;if(m[q]&&!seen[q]){seen[q]=1;stack.push(q)}}}}
+  const bw=x1-x0+1,bh=y1-y0+1,asp=bw/bh,mean=sum/n;
+  if(n<10||asp<1||asp>9||(bw>gw*.95&&bh>gh*.95))continue;
+  cands.push({x0,y0,x1,y1,n,mean});log('cand',x0*s,y0*s,bw*s,bh*s,'mean g',mean.toFixed(0))}
+ if(!cands.length)return{text:'',dbg,why:'nogreen'};
+ const maxN=Math.max(...cands.map(c=>c.n));
+ /* the glowing LCD is the brightest of the sizeable green regions (the dark green label strip is dimmer) */
+ const ranked=cands.filter(c=>c.n>=maxN*.15).sort((a,b)=>b.mean*Math.pow(b.n,.1)-a.mean*Math.pow(a.n,.1)).slice(0,3);
+ let fallback=null;
+ for(const cd of ranked){const r=proc(cd);if(r.ok)return r;if(!fallback||r.text.length>fallback.text.length)fallback=r}
+ return fallback||{text:'',dbg,why:'fail'};
+ function proc(best){
+ let box={x:Math.max(0,best.x0*s-s),y:Math.max(0,best.y0*s-s),x1:Math.min(W,(best.x1+1)*s+s),y1:Math.min(H,(best.y1+1)*s+s)};
+ const bw0=box.x1-box.x,bh0=box.y1-box.y;
+ /* ---- 2. the inside of the glass = between the first and last green pixel of every row AND column ---- */
+ const rmin=new Int32Array(bh0).fill(1e9),rmax=new Int32Array(bh0).fill(-1),cmin=new Int32Array(bw0).fill(1e9),cmax=new Int32Array(bw0).fill(-1);
+ for(let y=0;y<bh0;y++)for(let x=0;x<bw0;x++)if(grn(((y+box.y)*W+x+box.x)*4)){if(x<rmin[y])rmin[y]=x;if(x>rmax[y])rmax[y]=x;if(y<cmin[x])cmin[x]=y;if(y>cmax[x])cmax[x]=y}
+ const e=Math.max(2,Math.round(Math.min(bw0,bh0)*.025)),inside=new Uint8Array(bw0*bh0);let ix0=bw0,ix1=0,iy0=bh0,iy1=0,nin=0;
+ for(let y=0;y<bh0;y++)for(let x=0;x<bw0;x++)if(x>=rmin[y]+e&&x<=rmax[y]-e&&y>=cmin[x]+e&&y<=cmax[x]-e){inside[y*bw0+x]=1;nin++;if(x<ix0)ix0=x;if(x>ix1)ix1=x;if(y<iy0)iy0=y;if(y>iy1)iy1=y}
+ if(nin<400)return{text:'',dbg,why:'tiny',ok:false};
+ log('glass',box.x+ix0,box.y+iy0,ix1-ix0+1,iy1-iy0+1);
+ /* ---- 3. grey picture of the glass; Otsu threshold using inside pixels only ---- */
+ const gray0=new Uint8Array(bw0*bh0),hist=new Array(256).fill(0);
+ for(let y=0;y<bh0;y++)for(let x=0;x<bw0;x++){const i=((y+box.y)*W+x+box.x)*4,v=(px[i]*.3+px[i+1]*.59+px[i+2]*.11)|0;gray0[y*bw0+x]=v;if(inside[y*bw0+x])hist[v]++}
+ const pct=q=>{let a=0;const t=nin*q;for(let i=0;i<256;i++){a+=hist[i];if(a>=t)return i}return 255};
+ const ink=pct(.02),bgMed=pct(.5);
+ if(bgMed-ink<35)return{text:'',dbg,why:'lowcontrast',ok:false};
+ const th=Math.round(ink+(bgMed-ink)*.5);
+ log('ink',ink,'bg',bgMed,'th',th);
+ for(let i=0;i<gray0.length;i++)if(!inside[i])gray0[i]=bgMed; /* everything outside the glass becomes plain background */
+ /* ---- 4. straighten: tilt from the top/bottom edges of the glass, then remove the italic slant of the digits ---- */
+ const edgeSlope=arr=>{let n=0,sx=0,sy=0,sxx=0,sxy=0;for(let x=Math.round(bw0*.12);x<Math.round(bw0*.88);x++){const y=arr[x];if(y<0||y>=1e9)continue;n++;sx+=x;sy+=y;sxx+=x*x;sxy+=x*y}
+  const d=n*sxx-sx*sx;return n>8&&d>0?(n*sxy-sx*sy)/d:0};
+ let ang=-Math.atan((edgeSlope(cmin)+edgeSlope(cmax))/2)*180/Math.PI;if(Math.abs(ang)>20)ang=0;
+ log('tilt',ang.toFixed(1));
+ const warp=(src,sw,sh,ow,oh,fn)=>{const out=new Uint8Array(ow*oh);
+  for(let y=0;y<oh;y++)for(let x=0;x<ow;x++){const p=fn(x,y),sx=p[0],sy=p[1];
+   if(sx<0||sy<0||sx>=sw-1||sy>=sh-1){out[y*ow+x]=bgMed;continue}
+   const x0=sx|0,y0=sy|0,fx=sx-x0,fy=sy-y0,a=src[y0*sw+x0],b=src[y0*sw+x0+1],c=src[(y0+1)*sw+x0],d=src[(y0+1)*sw+x0+1];
+   out[y*ow+x]=(a*(1-fx)*(1-fy)+b*fx*(1-fy)+c*(1-fx)*fy+d*fx*fy)|0}return out};
+ const r=ang*Math.PI/180,sn=Math.sin(r),cs=Math.cos(r),rw=Math.round(bw0*Math.abs(cs)+bh0*Math.abs(sn)),rh=Math.round(bw0*Math.abs(sn)+bh0*Math.abs(cs));
+ const lvl=warp(gray0,bw0,bh0,rw,rh,(x,y)=>{const ux=x-rw/2,uy=y-rh/2;return[ux*cs+uy*sn+bw0/2,-ux*sn+uy*cs+bh0/2]});
+ /* slant of the digits: the shear that makes the vertical strokes line up in columns */
+ const lp=[];for(let y=0;y<rh;y++)for(let x=0;x<rw;x++)if(lvl[y*rw+x]<=th)lp.push(x,y);
+ let sh=0,shV=-1;const colh=new Float32Array(rw*2+rh*2);
+ for(let t=-.4;t<=.4001;t+=.01){colh.fill(0);const off=rw+rh;for(let i=0;i<lp.length;i+=2)colh[Math.round(lp[i]-t*(lp[i+1]-rh/2))+off]++;let v=0;for(let i=0;i<colh.length;i++)v+=colh[i]*colh[i];if(v>shV){shV=v;sh=t}}
+ log('slant',sh.toFixed(2));
+ const cw=rw+Math.round(Math.abs(sh)*rh)+2,ch=rh;
+ const gray=warp(lvl,rw,rh,cw,ch,(x,y)=>[x-(cw-rw)/2+sh*(y-rh/2),y]);
+ const dk=new Uint8Array(cw*ch);for(let i=0;i<dk.length;i++)dk[i]=gray[i]<=th?1:0;
+ log('work',cw,'x',ch,'th',th,'bg',bgMed);
+ /* ---- 5. connected pieces ---- */
+ const lab=new Int32Array(cw*ch).fill(-1),comps=[];
+ for(let st=0;st<dk.length;st++){if(!dk[st]||lab[st]>=0)continue;const id=comps.length,stack=[st];lab[st]=id;let n=0,x0=cw,y0=ch,x1=0,y1=0;
+  while(stack.length){const p=stack.pop(),cx=p%cw,cy=(p/cw)|0;n++;if(cx<x0)x0=cx;if(cx>x1)x1=cx;if(cy<y0)y0=cy;if(cy>y1)y1=cy;
+   for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){const a=cx+dx,b=cy+dy;if(a>=0&&b>=0&&a<cw&&b<ch){const q=b*cw+a;if(dk[q]&&lab[q]<0){lab[q]=id;stack.push(q)}}}}
+  comps.push({id,n,x0,y0,x1,y1,w:x1-x0+1,h:y1-y0+1})}
+ const hMax0=Math.max(1,...comps.map(c=>c.h));
+ const keep=comps.filter(c=>c.n>=Math.max(6,hMax0*hMax0*.002));
+ log('pieces',comps.length,'kept',keep.length);
+ if(!keep.length)return{text:'',dbg,why:'nodark',ok:false};
+ /* ---- 6. dot candidates are set aside, everything else is grouped into digits by x overlap ---- */
+ const T0=Math.max(...keep.map(c=>c.h));
+ const isDot=c=>c.w<=T0*.2&&c.h<=T0*.2&&c.w>=c.h*.4&&c.h>=c.w*.4&&c.n>=c.w*c.h*.5;
+ const tolV=Math.max(3,Math.round(Math.max(...keep.map(c=>Math.max(c.w,c.h)))*.1));
+ const segs=keep.filter(c=>!isDot(c)),sorted=segs.slice().sort((a,b)=>a.x0-b.x0),groups=[];
+ for(const c of sorted){const g=groups[groups.length-1];
+  if(g&&c.x0<=g.x1&&c.y0<=g.y1+tolV&&c.y1>=g.y0-tolV){g.cs.push(c);g.x1=Math.max(g.x1,c.x1);g.y0=Math.min(g.y0,c.y0);g.y1=Math.max(g.y1,c.y1)}
+  else groups.push({cs:[c],x0:c.x0,x1:c.x1,y0:c.y0,y1:c.y1})}
+ groups.forEach(g=>{g.w=g.x1-g.x0+1;g.h=g.y1-g.y0+1});
+ if(!groups.length)return{text:'',dbg,why:'nodigits',ok:false};
+ const Hmax=Math.max(...groups.map(g=>g.h));
+ const digs=groups.filter(g=>g.h>=Hmax*.45);
+ log('T0',T0,'Hmax',Hmax,'groups',groups.length,'digits',digs.length);
+ /* ---- 7. decode each digit by its 7 segments ---- */
+ const PAT={'1111110':'0','0110000':'1','1101101':'2','1111001':'3','0110011':'4','1011011':'5','1011111':'6','1110000':'7','1111111':'8','1111011':'9','1110011':'9','0011111':'6'};
+ const decode=g=>{
+  const pts=[];for(const c of g.cs)for(let y=c.y0;y<=c.y1;y++)for(let x=c.x0;x<=c.x1;x++)if(lab[y*cw+x]==c.id)pts.push(x,y);
+  const ym=(g.y0+g.y1)/2;let bs=0,bw=1e9;
+  for(let s=-.1;s<=.1001;s+=.02){let mn=1e9,mxx=-1e9;for(let i=0;i<pts.length;i+=2){const xx=pts[i]-s*(pts[i+1]-ym);if(xx<mn)mn=xx;if(xx>mxx)mxx=xx}if(mxx-mn<bw){bw=mxx-mn;bs=s}}
+  let mn=1e9,mxx=-1e9;const sp=[];for(let i=0;i<pts.length;i+=2){const xx=pts[i]-bs*(pts[i+1]-ym);sp.push(xx,pts[i+1]);if(xx<mn)mn=xx;if(xx>mxx)mxx=xx}
+  const w=mxx-mn+1,h=g.h;
+  if(w/h<.28)return{d:'1',pat:'1',bs,w,h};
+  const R=[[.2,.8,0,.2],[.72,1,.1,.5],[.72,1,.5,.9],[.2,.8,.8,1],[0,.28,.5,.9],[0,.28,.1,.5],[.2,.8,.4,.6]]; /* a b c d e f g */
+  const on=R.map(([fx0,fx1,fy0,fy1])=>{let hit=0;const X0=mn+fx0*w,X1=mn+fx1*w,Y0=g.y0+fy0*h,Y1=g.y0+fy1*h;
+   for(let i=0;i<sp.length;i+=2)if(sp[i]>=X0&&sp[i]<X1&&sp[i+1]>=Y0&&sp[i+1]<Y1)hit++;
+   return hit/Math.max(1,(X1-X0)*(Y1-Y0))>.3?1:0}).join('');
+  let d=PAT[on];if(d===undefined){let bd=9,bc='?';for(const k in PAT){let x=0;for(let i=0;i<7;i++)if(k[i]!=on[i])x++;if(x<bd){bd=x;bc=PAT[k]}}d=bd<=1?bc:'?'}
+  return{d,pat:on,bs:+bs.toFixed(2),w,h}};
+ const res=digs.map(decode);res.forEach((q,i)=>log('digit',i,q.d,q.pat,'shear',q.bs,'w',Math.round(q.w),'h',q.h));
+ /* ---- 8. decimal point: a small, lighter dot low between two digits ---- */
+ const thD=Math.round(th+(bgMed-th)*.7),base=digs.reduce((q,g)=>q+g.y1,0)/digs.length;let dpAfter=-1,bestN=0;
+ const need=Math.pow(Hmax*.045,2);
+ for(let k=0;k<digs.length-1;k++){const xa=digs[k].x1+2,xb=digs[k+1].x0-2;if(xb<=xa)continue;
+  const ya=Math.max(0,Math.round(base-Hmax*.3)),yb=Math.min(ch-1,Math.round(base+Hmax*.12));let n=0;
+  for(let y=ya;y<=yb;y++)for(let x=xa;x<=xb;x++)if(gray[y*cw+x]<=thD)n++;
+  log('gap',k,'dot px',n,'need',Math.round(need));if(n>=need&&n>bestN){bestN=n;dpAfter=k}}
+ let text=res.map(q=>q.d).join('');if(dpAfter>=0)text=text.slice(0,dpAfter+1)+'.'+text.slice(dpAfter+1);
+ log('text',text);
+ return{text,dbg,ok:/^\d+(\.\d+)?$/.test(text)&&text.replace('.','').length>=1,dump:DBG?{gray,cw,ch,digs,th,thD,base,Hmax}:null}
+ }
+}
 async function meterOcr(id,inp){const f=inp.files[0];inp.value='';if(!f)return;
  const btn=document.getElementById('cb_'+id),box=document.getElementById('bk_'+id)||document.getElementById('bc');if(!btn||!box)return;btn.textContent='⏳';btn.disabled=true;
- try{await loadTess();const pr=await prepImg(f);
-  if(!pr)await alert('फ़ोटो में हरा बॉक्स नहीं मिला। रीडिंग वाला हरा बॉक्स पूरा और साफ़ दिखाकर दोबारा फ़ोटो लें, या हाथ से डालें।');
-  else{
-   if(!tessW){tessW=await Tesseract.createWorker('eng');await tessW.setParameters({tessedit_char_whitelist:'0123456789.'})}
-   const psm=pr[0].width/pr[0].height>2.5?'7':'6';await tessW.setParameters({tessedit_pageseg_mode:psm});
-   let c=[];
-   for(const cv of pr){const out=(await tessW.recognize(cv)).data.text||'';
-    c=out.split('\n').map(l=>l.replace(/(\d)\s+(?=\d)/g,'$1')).join(' ').match(/\d+(?:\.\d+)?/g)||[];
-    c=c.map(s=>s.replace(/^0+(?=\d)/,'')).filter(s=>s.replace('.','').length>=2);if(c.length)break}
-   const pv=N(lastRead(id)),up=c.filter(s=>N(s)>=pv),pool=up.length?up:c;
-   pool.sort((a,b)=>b.replace('.','').length-a.replace('.','').length||N(a)-N(b));
-   if(!pool.length)await alert('हरे बॉक्स से रीडिंग नहीं पढ़ी जा सकी। अंक साफ़ और सीधे रखकर दोबारा फ़ोटो लें, या हाथ से डालें।');
-   else{box.value=pool[0];if(box.id=='bc')calc();box.classList.add('ok');setTimeout(()=>box.classList.remove('ok'),2500)}}}
- catch(e){await alert('रीडिंग पढ़ने में दिक्कत आई। इंटरनेट जाँचें (पहली बार ज़रूरी है) या हाथ से डालें।')}
+ try{
+  const im=await new Promise((res,rej)=>{const i=new Image;i.onload=()=>res(i);i.onerror=rej;i.src=URL.createObjectURL(f)});
+  const k=Math.min(1,1600/Math.max(im.naturalWidth,im.naturalHeight)),W=Math.round(im.naturalWidth*k),H=Math.round(im.naturalHeight*k),c=document.createElement('canvas');c.width=W;c.height=H;
+  const x=c.getContext('2d',{willReadFrequently:true});x.drawImage(im,0,0,W,H);URL.revokeObjectURL(im.src);
+  await new Promise(r=>setTimeout(r,30)); /* let the spinner paint */
+  const r=readLcd(x.getImageData(0,0,W,H).data,W,H);
+  if(r.why=='nogreen')await alert('फ़ोटो में हरी स्क्रीन नहीं मिली। मीटर की हरी स्क्रीन पूरी और साफ़ दिखाकर दोबारा फ़ोटो लें, या हाथ से डालें।');
+  else if(!r.ok)await alert('स्क्रीन के अंक पढ़े नहीं जा सके। मीटर को सीधा पकड़कर, रोशनी/चमक से बचकर दोबारा फ़ोटो लें, या हाथ से डालें।');
+  else{const v=r.text.replace(/^0+(?=\d)/,''),pv=N(lastRead(id));box.value=v;if(box.id=='bc')calc();box.classList.add('ok');setTimeout(()=>box.classList.remove('ok'),2500);
+   if(N(v)<pv)await alert('पढ़ी गई रीडिंग '+v+' पिछली रीडिंग ('+pv+') से कम है। फ़ोटो से मिलाकर जाँच लें।')}}
+ catch(e){await alert('फ़ोटो से रीडिंग पढ़ने में दिक्कत आई। हाथ से डालें।')}
  btn.textContent='📷';btn.disabled=false}
 function togX(k){const x=document.getElementById('xp_'+k),c=document.getElementById('xc_'+k);if(!x)return;x.classList.toggle('open');c.classList.toggle('open')}
 function togBills(){const x=document.getElementById('xbx'),c=document.getElementById('xch');if(!x)return;x.classList.toggle('open');c.classList.toggle('open')}
