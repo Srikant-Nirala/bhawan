@@ -672,9 +672,9 @@ function genBill(id,type){if(db.bills.some(b=>b.tenantId==id&&b.month==V('bm')))
  calc();const b={id:uid(),tenantId:id,month:V('bm'),type,prev:type=='rent'?'':V('bp'),cur:type=='rent'?'':V('bc'),units:B.units,rate:B.rate,elec:B.el,rent:B.rent,arrear:B.arrear,arrNote:JSON.stringify(B.arr.map(x=>[x[0],x[1]])),total:B.total,paid:'0',status:'pending',date:new Date().toISOString()};
  save('bills',b);applyAdv(id,b);rp('sent',b.id)}
 function msg(b,sms){const t=T(b.tenantId),p=db.profile,mm=(d=>d.toLocaleString('hi',{month:'long'})+'-'+d.getFullYear())(new Date(b.month+'-01T00:00')),
- L=[`Hello ${String(t.name).trim().split(/\s+/)[0]} जी,`,'','नमस्कार!',`आपका ${mm} का बिल।`,'',`यूनिट - फ्लैट ${t.flat||'-'}`,''];
+ L=[`Hello ${String(t.name).trim().split(/\s+/)[0]} जी,`,'','नमस्कार!','',`आपका ${mm} का बिल।`,'',`यूनिट - फ्लैट ${t.flat||'-'}`,''];
  if(b.type!='elec')L.push(`किराया = ${R(b.rent)}`);
- if(b.type!='rent')L.push(`बिजली बिल = ${R(b.elec)}`,`मीटर: ${b.prev} → ${b.cur} = ${b.units} यूनिट × ${R(b.rate)} = ${R(b.elec)}`);
+ if(b.type!='rent')L.push(`बिजली बिल = ${R(b.elec)}`,'',`( मीटर: ${b.prev} → ${b.cur} = ${b.units} यूनिट × ${R(b.rate)} = ${R(b.elec)} )`);
  if(N(b.arrear)>0){let ar=[];try{ar=JSON.parse(b.arrNote||'[]')}catch(e){}L.push('','*पिछला बकाया (Arrear):*');ar.forEach(x=>L.push(`${ML(x[0])}: ${R(x[1])}`));if(ar.length!=1)L.push(`कुल पिछला बकाया: ${R(b.arrear)}`)}
  L.push('',`*कुल: ${R(b.total)}*`);
  if(N(b.adv)>0)L.push(`एडवांस कटौती: − ${R(b.adv)}`,`*देय राशि: ${R(payable(b))}*`);
