@@ -683,7 +683,7 @@ function msg(b,sms){const t=T(b.tenantId),p=db.profile,mm=(d=>d.toLocaleString('
 function setPaid(x,v){const o=own(x);v=r2(Math.max(0,Math.min(v,o)));x.paid=String(v);x.status=v>=o?'paid':'pending';save('bills',x)}
 function payFull(id){const b=db.bills.find(x=>x.id==id),amt=r2(olderDue(b).reduce((q,x)=>q+dueOf(x),0)+dueOf(b));olderDue(b).forEach(x=>setPaid(x,own(x)));setPaid(b,own(b));if(amt>0)logPay(b.tenantId,amt);cur().pop();dir='bck';draw()}
 function payPick(id){const t=T(id);if(!t)return;
- if(!db.bills.some(b=>b.tenantId==id&&b.month==today().slice(0,7)))return alert(t.name+' का इस महीने का बिल नहीं बना\nपेमेंट नोट करने से पहले बिल बनाएँ');
+ if(!db.bills.some(b=>b.tenantId==id&&b.month==today().slice(0,7)))return modal(t.name+' का '+mname(today().slice(0,7))+' का बिल अभी नहीं बना है।\nपेमेंट नोट करने के लिए पहले बिल बनाएँ।',0,{left:1});
  PT.t=0;go('payTenant',id)}
 async function recvPay(id,full){const dt=V('rdt'),
  ds=db.bills.filter(b=>b.tenantId==id&&dueOf(b)>0).sort((a,c)=>a.month.localeCompare(c.month)||String(a.date).localeCompare(String(c.date))),bal=r2(ds.reduce((q,x)=>q+dueOf(x),0));let amt,extra=0;
@@ -894,7 +894,7 @@ addEventListener('online',()=>sync());
 const modal=(msg,ask,op)=>new Promise(res=>{const o=document.createElement('div');o.className='mdl';op=op||{};
  o.innerHTML='<div class=mbx role=alertdialog aria-modal=true><div class=mtx></div><div class=mbt>'+(ask?'<button class="mb mc">'+(op.n||'Cancel')+'</button>':'')+'<button class="mb mo">'+(op.y||'OK')+'</button></div></div>';
  if(op.dim){o.style.background='rgba(0,0,0,.82)';o.style.backdropFilter='blur(8px)';o.style.webkitBackdropFilter='blur(8px)'}
- o.querySelector('.mtx').textContent=String(msg);const c=v=>{o.remove();res(v)};
+ o.querySelector('.mtx').textContent=String(msg);if(op.left)o.querySelector('.mtx').style.textAlign='left';const c=v=>{o.remove();res(v)};
  o.querySelector('.mo').onclick=()=>c(true);const k=o.querySelector('.mc');if(k)k.onclick=()=>c(false);
  document.body.appendChild(o);o.querySelector('.mo').focus()});
 window.alert=m=>modal(typeof trMsg=='function'?trMsg(String(m)):m,0);
