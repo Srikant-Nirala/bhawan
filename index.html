@@ -312,9 +312,9 @@ return `<div class="card cp clk" onclick="PT.t=1;go('payTenant','${t.id}')"><div
 /* Tile4 list */ payRenter:()=>{const mo=today().slice(0,7),mn=mname(mo),
  tdue=t=>r2(db.bills.filter(b=>b.tenantId==t.id).reduce((q,b)=>q+dueOf(b),0)),hasBill=t=>db.bills.some(b=>b.tenantId==t.id&&b.month==mo),
  secs=[
-  {h:mn+' में पेमेंट नोट करना बाकी',c:'#fff',bg:'linear-gradient(135deg,#a8000e,#7a0009)',f:t=>hasBill(t)&&tdue(t)>0,e:'कोई पेमेंट बाकी नहीं 🎉'},
-  {h:mn+' में बिल बनाना बाकी',c:'#fff',bg:'linear-gradient(135deg,#ffa30a,#ff7a00)',f:t=>!hasBill(t),e:'सभी का बिल बन चुका है'},
-  {h:'किरायेदार जिनका पेमेंट हो गया है',c:'#fff',bg:'linear-gradient(135deg,#34c759,#248a3d)',f:t=>hasBill(t)&&tdue(t)<=0,e:'अभी कोई नहीं'}
+  {h:mn+' में पेमेंट नोट करना बाकी',c:'#a8000e',bg:'#fff',f:t=>hasBill(t)&&tdue(t)>0,e:'कोई पेमेंट बाकी नहीं 🎉'},
+  {h:mn+' में बिल बनाना बाकी',c:'#ff8a00',bg:'#fff',f:t=>!hasBill(t),e:'सभी का बिल बन चुका है'},
+  {h:'किरायेदार जिनका पेमेंट हो गया है',c:'#1b8a3d',bg:'#fff',f:t=>hasBill(t)&&tdue(t)<=0,e:'अभी कोई नहीं'}
  ],
  tile=t=>`<div class="tile tap" onclick="payPick('${t.id}')">${av(t.name)}<span class=tx><b class=fl>Flat ${E(t.flat)}</b><span class=nm>${E(t.name)}</span><small>${E(P(t.propId)?.name)}</small></span><span class=call aria-label="पेमेंट नोट करें">📝</span><span class=ch>›</span></div>`,
  act=db.tenants.filter(t=>t.active!='0'&&P(t.propId));
