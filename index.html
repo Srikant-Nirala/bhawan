@@ -166,6 +166,8 @@ select:required:invalid{color:var(--m)}select option{color:var(--t)}
 .dpw,.dpg{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center}.dpw span{font-size:12px;color:var(--m);font-weight:700;padding:4px 0}
 .dpd{height:38px;border:0;border-radius:50%;background:none;color:var(--t);font-size:16px;font-weight:600;padding:0}.dpd.td{box-shadow:inset 0 0 0 1.5px var(--p)}.dpd.sel{background:var(--p);color:#fff}
 input.ok{border-color:var(--g)!important;box-shadow:0 0 0 3px rgba(48,184,88,.25)}
+.dca{display:flex;justify-content:center;margin-top:8px;color:var(--m)}.dca svg{transition:transform .3s}.card.ex .dca svg{transform:rotate(180deg)}
+.badge.sbig.org.bb{color:#a85a00;font-weight:800}html[data-theme=dark] .badge.sbig.org.bb{color:#ffb454}
 </style></head><body>
 <div id="lk"><div class="lkb"><div class="lkt" id="lkt"></div><div class="lkd" id="lkd"></div><div class="lke" id="lke"></div><div class="lkp" id="lkp"></div><button id="lkc" style="display:none" onclick="lkCancel()">रद्द करें</button></div></div>
 <div id="main"></div>
@@ -318,12 +320,12 @@ return `<h2>पेमेंट डिटेल्स</h2><div ontouchstart="tx=e
  ch=r2(ps.filter(e=>e.tenantId==t.id).reduce((q,e)=>q+N(e.amount),0)),df=r2(prev+cur-ch),
  allPaid=bs.length>0&&bs.every(b=>b.status=='paid'),part=!allPaid&&bs.some(b=>b.status=='paid'||N(b.paid)>0),
  last=df>=0?ln('कुल बकाया',`<b class="${df==0?'dkg':'dkr'}">${R(df)}</b>`):ln('कुल एडवांस',`<b class=dkg>${R(-df)}</b>`);
-if(cm){const hd=`<div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><b class=fl style="font-size:18px">${E(t.name)}</b><b class=fl style="font-size:18px;white-space:nowrap">Flat ${E(t.flat)}</b></div>`,ln2='<div style="border-top:1px solid rgba(128,128,128,.3);margin:12px 0 0"></div>';
+if(cm){const hd=`<div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><b class=fl style="font-size:18px">${E(t.name)}</b><b class=fl style="font-size:18px;white-space:nowrap">Flat ${E(t.flat)}</b></div>`;
  /* status row: summary on the left, status / action label on the right */
  const sr=(l,b)=>`<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:12px"><span style="flex:1;min-width:0;font-size:15.75px;font-weight:700">${l}</span>${b}</div>`;
- const act=bs.length?(allPaid?sr(`कुल चुकाया = <span class=dkg>${R(ch)}</span>`,'<span class="badge sbig paid">चुकाया</span>'):sr(`कुल बकाया = <span class=dkr>${R(Math.max(0,df))}</span>`,'<span class="badge sbig">बकाया</span>')):sr('कैलकुलेशन के लिए बिल बनाएँ',`<span class="badge sbig" role=button style="background:#ff9500;color:#fff;cursor:pointer" onclick="event.stopPropagation();go('billForm',['${t.id}','${t.btype||'both'}'])">बिल बनाएँ</span>`);
+ const act=bs.length?(allPaid?sr(`कुल चुकाया = <span class=dkg>${R(ch)}</span>`,'<span class="badge sbig paid">चुकाया</span>'):sr(`कुल बकाया = <span class=dkr>${R(Math.max(0,df))}</span>`,'<span class="badge sbig">बकाया</span>')):sr('कैलकुलेशन के लिए →','<span class="badge sbig org bb">बिल बनाएँ</span>');
  const body=bs.length?`${ln(mname(m)+' का किराया',`<b>${R(cur)}</b>`)}${prev<0?ln('पुराना एडवांस',`<b class=dkg>(−) ${R(-prev)}</b>`):ln('पुराना बकाया',`<b class="${prev>0?'dkr':'dkg'}">(+) ${R(prev)}</b>`)}${dv}${ln('कुल किराया',`<b>${R(kk)}</b>`)}${ln('कुल चुकाया',`<b class=dkg>(−) ${R(ch)}</b>`)}${dv}${last}`:'';
- return `<div class="card cp clk" onclick="togCard(this)">${hd}${ln2}${act}<div style="border-top:1px solid rgba(128,128,128,.3);margin:14px 0 0"></div><div class=xp><div>${body}${hist(t)}</div></div></div>`}
+ return `<div class="card cp clk" onclick="togCard(this)">${hd}${act}<div class=dca><svg width=24 height=18 viewBox="0 0 24 18" fill=none stroke=currentColor stroke-width=2.2 stroke-linecap=round stroke-linejoin=round><path d="M5 3l7 5.5L19 3"/><path d="M5 10l7 5.5L19 10"/></svg></div><div class=xp><div>${bs.length?dv:''}${body}${hist(t)}</div></div></div>`}
 return `<div class="card cp clk" onclick="this.querySelector('.xp').classList.toggle('open')"><div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><b class=fl style="font-size:18px">${E(t.name)}</b><b class=fl style="font-size:18px;white-space:nowrap">Flat ${E(t.flat)}</b></div><div style="border-top:1px solid rgba(128,128,128,.3);margin:12px 0 0"></div><div class=xp><div>${ln(mname(m)+' का किराया',`<b>${R(cur)}</b>`)}${prev<0?ln('पुराना एडवांस',`<b class=dkg>(−) ${R(-prev)}</b>`):ln('पुराना बकाया',`<b class="${prev>0?'dkr':'dkg'}">(+) ${R(prev)}</b>`)}<div style="border-top:1px solid rgba(128,128,128,.3);margin:12px 0 0"></div></div></div>${ln('कुल किराया',`<b>${R(kk)}</b>`)}${ln('कुल चुकाया',`<b class=dkg>(−) ${R(ch)}</b>`)}<div style="border-top:1px solid rgba(128,128,128,.3);margin:12px 0 0"></div>${last}${bs.length&&m==today().slice(0,7)?`<div style="display:flex;justify-content:center;margin-top:14px"><span class="badge sbig ${allPaid?'paid':part?'org':''}">${allPaid?'चुकाया':part?'अधूरा चुकाया':'बकाया'}</span></div>`:''}</div>`}).join('')}`).join('')||`<div class=card><span class=m>${cm?'कोई किरायेदार नहीं':'इस महीने कोई बिल या भुगतान दर्ज नहीं'}</span></div>`)+`</div>`},
 
 /* Tile4 list */ payRenter:()=>{const mo=today().slice(0,7),mn=mname(mo),
@@ -898,7 +900,7 @@ async function meterOcr(id,inp){const f=inp.files[0];inp.value='';if(!f)return;
  btn.textContent='📷';btn.disabled=false}
 function togX(k){const x=document.getElementById('xp_'+k),c=document.getElementById('xc_'+k);if(!x)return;x.classList.toggle('open');c.classList.toggle('open')}
 /* accordion: opening one payment card closes any other */
-function togCard(c){const x=c.querySelector('.xp'),o=x.classList.contains('open');document.querySelectorAll('.cp.clk .xp.open').forEach(e=>e.classList.remove('open'));if(!o)x.classList.add('open')}
+function togCard(c){const x=c.querySelector('.xp'),o=x.classList.contains('open');document.querySelectorAll('.cp.clk').forEach(e=>{e.classList.remove('ex');const q=e.querySelector('.xp');if(q)q.classList.remove('open')});if(!o){x.classList.add('open');c.classList.add('ex')}}
 function togBills(){const x=document.getElementById('xbx'),c=document.getElementById('xch');if(!x)return;x.classList.toggle('open');c.classList.toggle('open')}
 async function saveTenDocs(id){const t=T(id);let ch=0;
  if(docs.some(d=>!String(d.name||'').trim()))return alert('हर डॉक्यूमेंट का नाम लिखना ज़रूरी है');docs.forEach(d=>d.name=d.name.trim());
