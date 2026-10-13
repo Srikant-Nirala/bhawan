@@ -663,7 +663,7 @@ function renderFlat(){const p=P(V('tp')),fl=flatList(p),occ=n=>db.tenants.some(t
 function pickPhoto(i){const f=i.files[0];if(!f)return;const im=new Image;im.onload=()=>{const c=document.createElement('canvas'),k=Math.min(1,900/im.width);c.width=im.width*k;c.height=im.height*k;c.getContext('2d').drawImage(im,0,0,c.width,c.height);photo=c.toDataURL('image/jpeg',.7)};im.src=URL.createObjectURL(f)}
 /* ---- in-app calendar: tapping a date fills the field immediately (no OK button) ---- */
 const DV=id=>{const e=document.getElementById(id);return e?(e.dataset.v||''):''};
-function pickDate(id){const el=document.getElementById(id);if(!el)return;if(seqMissing(id))return;
+function pickDate(id){const el=document.getElementById(id);if(!el)return;
  const sel0=el.dataset.v||'',b=(sel0||today()).split('-').map(Number);let y=b[0],m=b[1]-1;
  const o=document.createElement('div');o.className='mdl';o.style.background='rgba(0,0,0,.6)';
  const draw=()=>{const first=new Date(y,m,1).getDay(),dim=new Date(y,m+1,0).getDate();let c='';for(let i=0;i<first;i++)c+='<span></span>';
@@ -677,7 +677,7 @@ function pickDate(id){const el=document.getElementById(id);if(!el)return;if(seqM
 /* billing type chooser with its own heading */
 const BT={both:'किराया + बिजली',rent:'सिर्फ़ किराया'};
 function setTb(v){const t=document.getElementById('tb'),d=document.getElementById('tbd'),mw=document.getElementById('mw');if(!t)return;t.value=v;if(d)d.value=BT[v]||'';if(mw)mw.style.display=v=='both'?'':'none'}
-function pickBill(){if(seqMissing('tbd'))return;const cv=(document.getElementById('tb')||{}).value||'',o=document.createElement('div');o.className='mdl';o.style.background='rgba(0,0,0,.6)';
+function pickBill(){const cv=(document.getElementById('tb')||{}).value||'',o=document.createElement('div');o.className='mdl';o.style.background='rgba(0,0,0,.6)';
  o.innerHTML='<div class=mbx><div class=mtx style="margin-bottom:16px">बिल का प्रकार चुनें</div><div style="display:flex;flex-direction:column;gap:10px">'+Object.keys(BT).map(k=>`<button type=button class="mb ${k==cv?'mo':'mc'}" style="flex:none" data-v="${k}">${BT[k]}</button>`).join('')+'<button type=button class="mb mo" style="flex:none;margin-top:6px" data-x=1>Cancel</button></div></div>';
  o.onclick=e=>{const t=e.target.closest('button');if(t&&t.dataset.v){setTb(t.dataset.v);o.remove()}else if(e.target==o||(t&&t.dataset.x))o.remove()};document.body.appendChild(o)}
 /* add-tenant form: mandatory fields must be filled in order */
@@ -689,7 +689,6 @@ function seqGuard(e){const el=e.target&&e.target.closest&&e.target.closest('inpu
  const m=seqMissing(el.id);if(!m)return;e.preventDefault();e.stopPropagation();if(el.blur)el.blur();
  const now=Date.now();if(now-seqT<600)return;seqT=now;
  modal('पहले "'+m[1]+'" भरें').then(()=>{const t=document.getElementById(m[0]);if(t){t.scrollIntoView({block:'center'});if(t.tagName!='SELECT'&&t.id!='te')t.focus()}})}
-['pointerdown','mousedown','touchstart','click','focusin'].forEach(ev=>document.addEventListener(ev,seqGuard,{capture:true,passive:false}));
 function chkFlat(){const f=V('tf').trim().toLowerCase();if(f&&db.tenants.some(t=>t.active!='0'&&t.propId==V('tp')&&String(t.flat).trim().toLowerCase()==f)){alert('Flat number '+V('tf').trim()+' is already occupied.');$('#tf').value='';return true}return false}
 async function addTen(){{const need=seqMissing('__end__');if(need)return alert('कृपया "'+need[1]+'" भरें')}
  const pn10=V('tph').replace(/\D/g,'');if(pn10.length!=10)return alert('Phone number must be exactly 10 digits.');
