@@ -903,9 +903,8 @@ function togX(k){const x=document.getElementById('xp_'+k),c=document.getElementB
 function pay12(tid,m){let [y,q]=m.split('-').map(Number);q-=11;if(q<1){q+=12;y--}const lo=y+'-'+pd2(q),
  hp=db.payments.filter(x=>x.tenantId==tid&&String(x.pdate).slice(0,7)>=lo&&String(x.pdate).slice(0,7)<=m).sort((a,c)=>String(c.pdate).localeCompare(String(a.pdate))||String(c.id).localeCompare(String(a.id)));
  if(!hp.length)return '<div class=m style="margin-top:10px">अभी कोई भुगतान दर्ज नहीं</div>';
- return '<div style="display:grid;grid-template-columns:max-content max-content max-content 1fr;column-gap:8px;row-gap:10px;align-items:baseline;margin-top:12px;font-size:15.75px;font-variant-numeric:tabular-nums">'+hp.map(x=>{const n=N(x.amount),d=new Date(String(x.pdate)+'T00:00'),ok=!isNaN(d),
- c=n<0?'var(--r)':'#1b8a3d';
- return (ok?`<span style="text-align:right">${d.getDate()}</span><span>${d.toLocaleDateString('hi',{month:'long'})}</span><span>${d.getFullYear()}</span>`:`<span style="grid-column:1/4">${E(String(x.pdate))}</span>`)+`<b style="text-align:right;color:${c}">${n<0?'− ':''}${R(Math.abs(n))}</b>`}).join('')+'</div>'}
+ return '<div style="display:grid;grid-template-columns:max-content 1fr;column-gap:12px;row-gap:10px;align-items:baseline;margin-top:12px;font-size:15.75px;font-variant-numeric:tabular-nums">'+hp.map(x=>{const n=N(x.amount),d=new Date(String(x.pdate)+'T00:00');
+ return `<span>${isNaN(d)?E(String(x.pdate)):pd2(d.getDate())+'-'+pd2(d.getMonth()+1)+'-'+d.getFullYear()}</span><span style="text-align:right">${n<0?'− ':''}${R(Math.abs(n))}</span>`}).join('')+'</div>'}
 /* accordion: opening one payment card closes any other */
 function togCard(c){const x=c.querySelector('.xp'),o=x.classList.contains('open');document.querySelectorAll('.cp.clk').forEach(e=>{e.classList.remove('ex');const q=e.querySelector('.xp');if(q)q.classList.remove('open')});if(!o){x.classList.add('open');c.classList.add('ex')}}
 function togBills(){const x=document.getElementById('xbx'),c=document.getElementById('xch');if(!x)return;x.classList.toggle('open');c.classList.toggle('open')}
