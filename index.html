@@ -160,6 +160,11 @@ body.busy #main .btn,body.busy #main .badge{pointer-events:none;opacity:.55}
 .bki.sm::placeholder{font-size:12px}
 .dkg{color:#1b8a3d;font-weight:800;font-size:16px}html[data-theme=dark] .dkg{color:#34c759}.cp .dkg{font-size:inherit}
 .cam{flex:none;width:38px;height:38px;border-radius:11px;border:0;background:var(--p);color:#fff;font-size:19px;padding:0;display:grid;place-items:center;transition:transform .12s,opacity .2s}.cam:active{transform:scale(.9)}.cam:disabled{opacity:.6}
+input.dp{cursor:pointer}
+select:required:invalid{color:var(--m)}select option{color:var(--t)}
+.dph{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}.dph button{width:36px;height:36px;border-radius:50%;border:0;background:var(--bg);color:var(--p);font-size:20px;padding:0}.dph b{font-size:17px;text-align:center}
+.dpw,.dpg{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center}.dpw span{font-size:12px;color:var(--m);font-weight:700;padding:4px 0}
+.dpd{height:38px;border:0;border-radius:50%;background:none;color:var(--t);font-size:16px;font-weight:600;padding:0}.dpd.td{box-shadow:inset 0 0 0 1.5px var(--p)}.dpd.sel{background:var(--p);color:#fff}
 input.ok{border-color:var(--g)!important;box-shadow:0 0 0 3px rgba(48,184,88,.25)}
 </style></head><body>
 <div id="lk"><div class="lkb"><div class="lkt" id="lkt"></div><div class="lkd" id="lkd"></div><div class="lke" id="lke"></div><div class="lkp" id="lkp"></div><button id="lkc" style="display:none" onclick="lkCancel()">रद्द करें</button></div></div>
@@ -328,7 +333,7 @@ payTenant:id=>{const t=T(id)||{},ps=db.payments.filter(x=>x.tenantId==id).sort((
 const hd=`<h2>${E(t.name)}</h2><div class=m style="margin:-6px 2px 8px">${E(P(t.propId)?.name)} · Flat ${E(t.flat)}</div><div class="seg big"><button class="${PT.t?'':'on'}" onclick="PT.t=0;draw()">पेमेंट नोट करें</button><button class="${PT.t?'on':''}" onclick="PT.t=1;draw()">पेमेंट हिस्ट्री</button></div>`;
 if(PT.t)return hd+`<div class=card>${ps.map(x=>{const n=N(x.amount);return `<div class=item><div class=gr><b>${fmtDL(x.pdate)}</b>${x.note?`<div class=m>${E(x.note)}</div>`:''}</div><b style="color:${n<0?'var(--r)':'#1b8a3d'}">${n<0?'− ':''}${R(Math.abs(n))}</b></div>`}).join('')||'<span class=m>अभी कोई भुगतान दर्ज नहीं</span>'}</div>`;
 const bs=tbills(id).slice(0,12),due=r2(db.bills.filter(b=>b.tenantId==id).reduce((q,b)=>q+dueOf(b),0));
-return hd+`<div class="card ot" style="text-align:center;margin:28px 0 20px"><div style="font-size:18.7px;font-weight:800">कुल बकाया = ${R(due)}</div></div>${N(t.advance)>0?`<div class=card style="text-align:center;margin:-4px 0 20px;padding:12px"><b class=dkg style="font-size:17px">एडवांस = ${R(t.advance)}</b></div>`:''}<div class=card><label>भुगतान की तारीख</label><input id=rdt type=date value="${today()}"><div class=duo style="margin:14px 0 0"><button class=tile style="background:var(--p);color:#fff" onclick="recvPay('${id}')"><span class=ic style="background:rgba(255,255,255,.25)">＋</span>पेमेंट रकम डालें</button><button class=tile style="background:var(--g);color:#fff" onclick="recvPay('${id}',1)"><span class=ic style="background:rgba(255,255,255,.25)">✓</span>पूरा पेमेंट किया</button></div></div>
+return hd+`<div class="card ot" style="text-align:center;margin:28px 0 20px"><div style="font-size:18.7px;font-weight:800">कुल बकाया = ${R(due)}</div></div>${N(t.advance)>0?`<div class=card style="text-align:center;margin:-4px 0 20px;padding:12px"><b class=dkg style="font-size:17px">एडवांस = ${R(t.advance)}</b></div>`:''}<div class=card><label>भुगतान की तारीख *</label><input id=rdt class=dp readonly placeholder="पेमेंट डेट डालें" onclick="pickDate('rdt')"><div class=duo style="margin:14px 0 0"><button class=tile style="background:var(--p);color:#fff" onclick="recvPay('${id}')"><span class=ic style="background:rgba(255,255,255,.25)">＋</span>पेमेंट रकम डालें</button><button class=tile style="background:var(--g);color:#fff" onclick="recvPay('${id}',1)"><span class=ic style="background:rgba(255,255,255,.25)">✓</span>पूरा पेमेंट किया</button></div></div>
 <h3 class=tap onclick="togBills()" style="font-weight:900;font-size:14px;margin-top:44px;display:flex;justify-content:space-between;align-items:center;cursor:pointer">पिछले 12 महीने के बिल की स्थिति देखें<span id=xch>›</span></h3><div class=xp id=xbx><div><div class=card>${bs.map(b=>`<div class="item bi"><div class=gr><b style="display:block;margin-bottom:6px">${ML(b.month)}</b><div style="font-size:15px">${bd2(b)}</div></div>${roH(b)}</div>`).join('')||'<span class=m>अभी कोई बिल नहीं</span>'}</div></div></div>`},
 
 /* Tile6 */ billHist:()=>`<h2>बिल देखें व भेजें</h2>${histFlat(1)}`,
@@ -362,10 +367,10 @@ addProp:()=>`<h2>Properties</h2><div class=card>${db.props.map(p=>`<div class=it
 <button class=btn onclick="addProp()">Save property</button></div>`,
 
 addTen:()=>!db.props.length?'<div class=card>Add a property first.</div>':`<h2>किरायेदार का डिटेल्स डालें</h2><div class="card tf">
-<label>Tenant name *</label><input id=tn><label>Property *</label><select id=tp onchange="renderFlat()">${db.props.map(p=>`<option value="${p.id}">${E(p.name)}</option>`).join('')}</select>
-<label>Phone * (10 digits)</label><input id=tph type=tel inputmode=numeric maxlength=10 oninput="this.value=this.value.replace(/\\D/g,'').slice(0,10)"><label>Flat number</label><div id=fw></div><label>Entry date</label><input id=te type=date value="${today()}" onchange="syncPD()"><label>Payment date</label><input id=tpd type=date value="${today()}" min="${today()}" oninput="this.dataset.t=1">
+<label>Tenant name *</label><input id=tn><label>Property *</label><select id=tp required onchange="renderFlat()"><option value="">प्रॉपर्टी चुनें</option>${db.props.map(p=>`<option value="${p.id}">${E(p.name)}</option>`).join('')}</select>
+<label>Phone * (10 digits)</label><input id=tph type=tel inputmode=numeric maxlength=10 oninput="this.value=this.value.replace(/\\D/g,'').slice(0,10)"><label>Flat number</label><div id=fw></div><label>प्रवेश तिथि *</label><input id=te class=dp readonly placeholder="प्रवेश तिथि डालें" onclick="pickDate('te')">
 <label>Monthly rent *</label><input id=tr type=number inputmode=decimal><label>Security deposit (optional)</label><input id=td type=number inputmode=decimal>
-<div id=bw><label>Billing type</label><select id=tb onchange="$('#mw').style.display=this.value=='both'?'':'none'"><option value=both>Rent + Electricity</option><option value=rent>Rent only</option></select></div><div id=mw><label>Initial meter reading *</label><input id=tm type=number inputmode=decimal></div><label>Aadhar number (12 digits)</label><input id=ta inputmode=numeric maxlength=12 oninput="this.value=this.value.replace(/\\D/g,'').slice(0,12)">
+<div id=bw><label>बिल का प्रकार *</label><select id=tb required onchange="$('#mw').style.display=this.value=='both'?'':'none'"><option value="">किराया टाइप चुनें</option><option value=both>Rent + Electricity</option><option value=rent>Rent only</option></select></div><div id=mw style="display:none"><label>Initial meter reading *</label><input id=tm type=number inputmode=decimal></div><label>Aadhar number (12 digits)</label><input id=ta inputmode=numeric maxlength=12 oninput="this.value=this.value.replace(/\\D/g,'').slice(0,12)">
 <label>Aadhar photo</label><input type=file accept="image/*" onchange="pickPhoto(this)">
 <label>Other documents (optional)</label><div id=dl></div><input type=file id=df multiple accept="image/*,application/pdf" onchange="addDocs(this)" hidden><button class="btn o" type=button onclick="$('#df').click()">(+) Add document</button>
 <button class=btn onclick="addTen()">Save tenant</button></div><script>renderFlat();prefillTen()<\/script>`,
@@ -654,20 +659,41 @@ function updProp(id){if(!V('pn'))return alert('Enter property name');const ns=[.
 function prefillTen(){if(!PRE)return;const q=PRE;PRE=null;$('#tp').value=q.p;renderFlat();const f=$('#tf');if(f&&q.f)f.value=q.f;if(typeof chkFlat=='function')chkFlat()}
 const flatList=p=>{try{return JSON.parse(p?.flatNames||'[]')}catch(e){return[]}};
 function renderFlat(){const p=P(V('tp')),fl=flatList(p),occ=n=>db.tenants.some(t=>t.active!='0'&&t.propId==p?.id&&String(t.flat).trim().toLowerCase()==String(n).trim().toLowerCase());
- {const bw=$('#bw'),tb=$('#tb'),mw=$('#mw');if(bw&&tb&&mw){if(p&&p.rentOnly=='1'){tb.value='rent';bw.style.display='none';mw.style.display='none'}else{if(bw.style.display=='none')tb.value='both';bw.style.display='';mw.style.display=tb.value=='both'?'':'none'}}}
- $('#fw').innerHTML=fl.length?`<select id=tf onchange="chkFlat()"><option value="">Select flat</option>${fl.map(n=>`<option value="${E(n)}">${E(n)}${occ(n)?' (occupied)':''}</option>`).join('')}</select>`:'<input id=tf onchange="chkFlat()">'}
+ {const bw=$('#bw'),tb=$('#tb'),mw=$('#mw');if(bw&&tb&&mw){if(p&&p.rentOnly=='1'){tb.value='rent';bw.style.display='none';mw.style.display='none'}else{if(bw.style.display=='none')tb.value='';bw.style.display='';mw.style.display=tb.value=='both'?'':'none'}}}
+ $('#fw').innerHTML=fl.length?`<select id=tf required onchange="chkFlat()"><option value="">Select flat</option>${fl.map(n=>`<option value="${E(n)}">${E(n)}${occ(n)?' (occupied)':''}</option>`).join('')}</select>`:'<input id=tf onchange="chkFlat()">'}
 function pickPhoto(i){const f=i.files[0];if(!f)return;const im=new Image;im.onload=()=>{const c=document.createElement('canvas'),k=Math.min(1,900/im.width);c.width=im.width*k;c.height=im.height*k;c.getContext('2d').drawImage(im,0,0,c.width,c.height);photo=c.toDataURL('image/jpeg',.7)};im.src=URL.createObjectURL(f)}
-function syncPD(){const e=V('te'),p=$('#tpd');if(!p)return;p.min=e;if(e&&(!p.dataset.t||!p.value||p.value<e))p.value=e}
+/* ---- in-app calendar: tapping a date fills the field immediately (no OK button) ---- */
+const DV=id=>{const e=document.getElementById(id);return e?(e.dataset.v||''):''};
+function pickDate(id){const el=document.getElementById(id);if(!el)return;if(seqMissing(id))return;
+ const sel0=el.dataset.v||'',b=(sel0||today()).split('-').map(Number);let y=b[0],m=b[1]-1;
+ const o=document.createElement('div');o.className='mdl';o.style.background='rgba(0,0,0,.6)';
+ const draw=()=>{const first=new Date(y,m,1).getDay(),dim=new Date(y,m+1,0).getDate();let c='';for(let i=0;i<first;i++)c+='<span></span>';
+  for(let d=1;d<=dim;d++){const iso=y+'-'+pd2(m+1)+'-'+pd2(d);c+=`<button type=button class="dpd${iso==sel0?' sel':iso==today()?' td':''}" data-d="${iso}">${d}</button>`}
+  o.innerHTML=`<div class=mbx style="padding:16px 12px 14px"><div class=dph><button type=button data-n=-12>«</button><button type=button data-n=-1>‹</button><b>${new Date(y,m,1).toLocaleString('hi',{month:'long',year:'numeric'})}</b><button type=button data-n=1>›</button><button type=button data-n=12>»</button></div><div class=dpw>${['रवि','सोम','मंगल','बुध','गुरु','शुक्र','शनि'].map(x=>'<span>'+x+'</span>').join('')}</div><div class=dpg>${c}</div><div class=mbt style="margin-top:12px"><button type=button class="mb mc" data-x=1>रद्द करें</button></div></div>`};
+ o.onclick=e=>{const t=e.target.closest('button'),n=t&&t.dataset.n,d=t&&t.dataset.d;
+  if(n){const x=new Date(y,m+ +n,1);y=x.getFullYear();m=x.getMonth();draw()}
+  else if(d){el.dataset.v=d;el.value=fmtDL(d);o.remove();el.dispatchEvent(new Event('change',{bubbles:true}))}
+  else if(e.target==o||(t&&t.dataset.x))o.remove()};
+ draw();document.body.appendChild(o)}
+/* add-tenant form: mandatory fields must be filled in order */
+const SEQ=[['tn','किरायेदार का नाम'],['tp','प्रॉपर्टी'],['tph','फ़ोन नंबर (10 अंक)'],['tf','फ्लैट नंबर'],['te','प्रवेश तिथि'],['tr','मासिक किराया'],['tb','किराया टाइप (बिल का प्रकार)'],['tm','प्रारंभिक मीटर रीडिंग']];
+function seqMissing(id){for(const[k,l]of SEQ){if(k==id)return null;const e=document.getElementById(k);if(!e||e.offsetParent===null)continue;if(k=='tf'&&e.tagName=='INPUT')continue;
+  const v=k=='te'?(e.dataset.v||''):String(e.value||'').trim();if(k=='tph'?v.replace(/\D/g,'').length!=10:!v)return[k,l]}return null}
+let seqT=0;
+function seqGuard(e){const el=e.target&&e.target.closest&&e.target.closest('input,select');if(!el||!el.id||!SEQ.some(x=>x[0]==el.id)||!document.getElementById('tn'))return;
+ const m=seqMissing(el.id);if(!m)return;e.preventDefault();e.stopPropagation();if(el.blur)el.blur();
+ const now=Date.now();if(now-seqT<600)return;seqT=now;
+ modal('पहले "'+m[1]+'" भरें').then(()=>{const t=document.getElementById(m[0]);if(t){t.scrollIntoView({block:'center'});if(t.tagName!='SELECT'&&t.id!='te')t.focus()}})}
+['pointerdown','mousedown','touchstart','click','focusin'].forEach(ev=>document.addEventListener(ev,seqGuard,{capture:true,passive:false}));
 function chkFlat(){const f=V('tf').trim().toLowerCase();if(f&&db.tenants.some(t=>t.active!='0'&&t.propId==V('tp')&&String(t.flat).trim().toLowerCase()==f)){alert('Flat number '+V('tf').trim()+' is already occupied.');$('#tf').value='';return true}return false}
-async function addTen(){if(!V('tn')||!V('tph')||!V('tr')||(V('tb')=='both'&&V('tm')==''))return alert('Fill name, phone, rent'+(V('tb')=='both'?' and initial meter reading':'')+'.');
- if(!V('tf')&&flatList(P(V('tp'))).length)return alert('Select a flat.');
+async function addTen(){{const need=seqMissing('__end__');if(need)return alert('कृपया "'+need[1]+'" भरें')}
  const pn10=V('tph').replace(/\D/g,'');if(pn10.length!=10)return alert('Phone number must be exactly 10 digits.');
  const ad=V('ta').replace(/\D/g,'');if(ad&&ad.length!=12)return alert('Aadhar number must be exactly 12 digits.');
  if(chkFlat())return;
- const ed=V('te')||today(),pdt=V('tpd')||ed;if(pdt<ed)return alert('Payment date cannot be before entry date.');
+ const ed=DV('te'),pdt=ed;
  if(docs.some(d=>!String(d.name||'').trim()))return alert('हर डॉक्यूमेंट का नाम लिखना ज़रूरी है');docs.forEach(d=>d.name=d.name.trim());
  const id=uid();let ph=photo;if(ph&&url){const r=await post({a:'upload',name:V('tn')+'_'+id,data:ph});ph=r.url||ph}
- const t={id,name:V('tn'),propId:V('tp'),phone:pn10,flat:V('tf'),entry:V('te'),rent:V('tr'),deposit:V('td'),meter:V('tb')=='both'?V('tm'):'',aadhar:ad,photo:ph,docs:JSON.stringify(docs.map(d=>({name:d.name,url:d.data}))),active:'1',btype:V('tb')};
+ const t={id,name:V('tn'),propId:V('tp'),phone:pn10,flat:V('tf'),entry:ed,rent:V('tr'),deposit:V('td'),meter:V('tb')=='both'?V('tm'):'',aadhar:ad,photo:ph,docs:JSON.stringify(docs.map(d=>({name:d.name,url:d.data}))),active:'1',btype:V('tb')};
  if(url)await upDocs(t);
  const rn=N(t.rent),bl={id:uid(),tenantId:id,month:ed.slice(0,7),type:'rent',prev:'',cur:'',units:0,rate:N(db.profile.rate),elec:0,rent:rn,arrear:0,arrNote:'[]',total:rn,paid:String(rn),status:'paid',date:new Date().toISOString()},
  py={id:uid(),tenantId:id,amount:String(rn),pdate:pdt,note:'पहले महीने का किराया'};
@@ -698,9 +724,9 @@ function payFull(id){const b=db.bills.find(x=>x.id==id),amt=r2(olderDue(b).reduc
 function payPick(id){const t=T(id);if(!t)return;
  if(!db.bills.some(b=>b.tenantId==id&&b.month==today().slice(0,7)))return modal(t.name+' का '+mname(today().slice(0,7))+' का बिल अभी नहीं बना है।\nपेमेंट नोट करने के लिए पहले बिल बनाएँ।',0,{left:1});
  PT.t=0;go('payTenant',id)}
-async function recvPay(id,full){const dt=V('rdt'),
+async function recvPay(id,full){const dt=DV('rdt'),
  ds=db.bills.filter(b=>b.tenantId==id&&dueOf(b)>0).sort((a,c)=>a.month.localeCompare(c.month)||String(a.date).localeCompare(String(c.date))),bal=r2(ds.reduce((q,x)=>q+dueOf(x),0));let amt,extra=0;
- if(!dt)return alert('भुगतान की तारीख चुनें');
+ if(!dt)return alert('पहले "पेमेंट डेट डालें" — भुगतान की तारीख चुनें');
  if(full){if(!ds.length)return alert('इस किरायेदार का कोई बकाया नहीं');amt=bal;if(!await modal('पूरा किराया '+R(bal)+' मिला?',1,{y:'हाँ',n:'नहीं',dim:1}))return}
  else{const v=await askAmt();if(v===null)return;amt=r2(N(v));
   if(!(amt>0))return alert('सही रकम लिखें');
