@@ -370,7 +370,7 @@ addTen:()=>!db.props.length?'<div class=card>Add a property first.</div>':`<h2>�
 <label>Tenant name *</label><input id=tn><label>Property *</label><select id=tp required onchange="renderFlat()"><option value="">प्रॉपर्टी चुनें</option>${db.props.map(p=>`<option value="${p.id}">${E(p.name)}</option>`).join('')}</select>
 <label>Phone * (10 digits)</label><input id=tph type=tel inputmode=numeric maxlength=10 oninput="this.value=this.value.replace(/\\D/g,'').slice(0,10)"><label>Flat number</label><div id=fw></div><label>प्रवेश तिथि *</label><input id=te class=dp readonly placeholder="प्रवेश तिथि डालें" onclick="pickDate('te')">
 <label>Monthly rent *</label><input id=tr type=number inputmode=decimal><label>Security deposit (optional)</label><input id=td type=number inputmode=decimal>
-<div id=bw><label>बिल का प्रकार *</label><select id=tb required onchange="$('#mw').style.display=this.value=='both'?'':'none'"><option value="">किराया टाइप चुनें</option><option value=both>Rent + Electricity</option><option value=rent>Rent only</option></select></div><div id=mw style="display:none"><label>Initial meter reading *</label><input id=tm type=number inputmode=decimal></div><label>Aadhar number (12 digits)</label><input id=ta inputmode=numeric maxlength=12 oninput="this.value=this.value.replace(/\\D/g,'').slice(0,12)">
+<div id=bw><label>बिल का प्रकार *</label><input type=hidden id=tb value=""><input id=tbd class=dp readonly placeholder="किराया टाइप चुनें" onclick="pickBill()"></div><div id=mw style="display:none"><label>Initial meter reading *</label><input id=tm type=number inputmode=decimal></div><label>Aadhar number (12 digits)</label><input id=ta inputmode=numeric maxlength=12 oninput="this.value=this.value.replace(/\\D/g,'').slice(0,12)">
 <label>Aadhar photo</label><input type=file accept="image/*" onchange="pickPhoto(this)">
 <label>Other documents (optional)</label><div id=dl></div><input type=file id=df multiple accept="image/*,application/pdf" onchange="addDocs(this)" hidden><button class="btn o" type=button onclick="$('#df').click()">(+) Add document</button>
 <button class=btn onclick="addTen()">Save tenant</button></div><script>renderFlat();prefillTen()<\/script>`,
@@ -631,7 +631,6 @@ function runOv(o){document.body.appendChild(o);const rm=()=>o.remove();o.addEven
 /* bottom bar: hides while scrolling down the page, returns when scrolling back up */
 let ly=0;const navEl=()=>document.querySelector('nav');
 function navShow(){const n=navEl();if(n)n.classList.remove('hide');ly=scrollY}
-addEventListener('scroll',()=>{const y=scrollY,d=y-ly;if(Math.abs(d)<8)return;ly=y;const n=navEl();if(!n)return;if(y<=40||d<0)n.classList.remove('hide');else n.classList.add('hide')},{passive:true});
 /* NATIVE BACK: browser history mirrors the screen stack, so the phone's back button / swipe-back works like the in-app Back button.
    depth = screens open on the current tab (+1 when on the Profile tab, so back from Profile returns to Manage). */
 let hd=0,skipPop=0;
@@ -659,7 +658,7 @@ function updProp(id){if(!V('pn'))return alert('Enter property name');const ns=[.
 function prefillTen(){if(!PRE)return;const q=PRE;PRE=null;$('#tp').value=q.p;renderFlat();const f=$('#tf');if(f&&q.f)f.value=q.f;if(typeof chkFlat=='function')chkFlat()}
 const flatList=p=>{try{return JSON.parse(p?.flatNames||'[]')}catch(e){return[]}};
 function renderFlat(){const p=P(V('tp')),fl=flatList(p),occ=n=>db.tenants.some(t=>t.active!='0'&&t.propId==p?.id&&String(t.flat).trim().toLowerCase()==String(n).trim().toLowerCase());
- {const bw=$('#bw'),tb=$('#tb'),mw=$('#mw');if(bw&&tb&&mw){if(p&&p.rentOnly=='1'){tb.value='rent';bw.style.display='none';mw.style.display='none'}else{if(bw.style.display=='none')tb.value='';bw.style.display='';mw.style.display=tb.value=='both'?'':'none'}}}
+ {const bw=$('#bw'),tb=$('#tb'),mw=$('#mw');if(bw&&tb&&mw){if(p&&p.rentOnly=='1'){setTb('rent');bw.style.display='none';mw.style.display='none'}else{if(bw.style.display=='none')setTb('');bw.style.display='';mw.style.display=tb.value=='both'?'':'none'}}}
  $('#fw').innerHTML=fl.length?`<select id=tf required onchange="chkFlat()"><option value="">Select flat</option>${fl.map(n=>`<option value="${E(n)}">${E(n)}${occ(n)?' (occupied)':''}</option>`).join('')}</select>`:'<input id=tf onchange="chkFlat()">'}
 function pickPhoto(i){const f=i.files[0];if(!f)return;const im=new Image;im.onload=()=>{const c=document.createElement('canvas'),k=Math.min(1,900/im.width);c.width=im.width*k;c.height=im.height*k;c.getContext('2d').drawImage(im,0,0,c.width,c.height);photo=c.toDataURL('image/jpeg',.7)};im.src=URL.createObjectURL(f)}
 /* ---- in-app calendar: tapping a date fills the field immediately (no OK button) ---- */
@@ -669,16 +668,22 @@ function pickDate(id){const el=document.getElementById(id);if(!el)return;if(seqM
  const o=document.createElement('div');o.className='mdl';o.style.background='rgba(0,0,0,.6)';
  const draw=()=>{const first=new Date(y,m,1).getDay(),dim=new Date(y,m+1,0).getDate();let c='';for(let i=0;i<first;i++)c+='<span></span>';
   for(let d=1;d<=dim;d++){const iso=y+'-'+pd2(m+1)+'-'+pd2(d);c+=`<button type=button class="dpd${iso==sel0?' sel':iso==today()?' td':''}" data-d="${iso}">${d}</button>`}
-  o.innerHTML=`<div class=mbx style="padding:16px 12px 14px"><div class=dph><button type=button data-n=-12>«</button><button type=button data-n=-1>‹</button><b>${new Date(y,m,1).toLocaleString('hi',{month:'long',year:'numeric'})}</b><button type=button data-n=1>›</button><button type=button data-n=12>»</button></div><div class=dpw>${['रवि','सोम','मंगल','बुध','गुरु','शुक्र','शनि'].map(x=>'<span>'+x+'</span>').join('')}</div><div class=dpg>${c}</div><div class=mbt style="margin-top:12px"><button type=button class="mb mc" data-x=1>रद्द करें</button></div></div>`};
+  o.innerHTML=`<div class=mbx style="padding:16px 12px 14px"><div class=dph><button type=button data-n=-1>‹</button><b>${new Date(y,m,1).toLocaleString('hi',{month:'long',year:'numeric'})}</b><button type=button data-n=1>›</button></div><div class=dpw>${['रवि','सोम','मंगल','बुध','गुरु','शुक्र','शनि'].map(x=>'<span>'+x+'</span>').join('')}</div><div class=dpg>${c}</div><div class=mbt style="margin-top:12px"><button type=button class="mb mo" data-x=1>Cancel</button></div></div>`};
  o.onclick=e=>{const t=e.target.closest('button'),n=t&&t.dataset.n,d=t&&t.dataset.d;
   if(n){const x=new Date(y,m+ +n,1);y=x.getFullYear();m=x.getMonth();draw()}
   else if(d){el.dataset.v=d;el.value=fmtDL(d);o.remove();el.dispatchEvent(new Event('change',{bubbles:true}))}
   else if(e.target==o||(t&&t.dataset.x))o.remove()};
  draw();document.body.appendChild(o)}
+/* billing type chooser with its own heading */
+const BT={both:'किराया + बिजली',rent:'सिर्फ़ किराया'};
+function setTb(v){const t=document.getElementById('tb'),d=document.getElementById('tbd'),mw=document.getElementById('mw');if(!t)return;t.value=v;if(d)d.value=BT[v]||'';if(mw)mw.style.display=v=='both'?'':'none'}
+function pickBill(){if(seqMissing('tbd'))return;const cv=(document.getElementById('tb')||{}).value||'',o=document.createElement('div');o.className='mdl';o.style.background='rgba(0,0,0,.6)';
+ o.innerHTML='<div class=mbx><div class=mtx style="margin-bottom:16px">बिल का प्रकार चुनें</div><div style="display:flex;flex-direction:column;gap:10px">'+Object.keys(BT).map(k=>`<button type=button class="mb ${k==cv?'mo':'mc'}" style="flex:none" data-v="${k}">${BT[k]}</button>`).join('')+'<button type=button class="mb mo" style="flex:none;margin-top:6px" data-x=1>Cancel</button></div></div>';
+ o.onclick=e=>{const t=e.target.closest('button');if(t&&t.dataset.v){setTb(t.dataset.v);o.remove()}else if(e.target==o||(t&&t.dataset.x))o.remove()};document.body.appendChild(o)}
 /* add-tenant form: mandatory fields must be filled in order */
-const SEQ=[['tn','किरायेदार का नाम'],['tp','प्रॉपर्टी'],['tph','फ़ोन नंबर (10 अंक)'],['tf','फ्लैट नंबर'],['te','प्रवेश तिथि'],['tr','मासिक किराया'],['tb','किराया टाइप (बिल का प्रकार)'],['tm','प्रारंभिक मीटर रीडिंग']];
+const SEQ=[['tn','किरायेदार का नाम'],['tp','प्रॉपर्टी'],['tph','फ़ोन नंबर (10 अंक)'],['tf','फ्लैट नंबर'],['te','प्रवेश तिथि'],['tr','मासिक किराया'],['tbd','किराया टाइप (बिल का प्रकार)'],['tm','प्रारंभिक मीटर रीडिंग']];
 function seqMissing(id){for(const[k,l]of SEQ){if(k==id)return null;const e=document.getElementById(k);if(!e||e.offsetParent===null)continue;if(k=='tf'&&e.tagName=='INPUT')continue;
-  const v=k=='te'?(e.dataset.v||''):String(e.value||'').trim();if(k=='tph'?v.replace(/\D/g,'').length!=10:!v)return[k,l]}return null}
+  const v=k=='te'?(e.dataset.v||''):k=='tbd'?String((document.getElementById('tb')||{}).value||''):String(e.value||'').trim();if(k=='tph'?v.replace(/\D/g,'').length!=10:!v)return[k,l]}return null}
 let seqT=0;
 function seqGuard(e){const el=e.target&&e.target.closest&&e.target.closest('input,select');if(!el||!el.id||!SEQ.some(x=>x[0]==el.id)||!document.getElementById('tn'))return;
  const m=seqMissing(el.id);if(!m)return;e.preventDefault();e.stopPropagation();if(el.blur)el.blur();
