@@ -307,7 +307,7 @@ return `<h2 style="margin-bottom:2px">Rent Manager</h2><div style="margin:0 2px 
 <div class="slim two" id=Tile7s><div onclick="go('occ')">🏠 ${oc} फ्लैट भरे हुए</div><i></i><div onclick="go('empty')">🔑 ${em} फ्लैट खाली</div></div>
 ${tl('menu2','listTen','📋','#30b858','Tenants Information','Call and view bills')}${tl('menu1','analytics','📊','#bf5af2','Rent Analytics','Paid vs pending by month')}${tl('menu6','meterRead','🔢','#ff9f0a','मीटर रीडिंग देखें','हर फ्लैट की आखिरी रीडिंग')}${tl('menu3','addTen','👤','#0a84ff','Add tenant','Details, deposit, Aadhar')}${tl('menu5','qrSend','📲','#25d366','QR code भेजें','UPI QR WhatsApp पर भेजें')}`},
 
-meterRead:()=>{const k=x=>String(x).trim().toLowerCase(),d0='2015-01-01',
+meterRead:()=>{const k=x=>String(x).trim().toLowerCase(),d0='2015-04-01',
 ymd=v=>{const x=new Date(v);return isNaN(x)?'':x.getFullYear()+'-'+pd2(x.getMonth()+1)+'-'+pd2(x.getDate())},
 dm=v=>{const x=new Date(String(v)+'T00:00');return isNaN(x)?String(v):pd2(x.getDate())+'-'+pd2(x.getMonth()+1)+'-'+x.getFullYear()},
 dv='<div style="border-top:1px solid rgba(128,128,128,.3);margin:12px 0 0"></div>';
@@ -319,8 +319,8 @@ return {p,fl:names.map(n=>{const ts=db.tenants.filter(t=>t.propId==p.id&&k(t.fla
  return{n,t:ac,ok,rs}}).filter(f=>f.ok)}}).filter(x=>x.fl.length);
 const card=f=>{const l=f.rs[0],hist=f.rs.slice(0,6);
  return `<div class="card cp clk" onclick="togCard(this)"><div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><b class=fl style="font-size:18px">${f.t?E(f.t.name):'Empty Flat'}</b><span style="position:relative;flex:none;width:110px;text-align:center"><b class=fl style="font-size:18px;white-space:nowrap">Flat ${E(f.n)}</b><svg class=cv style="position:absolute;right:0;top:50%;margin-top:-8px" width=16 height=16 viewBox="0 0 16 16" fill=none stroke=currentColor stroke-width=2 stroke-linecap=round stroke-linejoin=round><path d="M3 6l5 5 5-5"/></svg></span></div>
-<div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-top:12px;font-size:15.75px"><span>${fmtDL(l?l.d:d0)}</span><b>${E(l?l.v:'0')}</b></div>
-<div class=xp><div>${dv}<div style="font-weight:900;font-size:15px;margin-top:14px">पिछली 6 मीटर रीडिंग</div>${hist.length?'<div style="display:grid;grid-template-columns:max-content 1fr;column-gap:12px;row-gap:10px;align-items:baseline;margin-top:12px;font-size:15.75px;font-variant-numeric:tabular-nums">'+hist.map(x=>`<span>${dm(x.d)}</span><span style="text-align:right">${E(x.v)}</span>`).join('')+'</div>':'<div class=m style="margin-top:10px">अभी कोई रीडिंग दर्ज नहीं</div>'}</div></div></div>`};
+<div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-top:12px;font-size:15.75px"><span>${fmtDL(l?l.d:d0)}</span><b style="flex:none;width:110px;text-align:center">${E(l?l.v:'0')}</b></div>
+<div class=xp><div>${dv}<div style="font-weight:900;font-size:15px;margin-top:14px">पिछली 6 मीटर रीडिंग</div>${hist.length?'<div style="display:grid;grid-template-columns:1fr 110px;column-gap:12px;row-gap:10px;align-items:baseline;margin-top:12px;font-size:15.75px;font-variant-numeric:tabular-nums">'+hist.map(x=>`<span>${dm(x.d)}</span><span style="text-align:center">${E(x.v)}</span>`).join('')+'</div>':'<div class=m style="margin-top:10px">अभी कोई रीडिंग दर्ज नहीं</div>'}</div></div></div>`};
 return `<h2>Meter Reading</h2>`+(rows.map(x=>`<h3 class=ph>${E(x.p.name)}</h3>${x.fl.map(card).join('')}`).join('')||'<div class=card>कोई फ्लैट नहीं</div>')},
 qrSend:()=>{const q=upiQr(),p=db.profile;return `<h2>QR code भेजें</h2>`+(q?`<div class=card style="text-align:center">${qrSvg(q)}<div class=m style="margin-top:10px">QR स्कैन करके UPI से भुगतान करें</div><div class=m>${E(p.upi)}</div></div><button class=btn style="background:#25d366" onclick="shareQrOnly()">Send on WhatsApp</button>`:'<div class=card>QR के लिए UPI ID प्रोफ़ाइल में ऐड करें</div>')},
 
