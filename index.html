@@ -307,7 +307,7 @@ return `<h2 style="margin-bottom:2px">Rent Manager</h2><div style="margin:0 2px 
 <div class="slim two" id=Tile7s><div onclick="go('occ')">🏠 ${oc} फ्लैट भरे हुए</div><i></i><div onclick="go('empty')">🔑 ${em} फ्लैट खाली</div></div>
 ${tl('menu2','listTen','📋','#30b858','Tenants Information','Call and view bills')}${tl('menu1','analytics','📊','#bf5af2','Rent Analytics','Paid vs pending by month')}${tl('menu6','meterRead','🔢','#ff9f0a','मीटर रीडिंग देखें','हर फ्लैट की आखिरी रीडिंग')}${tl('menu3','addTen','👤','#0a84ff','Add tenant','Details, deposit, Aadhar')}${tl('menu5','qrSend','📲','#25d366','QR code भेजें','UPI QR WhatsApp पर भेजें')}`},
 
-meterRead:()=>{const k=x=>String(x).trim().toLowerCase(),d0='2015-04-01',
+meterRead:()=>{const k=x=>String(x).trim().toLowerCase(),d0='2016-04-01',
 ymd=v=>{const x=new Date(v);return isNaN(x)?'':x.getFullYear()+'-'+pd2(x.getMonth()+1)+'-'+pd2(x.getDate())},
 dm=v=>{const x=new Date(String(v)+'T00:00');return isNaN(x)?String(v):pd2(x.getDate())+'-'+pd2(x.getMonth()+1)+'-'+x.getFullYear()},
 dv='<div style="border-top:1px solid rgba(128,128,128,.3);margin:12px 0 0"></div>';
