@@ -722,9 +722,9 @@ async function delPay(id){const p=db.payments.find(x=>x.id==id);if(!p)return;con
 const askReading=(t,b)=>new Promise(res=>{const o=document.createElement('div');o.className='mdl';
  o.innerHTML='<div class=mbx role=dialog aria-modal=true><div class=mtx style="margin-bottom:14px"></div><input id=mrAmt type=number inputmode=decimal placeholder="नई रीडिंग" style="font-size:22px;text-align:center;margin:0 0 18px"><div class=mbt><button class="mb mc">Cancel</button><button class="mb mo">Save</button></div></div>';
  o.style.background='rgba(0,0,0,.82)';o.style.backdropFilter='blur(8px)';o.style.webkitBackdropFilter='blur(8px)';
- o.querySelector('.mtx').textContent='मीटर रीडिंग अपडेट करें\n\n'+(t.name?t.name+' · ':'')+'Flat '+(t.flat||'')+'\nपिछली रीडिंग: '+b.prev+'\nअभी दर्ज रीडिंग: '+b.cur;const c=v=>{o.remove();res(v)};
+ o.querySelector('.mtx').textContent='मीटर रीडिंग अपडेट करें\n\n'+(t.name?t.name+' · ':'')+'Flat '+(t.flat||'')+'\nअभी दर्ज रीडिंग: '+b.cur;const c=v=>{o.remove();res(v)};
  o.querySelector('.mo').onclick=()=>c(o.querySelector('#mrAmt').value);o.querySelector('.mc').onclick=()=>c(null);
- document.body.appendChild(o);o.querySelector('#mrAmt').focus()});
+ document.body.appendChild(o)});
 async function updMeter(bid){const b=db.bills.find(x=>x.id==bid);if(!b||b.type=='rent'||String(b.cur??'')===''||b.month!=today().slice(0,7))return;
  const t=T(b.tenantId)||{};const v=await askReading(t,b);if(v===null)return;
  const s=String(v).trim();if(s===''||isNaN(Number(s))||Number(s)<0)return alert('सही मीटर रीडिंग डालें');
@@ -805,7 +805,7 @@ function msg(b,sms){const t=T(b.tenantId),p=db.profile,mm=(d=>d.toLocaleString('
  if(N(b.arrear)>0){let ar=[];try{ar=JSON.parse(b.arrNote||'[]')}catch(e){}L.push('','*पिछला बकाया (Arrear):*');ar.forEach(x=>L.push(`${ML(x[0])}: ${R(x[1])}`));if(ar.length!=1)L.push(`कुल पिछला बकाया: ${R(b.arrear)}`)}
  L.push('',`*कुल: ${R(b.total)}*`);
  if(N(b.adv)>0)L.push(`एडवांस कटौती: − ${R(b.adv)}`,`*देय राशि: ${R(payable(b))}*`);
- if(p.upi&&payable(b)>0)L.push('',...(sms?[`UPI आईडी से भुगतान करें: ${p.upi}`]:['लिंक क्लिक कर UPI से पेमेंट करें:',upiUri(b)]));
+ if(p.upi&&payable(b)>0)L.push('',...(sms?[`UPI आईडी से भुगतान करें: ${p.upi}`]:['Note: Kripya payment ke bad payment ka screenshot jarror karen','','लिंक क्लिक कर UPI से पेमेंट करें:',upiUri(b)]));
  if(p.name)L.push('',`– ${p.name}`);const bdt=billDate(b);if(bdt)L.push((p.name?'\u2002 ':'')+bdt);return L.join('\n')}
 function setPaid(x,v){const o=own(x);v=r2(Math.max(0,Math.min(v,o)));x.paid=String(v);x.status=v>=o?'paid':'pending';save('bills',x)}
 function payFull(id){const b=db.bills.find(x=>x.id==id),amt=r2(olderDue(b).reduce((q,x)=>q+dueOf(x),0)+dueOf(b));olderDue(b).forEach(x=>setPaid(x,own(x)));setPaid(b,own(b));if(amt>0)logPay(b.tenantId,amt);cur().pop();dir='bck';draw()}
@@ -814,7 +814,7 @@ function payPick(id){const t=T(id);if(!t)return;
  PT.t=0;go('payTenant',id)}
 async function recvPay(id,full){const dt=DV('rdt'),
  ds=db.bills.filter(b=>b.tenantId==id&&dueOf(b)>0).sort((a,c)=>a.month.localeCompare(c.month)||String(a.date).localeCompare(String(c.date))),bal=r2(ds.reduce((q,x)=>q+dueOf(x),0));let amt,extra=0;
- if(!dt)return alert('पहले "पेमेंट डेट डालें" — भुगतान की तारीख चुनें');
+ if(!dt)return alert('पेमेंट का डेट चुनें');
  if(full){if(!ds.length)return alert('इस किरायेदार का कोई बकाया नहीं');amt=bal;if(!await modal('पूरा किराया '+R(bal)+' मिला?',1,{y:'हाँ',n:'नहीं',dim:1}))return}
  else{const v=await askAmt();if(v===null)return;amt=r2(N(v));
   if(!(amt>0))return alert('सही रकम लिखें');
