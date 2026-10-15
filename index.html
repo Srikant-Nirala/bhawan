@@ -565,7 +565,7 @@ function mkBill(t,type,month,prev,curR){const rate=N(db.profile.rate),units=type
 const askBulk=(todo,extra,skip)=>new Promise(res=>{const o=document.createElement('div');o.className='mdl';
  o.innerHTML='<div class=mbx role=alertdialog aria-modal=true><div class=mtx style="margin-bottom:12px"></div><div class=bl style="max-height:45vh;overflow-y:auto;margin:0 0 18px;border-top:1px solid rgba(128,128,128,.3)"></div><div class=mbt><button class="mb mc">Cancel</button><button class="mb mo">OK</button></div></div>';
  o.style.background='rgba(0,0,0,.82)';o.style.backdropFilter='blur(8px)';o.style.webkitBackdropFilter='blur(8px)';
- o.querySelector('.mtx').textContent='मीटर रीडिंग सही है तो बिल बनाएँ';
+ o.querySelector('.mtx').textContent='मीटर रीडिंग चेक कर लें!';
  const L=o.querySelector('.bl');todo.filter(x=>x[1]!='rent').sort((a,c)=>byFlat(a[0],c[0])).forEach(x=>{const r=document.createElement('div');r.style.cssText='display:flex;justify-content:space-between;gap:10px;padding:10px 4px;border-bottom:1px solid rgba(128,128,128,.3);font-size:17px';
   const a=document.createElement('b');a.textContent='Flat '+(x[0].flat||'-');const b=document.createElement('span');b.textContent=x[1]=='rent'?'सिर्फ़ किराया':x[3];r.append(a,b);L.appendChild(r)});
  const n=[];if(extra)n.push('+ छूटे महीनों के '+extra+' पुराने बिल');if(skip)n.push(skip+' किरायेदार बिना रीडिंग के छूट जाएँगे');
