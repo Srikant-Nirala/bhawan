@@ -567,7 +567,7 @@ const askBulk=(todo,extra,skip)=>new Promise(res=>{const o=document.createElemen
  o.style.background='rgba(0,0,0,.82)';o.style.backdropFilter='blur(8px)';o.style.webkitBackdropFilter='blur(8px)';
  o.querySelector('.mtx').textContent='मीटर रीडिंग चेक कर लें!';
  const L=o.querySelector('.bl');todo.filter(x=>x[1]!='rent').sort((a,c)=>byFlat(a[0],c[0])).forEach(x=>{const r=document.createElement('div');r.style.cssText='display:flex;justify-content:space-between;gap:10px;padding:10px 4px;border-bottom:1px solid rgba(128,128,128,.3);font-size:17px';
-  const a=document.createElement('b');a.textContent='Flat '+(x[0].flat||'-');const b=document.createElement('span');b.textContent=x[1]=='rent'?'सिर्फ़ किराया':x[3];r.append(a,b);L.appendChild(r)});
+  const a=document.createElement('b');a.textContent='Flat '+(x[0].flat||'-');const b=document.createElement('b');b.textContent=x[1]=='rent'?'सिर्फ़ किराया':x[3];r.append(a,b);L.appendChild(r)});
  const n=[];if(extra)n.push('+ छूटे महीनों के '+extra+' पुराने बिल');if(skip)n.push(skip+' किरायेदार बिना रीडिंग के छूट जाएँगे');
  if(n.length){const d=document.createElement('div');d.className='m';d.style.cssText='margin:-8px 0 14px;text-align:center;font-size:14px';d.textContent=n.join(' · ');L.after(d)}
  const c=v=>{o.remove();res(v)};o.querySelector('.mo').onclick=()=>c(true);o.querySelector('.mc').onclick=()=>c(false);
