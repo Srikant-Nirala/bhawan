@@ -136,6 +136,7 @@ html[data-theme=dark] .nm{color:#fff}html[data-theme=dark] .fl{color:#aeaeb2}
 .mtx{font-size:22px;font-weight:700;line-height:1.4;text-align:center;white-space:pre-line;word-break:break-word;margin-bottom:22px;letter-spacing:-.01em}
 .mbt{display:flex;gap:10px}
 .mb{flex:1;padding:15px;border:0;border-radius:14px;font-size:18px;font-weight:700}
+.bki::placeholder{font-weight:400}
 .mb.mo{background:var(--p);color:#fff}.mb.mc{background:var(--bg);color:var(--t)}
 .tf label{font-weight:700;color:var(--t);opacity:.62;font-size:14px}
 .dkr{color:#b3000f;font-weight:800;font-size:16px}
@@ -400,7 +401,10 @@ return `<h2>पुराना बकाया</h2><div class=m style="margin:-6
 
 /* Tile3 list */ notBilled:()=>{const mo=today().slice(0,7),rows=db.props.map(p=>({p,ts:active(p.id).filter(t=>!db.bills.some(b=>b.tenantId==t.id&&b.month==mo)).sort(byFlat)})).filter(x=>x.ts.length),n=rows.reduce((a,x)=>a+x.ts.length,0);
 const head=`<h2>बिल भेजना बाकी</h2>`;
-return head+(rows.map(x=>`<h3 class=ph>${E(x.p.name)}</h3><div class=card>${x.ts.map(t=>{const ty=t.btype||'both';return `<div class=item style="display:grid;grid-template-columns:1fr 150px;align-items:center;gap:6px 10px"><b class=fl>${E(t.name)}</b>${ty=='rent'?`<div class=m>सिर्फ़ किराया · ${R(t.rent)}</div>`:`<div class=m>पिछली रीडिंग ${E(lastRead(t.id)??'')}</div>`}<b class="fl glw">Flat ${E(t.flat)}</b>${ty=='rent'?'<span></span>':`<div style="display:flex;align-items:center;gap:6px;width:150px"><input id=bk_${t.id} type=number inputmode=decimal class="bki sm" placeholder="मीटर रीडिंग डालें" style="flex:1;min-width:0;width:auto;margin:0;padding:9px 8px;font-size:15px"><button type=button class=cam id=cb_${t.id} aria-label="कैमरा" onclick="document.getElementById('cf_${t.id}').click()">📷</button><input type=file id=cf_${t.id} accept="image/*" capture=environment hidden onchange="meterOcr('${t.id}',this)"></div>`}</div>`}).join('')}</div>`).join('')||'<div class=card>सभी का बिल बन चुका 🎉</div>')+(n?`<button class=btn onclick="bulkGen()" style="background:var(--g)">बिल बनाएँ</button>`:'')},
+return head+(rows.map(x=>`<h3 class=ph>${E(x.p.name)}</h3><div class=card>${x.ts.map(t=>{const ty=t.btype||'both';return `<div class=item style="display:grid;grid-template-columns:1fr 150px;align-items:center;gap:6px 10px"><b class=fl>${E(t.name)}</b>${ty=='rent'?`<div class=m>सिर्फ़ किराया · ${R(t.rent)}</div>`:`<div class=m>पिछली रीडिंग ${E(lastRead(t.id)??'')}</div>`}<b class="fl glw">Flat ${E(t.flat)}</b>${ty=='rent'?'<span></span>':`<div style="display:flex;align-items:center;gap:6px;width:150px"><input id=bk_${t.id} type=number inputmode=decimal class="bki sm" placeholder="मीटर रीडिंग डालें" style="font-weight:700;flex:1;min-width:0;width:auto;margin:0;padding:9px 8px;font-size:15px"><button type=button class=cam id=cb_${t.id} aria-label="कैमरा" onclick="document.getElementById('cf_${t.id}').click()">📷</button><input type=file id=cf_${t.id} accept="image/*" capture=environment hidden onchange="meterOcr('${t.id}',this)"></div>`}</div>`}).join('')}</div>`).join('')||'<div class=card>सभी का बिल बन चुका 🎉</div>')+(n?`<button class=btn onclick="bulkGen()" style="background:var(--g)">बिल बनाएँ</button>`:'')},
+
+bulkDone:ids=>{const bs=ids.map(i=>db.bills.find(b=>b.id==i)).filter(Boolean).sort((a,c)=>String(T(a.tenantId)?.propId).localeCompare(String(T(c.tenantId)?.propId))||byFlat(T(a.tenantId),T(c.tenantId)));
+return `<h2>बिल बन गए ✅</h2><div class=m style="margin:-6px 2px 8px">${bs.length} बिल · ${mname(bs[0]?.month||today().slice(0,7))}</div><div class=card>${bs.map(b=>{const t=T(b.tenantId);return `<div class=item>${av(t.name)}<div class=gr><b class=fl>Flat ${E(t.flat)}</b><div class=nm>${E(t.name)}</div></div><button class="badge chip" style="border:0;background:var(--p,#0a84ff);color:#fff" onclick="go('sent','${b.id}')">बिल देखें</button></div>`}).join('')}</div>`},
 
 oldBill:()=>{const mo=today().slice(0,7),rows=db.props.map(p=>({p,ts:active(p.id).sort(byFlat)})).filter(x=>x.ts.length),n=rows.reduce((a,x)=>a+x.ts.length,0);
 const head=`<h2>बैकडेटेड बिल बनाएँ</h2><div class=m style="margin:-6px 2px 8px">${mname(mo)} · ${n} किरायेदार</div>`;
@@ -427,9 +431,6 @@ billForm:([id,type])=>{const t=T(id),prev=lastRead(id);return `<h2>Rent - ${E(t.
 <label>Month</label><input id=bm type=month value="${today().slice(0,7)}" oninput="calc()">
 ${type!='rent'?`<label>Previous reading</label><input id=bp type=number value="${prev}" oninput="calc()"><label>Current reading</label><div style="display:flex;align-items:center;gap:8px;margin:5px 0 14px"><input id=bc type=number inputmode=decimal oninput="calc()" style="flex:1;min-width:0;margin:0"><button type=button class=cam id=cb_${id} aria-label="कैमरा" style="width:50px;height:50px;font-size:24px" onclick="document.getElementById('cf_${id}').click()">📷</button><input type=file id=cf_${id} accept="image/*" capture=environment hidden onchange="meterOcr('${id}',this)"></div>`:''}
 <div id=arr></div></div><div class=card id=sum></div><button class=btn onclick="genBill('${id}','${type}')" style="background:var(--g)">Generate bill</button><script>calc()<\/script>`},
-
-bulkDone:ids=>{const bs=ids.map(i=>db.bills.find(b=>b.id==i)).filter(Boolean).sort((a,c)=>String(T(a.tenantId)?.propId).localeCompare(String(T(c.tenantId)?.propId))||byFlat(T(a.tenantId),T(c.tenantId)));
-return `<h2>बिल बन गए ✅</h2><div class=m style="margin:-6px 2px 8px">${bs.length} बिल · ${mname(bs[0]?.month||today().slice(0,7))}</div><div class=card>${bs.map(b=>{const t=T(b.tenantId);return `<div class=item>${av(t.name)}<div class=gr><b class=fl>Flat ${E(t.flat)}</b><div class=nm>${E(t.name)}</div></div><button class="badge chip" style="border:0;background:var(--p,#0a84ff);color:#fff" onclick="go('sent','${b.id}')">बिल देखें</button></div>`}).join('')}</div>`},
 
 welcome:id=>{const t=T(id);return `<h2>Welcome message</h2><div class=card><pre style="white-space:pre-wrap;font:inherit;margin:0;overflow-wrap:anywhere;word-break:break-word">${E(welcomeMsg(t))}</pre></div>
 <a class=btn style="background:#25d366" target=_blank href="https://wa.me/${wa(t.phone)}?text=${encodeURIComponent(welcomeMsg(t))}">Send on WhatsApp</a>`},
@@ -561,6 +562,16 @@ async function shareQrOnly(){const m=upiQr();if(!m)return alert('Profile मे�
  await alert('QR की फ़ोटो सेव हो गई। अब व्हाट्सऐप खुलेगा, उसमें फ़ोटो जोड़कर भेजें।');window.open('https://wa.me/?text='+encodeURIComponent(tx),'_blank')}
 function mkBill(t,type,month,prev,curR){const rate=N(db.profile.rate),units=type=='rent'?0:Math.max(0,N(curR)-N(prev)),el=r2(units*rate),rent=type=='elec'?0:N(t.rent),ar=arrears(t.id,month),A=r2(ar.reduce((q,x)=>q+x[1],0));
  return{id:uid(),tenantId:t.id,month,type,prev:type=='rent'?'':String(prev),cur:type=='rent'?'':String(curR),units,rate,elec:el,rent,arrear:A,arrNote:JSON.stringify(ar.map(x=>[x[0],x[1]])),total:r2(el+rent+A),paid:'0',status:'pending',date:new Date().toISOString()}}
+const askBulk=(todo,extra,skip)=>new Promise(res=>{const o=document.createElement('div');o.className='mdl';
+ o.innerHTML='<div class=mbx role=alertdialog aria-modal=true><div class=mtx style="margin-bottom:12px"></div><div class=bl style="max-height:45vh;overflow-y:auto;margin:0 0 18px;border-top:1px solid rgba(128,128,128,.3)"></div><div class=mbt><button class="mb mc">Cancel</button><button class="mb mo">OK</button></div></div>';
+ o.style.background='rgba(0,0,0,.82)';o.style.backdropFilter='blur(8px)';o.style.webkitBackdropFilter='blur(8px)';
+ o.querySelector('.mtx').textContent='मीटर रीडिंग सही है तो बिल बनाएँ';
+ const L=o.querySelector('.bl');todo.filter(x=>x[1]!='rent').sort((a,c)=>byFlat(a[0],c[0])).forEach(x=>{const r=document.createElement('div');r.style.cssText='display:flex;justify-content:space-between;gap:10px;padding:10px 4px;border-bottom:1px solid rgba(128,128,128,.3);font-size:17px';
+  const a=document.createElement('b');a.textContent='Flat '+(x[0].flat||'-');const b=document.createElement('span');b.textContent=x[1]=='rent'?'सिर्फ़ किराया':x[3];r.append(a,b);L.appendChild(r)});
+ const n=[];if(extra)n.push('+ छूटे महीनों के '+extra+' पुराने बिल');if(skip)n.push(skip+' किरायेदार बिना रीडिंग के छूट जाएँगे');
+ if(n.length){const d=document.createElement('div');d.className='m';d.style.cssText='margin:-8px 0 14px;text-align:center;font-size:14px';d.textContent=n.join(' · ');L.after(d)}
+ const c=v=>{o.remove();res(v)};o.querySelector('.mo').onclick=()=>c(true);o.querySelector('.mc').onclick=()=>c(false);
+ document.body.appendChild(o)});
 async function bulkGen(){const mo=today().slice(0,7),todo=[],bad=[];let skip=0;
  db.props.forEach(p=>active(p.id).filter(t=>!db.bills.some(b=>b.tenantId==t.id&&b.month==mo)).sort(byFlat).forEach(t=>{const ty=t.btype||'both';
   if(ty=='rent'){todo.push([t,ty,'','']);return}
@@ -570,7 +581,7 @@ async function bulkGen(){const mo=today().slice(0,7),todo=[],bad=[];let skip=0;
  if(!todo.length)return alert('कम से कम एक मीटर रीडिंग डालें');
  if(todo.some(x=>x[1]!='rent')&&!N(db.profile.rate))return alert('पहले Profile में बिजली की दर डालें');
  const extra=todo.reduce((q,x)=>q+missingMonths(x[0],mo).length,0);
- if(!await modal(todo.length+' बिल बनेंगे'+(extra?' (+ छूटे महीनों के '+extra+' पुराने बिल)':'')+(skip?' · '+skip+' किरायेदार बिना रीडिंग के छूट जाएँगे':'')+'। आगे बढ़ें?',1))return;
+ if(!await askBulk(todo,extra,skip))return;
  const bills=[],all=[];
  todo.forEach(x=>{missingMonths(x[0],mo).forEach(m=>{const rd=x[1]=='rent'?'':readAt(x[0].id,m),o=mkBill(x[0],x[1],m,rd,rd);db.bills.push(o);all.push(o)});
   const b=mkBill(x[0],x[1],mo,x[2],x[3]);db.bills.push(b);bills.push(b);all.push(b)});
