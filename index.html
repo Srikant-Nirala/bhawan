@@ -301,7 +301,7 @@ const views={
    Tile2 = "<माह> में किराया पाया" (big tile, right) -> view rcvMonth
    Tile3 = "बिल भेजें"          (row 1, left)       -> view notBilled
    Tile4 = "पेमेंट नोट करें"    (row 1, right)      -> views payRenter / payTenant
-   Tile5 = "पेमेंट देखें"       (row 2, left)       -> view payView
+   Tile5 = "पेमेंट का हिसाब"       (row 2, left)       -> view payView
    Tile6 = "बिल देखें व भेजें"   (row 2, right)      -> view billHist
    menu1..menu4 = Tenants Information, Rent Analytics, Add tenant, Add property */
 menu:()=>{const mo=today().slice(0,7),mn=mname(mo),ok=db.bills.filter(b=>T(b.tenantId)),mb=ok.filter(b=>b.month==mo),act=db.tenants.filter(t=>t.active!='0'),bi=new Set(mb.map(b=>b.tenantId)),
@@ -313,7 +313,7 @@ return `<h2 style="margin-bottom:2px">Rent Manager</h2><div style="margin:0 2px 
 <div class=tap id=Tile2 onclick="go('rcvMonth')"><span>${mn} में किराया पाया</span><b>${R(b3)}</b></div></div>
 <div class="slim${b4>0?' run':' ok'}" id=Tile3s onclick="go('notBilled')"><span>${b4>0?'⚡ '+mn+' माह में '+b4+' किरायेदार का बिल बनाना बाकी':mn+' माह के सब बिल बन गए ✓'}</span></div>
 <div class=duo><button class=tile id=Tile3 onclick="go('notBilled')"><span class=ic style="background:#ff9f0a">⚡</span>बिल बनाएँ</button><button class=tile id=Tile4 onclick="go('payRenter')"><span class=ic style="background:#30b858">💰</span>पेमेंट नोट करें</button></div>
-<div class=duo style="margin-bottom:28px"><button class=tile id=Tile6 onclick="go('billHist')"><span class=ic style="background:#5e5ce6">🧾</span>बिल देखें व भेजें</button><button class=tile id=Tile5 onclick="PV.m=today().slice(0,7);go('payView')"><span class=ic style="background:#0a84ff">👁</span>पेमेंट देखें</button></div>
+<div class=duo style="margin-bottom:28px"><button class=tile id=Tile6 onclick="go('billHist')"><span class=ic style="background:#5e5ce6">🧾</span>बिल देखें व भेजें</button><button class=tile id=Tile5 onclick="PV.m=today().slice(0,7);go('payView')"><span class=ic style="background:#0a84ff">👁</span>पेमेंट का हिसाब</button></div>
 <div class="slim two" id=Tile7s><div onclick="go('occ')">🏠 ${oc} फ्लैट भरे हुए</div><i></i><div onclick="go('empty')">🔑 ${em} फ्लैट खाली</div></div>
 ${tl('menu6','meterRead','🔢','#ff9f0a','मीटर रीडिंग देखें','हर फ्लैट की आखिरी रीडिंग')}${tl('menu1','analytics','📊','#bf5af2','Rent Analytics','Paid vs pending by month')}${tl('menu2','listTen','📋','#30b858','Tenants Information','Call and view bills')}${tl('menu3','addTen','👤','#0a84ff','Add tenant','Details, deposit, Aadhar')}${tl('menu5','qrSend','📲','#25d366','QR code भेजें','UPI QR WhatsApp पर भेजें')}`},
 
