@@ -618,15 +618,16 @@ async function saveReadings(){const mo=today().slice(0,7),s={_ok:1},bad=[],miss=
 function billSummary(mo){const rate=N(db.profile.rate),us=mrUnits(mo),amt=mrAmt(mo,rate);
  return `<h2>बिल बनाएँ</h2>
 ${mrPend(mo).some(t=>(t.btype||'both')!='rent')?'<div class=dkg style="margin:-4px 2px 12px">✅ इस महीने मीटर रीडिंग रिकॉर्ड की जा चुकी है</div>':''}
-<div class=card style="text-align:center;padding:22px 16px"><div style="font-size:20px;font-weight:800">कुल बिजली बकाया = ${R(amt)}</div><div class=m style="margin-top:8px;font-weight:600">बिजली दर: ${R(rate)} प्रति यूनिट</div></div>
+<div class=card style="text-align:center;padding:22px 16px"><div style="font-size:20px;font-weight:800">कुल बिजली बकाया = ${R(amt)}</div><div id=rl class=m style="margin-top:8px;font-weight:600">बिजली दर: ${R(rate)} प्रति यूनिट</div></div>
 <div class=m style="margin:18px 4px 8px;font-weight:700;line-height:1.5">बिजली का रेट चेंज कर बिल बढ़ाएँ या घटाएँ</div>
-<div class=card><div id=cmp></div><label>नई बिजली दर (₹ प्रति यूनिट)</label><input id=nrate type=number step=0.01 inputmode=decimal oninput="liveRate()"></div>
+<div class=card><label>नई बिजली दर (₹ प्रति यूनिट)</label><input id=nrate type=number step=0.01 inputmode=decimal oninput="liveRate()"></div>
 <button class=btn style="background:var(--g)" onclick="confirmBills()">बिल बनाएँ</button>
 ${us.length?`<div class=card style="margin-top:24px">${us.map(x=>`<div class=item><div class=gr><b class=fl>Flat ${E(x.t.flat)}</b><div class=nm>${E(x.t.name)}</div></div><div style="text-align:right"><div class=m>${x.u} यूनिट</div><b>${R(r2(x.u*rate))}</b></div></div>`).join('')}</div>`:''}`}
-function liveRate(){const c=document.getElementById('cmp');if(!c)return;const mo=today().slice(0,7),rate=N(db.profile.rate),nr=N(V('nrate'));
- if(!(nr>0)){c.innerHTML='';return}
- const a=mrAmt(mo,rate),b=mrAmt(mo,nr),d=r2(b-a),ln=(l,v)=>`<div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-top:8px;font-size:16px"><span>${l}</span>${v}</div>`;
- c.innerHTML=`<div style="border-bottom:1px solid var(--b);margin-bottom:14px;padding-bottom:12px">${ln('मौजूदा ('+R(rate)+'/यूनिट)','<b>'+R(a)+'</b>')}${ln('नया ('+R(nr)+'/यूनिट)','<b>'+R(b)+'</b>')}${ln(d>0?'बढ़ेगा':d<0?'घटेगा':'अंतर','<b class="'+(d>0?'dkg':d<0?'dkr':'')+'">'+(d>0?'+ ':d<0?'− ':'')+R(Math.abs(d))+'</b>')}</div>`}
+function liveRate(){const l=document.getElementById('rl');if(!l)return;const mo=today().slice(0,7),rate=N(db.profile.rate),nr=N(V('nrate'));
+ if(!(nr>0)){l.className='m';l.style.cssText='margin-top:8px;font-weight:600';l.textContent='बिजली दर: '+R(rate)+' प्रति यूनिट';return}
+ const a=mrAmt(mo,rate),b=mrAmt(mo,nr);
+ l.className='';l.style.cssText='font-size:20px;font-weight:800;margin-top:8px';
+ l.innerHTML='नई दर से बकाया = <span class="'+(b<a?'pmr':'pmg')+'">'+R(b)+'</span>'}
 /* pencil on the Meter Reading page, for a reading that is noted but whose bill is not made yet */
 async function updNoted(tid){const mo=today().slice(0,7),s=db.mr&&db.mr[mo],t=T(tid);if(!s||!t||s[tid]===undefined)return;
  if(db.bills.some(b=>b.tenantId==tid&&b.month==mo))return;
