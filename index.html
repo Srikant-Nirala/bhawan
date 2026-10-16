@@ -617,12 +617,13 @@ async function saveReadings(){const mo=today().slice(0,7),s={_ok:1},bad=[],miss=
  draw();scrollTo(0,0)}
 function billSummary(mo){const rate=N(db.profile.rate),us=mrUnits(mo),amt=mrAmt(mo,rate);
  return `<h2>बिल बनाएँ</h2>
-${mrPend(mo).some(t=>(t.btype||'both')!='rent')?'<div class=dkg style="margin:-4px 2px 12px">✅ इस महीने मीटर रीडिंग रिकॉर्ड की जा चुकी है</div>':''}
+${mrPend(mo).some(t=>(t.btype||'both')!='rent')?'<div class=dkg style="margin:-4px 2px 12px">इस महीने मीटर रीडिंग रिकॉर्ड की जा चुकी है</div>':''}
 <div class=card style="text-align:center;padding:22px 16px"><div style="font-size:20px;font-weight:800">कुल बिजली बकाया = ${R(amt)}</div><div id=rl class=m style="margin-top:8px;font-weight:600">बिजली दर: ${R(rate)} प्रति यूनिट</div></div>
-<div class=m style="margin:18px 4px 8px;font-weight:700;line-height:1.5">बिजली का रेट चेंज कर बिल बढ़ाएँ या घटाएँ</div>
-<div class=card><label>नई बिजली दर (₹ प्रति यूनिट)</label><input id=nrate type=number step=0.01 inputmode=decimal oninput="liveRate()"></div>
+<div onclick="togRate()" style="margin:18px 4px 8px;display:flex;align-items:center;justify-content:space-between;gap:8px;cursor:pointer;color:var(--m);font-size:14px;font-weight:800;line-height:1.5"><span>बिजली का रेट चेंज कर बिल बढ़ाएँ या घटाएँ</span><span id=rch style="font-size:14px;font-weight:800;transition:transform .2s">⌄</span></div>
+<div id=rbox class=card style="display:none"><label>नई बिजली दर (₹ प्रति यूनिट)</label><input id=nrate type=number step=0.01 inputmode=decimal oninput="liveRate()"></div>
 <button class=btn style="background:var(--g)" onclick="confirmBills()">बिल बनाएँ</button>
-${us.length?`<div class=card style="margin-top:24px">${us.map(x=>`<div class=item><div class=gr><b class=fl>Flat ${E(x.t.flat)}</b><div class=nm>${E(x.t.name)}</div></div><div style="text-align:right"><div class=m>${x.u} यूनिट</div><b>${R(r2(x.u*rate))}</b></div></div>`).join('')}</div>`:''}`}
+${us.length?`<div class=card style="margin-top:24px">${us.map(x=>`<div class=item><div class=gr><b class=fl>Flat ${E(x.t.flat)}</b><div class=nm>${E(x.t.name)}</div></div><div style="text-align:right"><div class=m style="font-weight:800">${x.u} यूनिट</div><b>${R(r2(x.u*rate))}</b></div></div>`).join('')}</div>`:''}`}
+function togRate(){const b=document.getElementById('rbox'),c=document.getElementById('rch');if(!b)return;const o=b.style.display=='none';b.style.display=o?'':'none';if(c)c.style.transform=o?'rotate(180deg)':'';if(o){const i=document.getElementById('nrate');if(i)i.focus()}}
 function liveRate(){const l=document.getElementById('rl');if(!l)return;const mo=today().slice(0,7),rate=N(db.profile.rate),nr=N(V('nrate'));
  if(!(nr>0)){l.className='m';l.style.cssText='margin-top:8px;font-weight:600';l.textContent='बिजली दर: '+R(rate)+' प्रति यूनिट';return}
  const a=mrAmt(mo,rate),b=mrAmt(mo,nr);
@@ -641,7 +642,7 @@ async function confirmBills(){const mo=today().slice(0,7),st=(db.mr&&db.mr[mo])|
  const todo=[];mrPend(mo).forEach(t=>{const ty=t.btype||'both';if(ty=='rent')todo.push([t,ty,'','',mo+'-01']);else todo.push([t,ty,lastRead(t.id),st[t.id],st['d_'+t.id]||nd])});
  const nr=N(V('nrate')),rate=nr>0?nr:N(db.profile.rate);
  if(todo.some(x=>x[1]!='rent')&&!(rate>0))return alert('पहले Profile में बिजली की दर डालें, या नई दर यहाँ डालें');
- if(!await modal('बिजली दर '+R(rate)+' प्रति यूनिट से '+todo.length+' बिल बनेंगे।\nकुल बिजली = '+R(mrAmt(mo,rate))+'\n\nआगे बढ़ें?',1,{y:'हाँ, बिल बनाएँ',n:'Cancel',dim:1}))return;
+ if(!await modal((nr>0?'नई बिजली दर ':'बिजली दर ')+R(rate)+'/यूनिट से सारे बिल बनेंगे।\nकुल बिजली = '+R(mrAmt(mo,rate))+'\n\nआगे बढ़ें?',1,{y:'हाँ, बिल बनाएँ',n:'Cancel',dim:1}))return;
  const bills=[],all=[];
  todo.forEach(x=>{missingMonths(x[0],mo).forEach(m=>{const rd=x[1]=='rent'?'':readAt(x[0].id,m),o=mkBill(x[0],x[1],m,rd,rd,rate,x[1]=='rent'?m+'-01':undefined);db.bills.push(o);all.push(o)});
   const b=mkBill(x[0],x[1],mo,x[2],x[3],rate,x[4]);db.bills.push(b);bills.push(b);all.push(b)});
