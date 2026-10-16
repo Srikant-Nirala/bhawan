@@ -618,17 +618,18 @@ async function saveReadings(){const mo=today().slice(0,7),s={_ok:1},bad=[],miss=
 function billSummary(mo){const rate=N(db.profile.rate),us=mrUnits(mo),amt=mrAmt(mo,rate);
  return `<h2>बिल बनाएँ</h2>
 ${mrPend(mo).some(t=>(t.btype||'both')!='rent')?'<div class=dkg style="margin:-4px 2px 12px">इस महीने मीटर रीडिंग रिकॉर्ड की जा चुकी है</div>':''}
-<div class=card style="text-align:center;padding:40px 16px"><div style="font-size:26px;font-weight:800">कुल बिजली बकाया = ${R(amt)}</div><div id=rl class=m style="margin-top:12px;font-weight:600;font-size:16px">बिजली दर: ${R(rate)} प्रति यूनिट</div></div>
+<div class=card style="text-align:center;padding:40px 16px"><div style="font-size:21px;font-weight:800">कुल बिजली बकाया = ${R(amt)}</div><div id=rl class=m style="margin-top:12px;font-weight:600;font-size:16px">बिजली दर: ${R(rate)} प्रति यूनिट</div></div>
 <div onclick="togRate()" style="margin:22px 4px 10px;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;color:var(--m);font-size:17px;font-weight:800;line-height:1.5;text-align:center"><span>बिजली का रेट चेंज कर बिल बढ़ाएँ या घटाएँ</span><span id=rch style="font-size:17px;font-weight:800;transition:transform .2s">⌄</span></div>
-<div id=rbox class=card style="display:none"><label>नई बिजली दर (₹ प्रति यूनिट)</label><input id=nrate type=number step=0.01 inputmode=decimal oninput="liveRate()" onfocus="kbUp(this)"></div>
-<button class=btn style="background:var(--g);margin-top:36px" onclick="confirmBills()">बिल बनाएँ</button>
+<div id=rbox class=card style="display:none"><label style="text-align:center;display:block">नई बिजली दर (₹ प्रति यूनिट)</label><input id=nrate type=hidden value=""><div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:10px"><button type=button aria-label="घटाएँ" onclick="stepRate(-1)" style="width:44px;height:44px;border-radius:50%;border:0;background:var(--p);color:#fff;font-size:28px;font-weight:600;line-height:1;display:flex;align-items:center;justify-content:center;padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent">−</button><div id=rval style="font-size:24px;font-weight:800;text-align:center;flex:1">₹${N(rate).toFixed(2)}</div><button type=button aria-label="बढ़ाएँ" onclick="stepRate(1)" style="width:44px;height:44px;border-radius:50%;border:0;background:var(--p);color:#fff;font-size:28px;font-weight:600;line-height:1;display:flex;align-items:center;justify-content:center;padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent">+</button></div></div>
+<button class=btn style="background:var(--p);margin-top:36px" onclick="confirmBills()">बिल बनाएँ</button>
 ${us.length?`<div class=card style="margin-top:24px">${us.map(x=>`<div class=item><div class=gr><b class=fl>Flat ${E(x.t.flat)}</b><div class=nm>${E(x.t.name)}</div></div><div style="text-align:right"><div class=m style="font-weight:800">${x.u} यूनिट</div><b>${R(r2(x.u*rate))}</b></div></div>`).join('')}</div>`:''}`}
+function stepRate(d){const mo=today().slice(0,7),base=N(db.profile.rate),i=document.getElementById('nrate'),c=N(i.value)>0?N(i.value):base,n=Math.max(0,Math.round((c+d*0.1)*10)/10),v=document.getElementById('rval');if(v)v.textContent='₹'+n.toFixed(2);i.value=(Math.abs(n-base)<0.0001||!(n>0))?'':String(n);liveRate()}
 function kbUp(el){const f=()=>{const r=el.getBoundingClientRect(),vh=(window.visualViewport?visualViewport.height:innerHeight),t=r.bottom-(vh-12);if(t>0)scrollBy({top:t,behavior:'smooth'})};setTimeout(f,300);setTimeout(f,600)}
 function togRate(){const b=document.getElementById('rbox'),c=document.getElementById('rch');if(!b)return;const o=b.style.display=='none';b.style.display=o?'':'none';if(c)c.style.transform=o?'rotate(180deg)':'';if(o){const i=document.getElementById('nrate');if(i)i.focus()}}
 function liveRate(){const l=document.getElementById('rl');if(!l)return;const mo=today().slice(0,7),rate=N(db.profile.rate),nr=N(V('nrate'));
  if(!(nr>0)){l.className='m';l.style.cssText='margin-top:12px;font-weight:600;font-size:16px';l.textContent='बिजली दर: '+R(rate)+' प्रति यूनिट';return}
  const a=mrAmt(mo,rate),b=mrAmt(mo,nr);
- l.className='';l.style.cssText='font-size:26px;font-weight:800;margin-top:12px';
+ l.className='';l.style.cssText='font-size:21px;font-weight:800;margin-top:12px';
  l.innerHTML='नई दर से बकाया = <span class="'+(b<a?'pmr':'pmg')+'">'+R(b)+'</span>'}
 /* pencil on the Meter Reading page, for a reading that is noted but whose bill is not made yet */
 async function updNoted(tid){const mo=today().slice(0,7),s=db.mr&&db.mr[mo],t=T(tid);if(!s||!t||s[tid]===undefined)return;
@@ -643,7 +644,7 @@ async function confirmBills(){const mo=today().slice(0,7),st=(db.mr&&db.mr[mo])|
  const todo=[];mrPend(mo).forEach(t=>{const ty=t.btype||'both';if(ty=='rent')todo.push([t,ty,'','',mo+'-01']);else todo.push([t,ty,lastRead(t.id),st[t.id],st['d_'+t.id]||nd])});
  const nr=N(V('nrate')),rate=nr>0?nr:N(db.profile.rate);
  if(todo.some(x=>x[1]!='rent')&&!(rate>0))return alert('पहले Profile में बिजली की दर डालें, या नई दर यहाँ डालें');
- if(!await modal((nr>0?'नई बिजली दर ':'बिजली दर ')+R(rate)+'/यूनिट से सारे बिल बनेंगे।\nकुल बिजली = '+R(mrAmt(mo,rate))+'\n\nआगे बढ़ें?',1,{y:'हाँ, बिल बनाएँ',n:'Cancel',dim:1}))return;
+ if(!await modal(R(rate)+'/यूनिट से सारे बिल बनेंगे।\n\nकुल बिजली = '+R(mrAmt(mo,rate))+'\n\nआगे बढ़ें?',1,{y:'हाँ, बिल बनाएँ',n:'Cancel',dim:1}))return;
  const bills=[],all=[];
  todo.forEach(x=>{missingMonths(x[0],mo).forEach(m=>{const rd=x[1]=='rent'?'':readAt(x[0].id,m),o=mkBill(x[0],x[1],m,rd,rd,rate,x[1]=='rent'?m+'-01':undefined);db.bills.push(o);all.push(o)});
   const b=mkBill(x[0],x[1],mo,x[2],x[3],rate,x[4]);db.bills.push(b);bills.push(b);all.push(b)});
