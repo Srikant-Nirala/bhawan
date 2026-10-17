@@ -313,7 +313,7 @@ return `<h2 style="margin-bottom:2px">Rent Manager</h2><div style="margin:0 2px 
 <div class="quad one">
 <div class=tap id=Tile1 onclick="go('totalDue')"><span>कुल किराया बकाया</span><b>${R(b1)}</b></div>
 <div class=tap id=Tile2 onclick="go('rcvMonth')"><span>${mn} में किराया पाया</span><b>${R(b3)}</b></div></div>
-<div class="slim${b4>0?' run':' ok'}" id=Tile3s onclick="go('notBilled')"><span>${b4>0?'⚡ '+mn+' माह में '+b4+' किरायेदार का बिल बनाना बाकी':mn+' माह के सब बिल बन गए ✓'}</span></div>
+<div class="slim${b4>0?' run':' ok'}" id=Tile3s onclick="go('notBilled')"><span>${b4>0?'⚡ '+mn+' माह में '+b4+' किरायेदार का बिल बनाना बाकी':'✓ '+mn+' माह के सब बिल बन गए'}</span></div>
 <div class=duo><button class=tile id=Tile3 onclick="go('notBilled')"><span class=ic style="background:#ff9f0a">⚡</span>बिल बनाएँ</button><button class=tile id=Tile4 onclick="go('payRenter')"><span class=ic style="background:#30b858">💰</span>पेमेंट नोट करें</button></div>
 <div class=duo style="margin-bottom:28px"><button class=tile id=Tile6 onclick="go('billHist')"><span class=ic style="background:#5e5ce6">🧾</span>बिल देखें व भेजें</button><button class=tile id=Tile5 onclick="PV.m=today().slice(0,7);go('payView')"><span class=ic style="background:#0a84ff">👁</span>पेमेंट का हिसाब</button></div>
 <div class="slim two" id=Tile7s><div onclick="go('occ')">🏠 ${oc} फ्लैट भरे हुए</div><i></i><div onclick="go('empty')">🔑 ${em} फ्लैट खाली</div></div>
@@ -1077,7 +1077,7 @@ function pay12(tid,m){let [y,q]=m.split('-').map(Number);q-=11;if(q<1){q+=12;y--
  return '<div style="display:grid;grid-template-columns:max-content 1fr;column-gap:12px;row-gap:10px;align-items:baseline;margin-top:12px;font-size:15.75px;font-variant-numeric:tabular-nums">'+hp.map(x=>{const n=N(x.amount),d=new Date(String(x.pdate)+'T00:00');
  return `<span>${isNaN(d)?E(String(x.pdate)):pd2(d.getDate())+'-'+pd2(d.getMonth()+1)+'-'+d.getFullYear()}</span><span style="text-align:right">${n<0?'− ':''}${R(Math.abs(n))}</span>`}).join('')+'</div>'}
 /* accordion: opening one payment card closes any other */
-function togCard(c){const x=c.querySelector('.xp'),o=x.classList.contains('open');const M=document.getElementById('main');if(M)M.classList.toggle('fxo',!o);document.querySelectorAll('.cp.clk').forEach(e=>{e.classList.remove('ex');const q=e.querySelector('.xp');if(q)q.classList.remove('open')});if(!o){x.classList.add('open');c.classList.add('ex')}}
+function togCard(c){const x=c.querySelector('.xp'),o=x.classList.contains('open');const M=document.getElementById('main');if(M)M.classList.toggle('fxo',!o);document.querySelectorAll('.cp.clk').forEach(e=>{e.classList.remove('ex');const q=e.querySelector('.xp');if(q)q.classList.remove('open')});if(!o){x.classList.add('open');c.classList.add('ex');c.style.scrollMarginBottom='24px';setTimeout(()=>{if(c.classList.contains('ex'))c.scrollIntoView({block:'nearest',behavior:'smooth'})},380)}}
 function togBills(){const x=document.getElementById('xbx'),c=document.getElementById('xch');if(!x)return;x.classList.toggle('open');c.classList.toggle('open')}
 async function saveTenDocs(id){const t=T(id);let ch=0;
  if(docs.some(d=>!String(d.name||'').trim()))return alert('हर डॉक्यूमेंट का नाम लिखना ज़रूरी है');docs.forEach(d=>d.name=d.name.trim());
