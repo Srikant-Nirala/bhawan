@@ -159,7 +159,7 @@ html[data-theme=dark] .btn.lbtn{background:linear-gradient(135deg,#12294a,#0e234
 html[data-theme=dark] .badge.sbig:not(.paid):not(.org):not(.shr){color:#ff6b61}
 .card.ot{background:linear-gradient(135deg,#fff6ea,#ffeacc);color:#c25a00;box-shadow:0 2px 10px rgba(255,149,0,.15)}
 html[data-theme=dark] .card.ot{background:linear-gradient(135deg,#3a2508,#2f1d06);color:#ffa233;box-shadow:none}
-#main h2,#main .mnav,#main h3.ph,#main .card.sm,#main .card.cp{transition:opacity .25s ease,filter .25s ease}#main.fxo .mnav,#main.fxo h3.ph,#main.fxo .card.sm,#main.fxo .card.cp:not(.ex){opacity:.12;filter:grayscale(1)}
+#main h2,#main .mnav,#main h3.ph,#main .card.sm,#main .pms,#main .card.cp{transition:opacity .25s ease,filter .25s ease}#main.fxo .mnav,#main.fxo h3.ph,#main.fxo .card.sm,#main.fxo .pms,#main.fxo .card.cp:not(.ex){opacity:.12;filter:grayscale(1)}
 .xp{display:grid;grid-template-rows:0fr;transition:grid-template-rows .32s ease}.xp.open{grid-template-rows:1fr}.xp>div{min-height:0;overflow:hidden}
 .xh{font-size:16px!important;font-weight:900!important;display:flex;justify-content:space-between;align-items:center;cursor:pointer}
 .xc{display:inline-block;font-size:24px;transition:transform .25s ease}.xc.open{transform:rotate(90deg)}#xc_r,#xc_d,#xc_a{transform:rotate(90deg)}#xc_r.open,#xc_d.open,#xc_a.open{transform:rotate(-90deg)}
@@ -197,12 +197,12 @@ html[data-theme=dark] .slim.run::after{background:#aeaeb2}
 #main>*{transition:opacity .25s ease,filter .25s ease}
 #main.fxo>*:not(h2):not(.bkc):not(.ex):not([ontouchstart]){opacity:.12;filter:grayscale(1)}
 .card.cp.bh{padding-bottom:12px}
-.mnav.tl{background:linear-gradient(135deg,#d4e9ff,#b9dbff);border-radius:20px;padding:10px 14px;margin:6px 0 12px;box-shadow:0 2px 10px rgba(10,132,255,.18),inset 0 1px 0 rgba(255,255,255,.6)}
-.mnav.tl b{color:#0a4fb3;font-size:18px;font-weight:800}
-.mnav.tl button{background:var(--p);color:#fff;-webkit-text-stroke:.7px #fff;box-shadow:0 2px 6px rgba(10,132,255,.35)}
+.mnav.tl{background:linear-gradient(135deg,#2b95ff,#0a6fe0);border-radius:20px;padding:10px 14px;margin:6px 0 12px;box-shadow:0 3px 12px rgba(10,132,255,.35),inset 0 1px 0 rgba(255,255,255,.25)}
+.mnav.tl b{color:#fff;font-size:18px;font-weight:800}
+.mnav.tl button{background:#fff;color:#0a6fe0;-webkit-text-stroke:.7px currentColor;box-shadow:0 2px 6px rgba(0,0,0,.18)}
 .mnav.tl button:disabled{opacity:.35}
-html[data-theme=dark] .mnav.tl{background:linear-gradient(135deg,#12294a,#0e2342);box-shadow:inset 0 1px 0 rgba(255,255,255,.08)}
-html[data-theme=dark] .mnav.tl b{color:#6cb4ff}
+html[data-theme=dark] .mnav.tl{background:linear-gradient(135deg,#0a62d6,#0847a8);box-shadow:inset 0 1px 0 rgba(255,255,255,.12)}html[data-theme=dark] .mnav.tl button{background:rgba(255,255,255,.9);color:#0847a8}
+html[data-theme=dark] .mnav.tl b{color:#fff}
 </style></head><body>
 <div id="lk"><div class="lkb"><div class="lkt" id="lkt"></div><div class="lkd" id="lkd"></div><div class="lke" id="lke"></div><div class="lkp" id="lkp"></div><button id="lkc" style="display:none" onclick="lkCancel()">Cancel</button></div></div>
 <div id="main"></div>
@@ -361,7 +361,7 @@ const rows=db.props.map(p=>({p,ts:db.tenants.filter(t=>t.propId==p.id&&((cm&&t.a
 const ln=(l,v)=>`<div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-top:12px;font-size:15.75px"><span>${l}</span>${v}</div>`;
 const dv='<div style="border-top:1px solid rgba(128,128,128,.3);margin:12px 0 0"></div>';
 const hist=t=>dv+`<div style="font-weight:900;font-size:15px;margin-top:14px">पिछले 12 महीने का पेमेंट डिटेल्स</div>`+pay12(t.id,m);
-return `<h2>पेमेंट डिटेल्स</h2><div ontouchstart="tx=event.touches[0].clientX" ontouchend="swpP(event)" style="min-height:50vh"><div class="mnav tl"><button onclick="shiftPM(-1)">‹</button><b>${mlabel(m)}</b><button onclick="shiftPM(1)" ${m>=today().slice(0,7)?'disabled':''}>›</button></div><div class="card sm" style="margin:18px 0 12px;font-size:16px;font-weight:400;text-align:left">${mname(m)} में मिला = <b class=pmg>${R(tot)}</b>${m==today().slice(0,7)?` - बकाया = <b class=pmr>${R(r2(db.bills.filter(b=>T(b.tenantId)).reduce((a,b)=>a+dueOf(b),0)))}</b>`:''}</div>`+(rows.map(x=>`<h3 class=ph>${E(x.p.name)}</h3>${x.ts.map(t=>{const bs=bOf(t),cur=r2(bs.reduce((q,b)=>q+own(b),0)),
+return `<h2>पेमेंट डिटेल्स</h2><div ontouchstart="tx=event.touches[0].clientX" ontouchend="swpP(event)" style="min-height:50vh"><div class="mnav tl"><button onclick="shiftPM(-1)">‹</button><b>${mlabel(m)}</b><button onclick="shiftPM(1)" ${m>=today().slice(0,7)?'disabled':''}>›</button></div><div class=pms style="margin:18px 2px 12px;font-size:17px;font-weight:800;color:var(--t);text-align:left">${mname(m)} में मिला = <b class=pmg>${R(tot)}</b>${m==today().slice(0,7)?` - बकाया = <b class=pmr>${R(r2(db.bills.filter(b=>T(b.tenantId)).reduce((a,b)=>a+dueOf(b),0)))}</b>`:''}</div>`+(rows.map(x=>`<h3 class=ph>${E(x.p.name)}</h3>${x.ts.map(t=>{const bs=bOf(t),cur=r2(bs.reduce((q,b)=>q+own(b),0)),
  /* carried over from earlier months = everything billed before this month − every payment dated before this month (so an older payment made later also reduces this month's कुल किराया) */
  prev=r2(db.bills.filter(b=>b.tenantId==t.id&&String(b.month)<m).reduce((q,b)=>q+own(b),0)-db.payments.filter(x=>x.tenantId==t.id&&String(x.pdate).slice(0,7)<m).reduce((q,x)=>q+N(x.amount),0)),
  kk=Math.max(0,r2(cur+prev)),
