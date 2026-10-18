@@ -197,7 +197,12 @@ html[data-theme=dark] .slim.run::after{background:#aeaeb2}
 #main>*{transition:opacity .25s ease,filter .25s ease}
 #main.fxo>*:not(h2):not(.bkc):not(.ex):not([ontouchstart]){opacity:.12;filter:grayscale(1)}
 .card.cp.bh{padding-bottom:12px}
-.mnav.tl{background:rgba(120,120,128,.22);border-radius:16px;padding:10px 14px;margin:6px 0 12px}
+.mnav.tl{background:linear-gradient(135deg,#d4e9ff,#b9dbff);border-radius:20px;padding:10px 14px;margin:6px 0 12px;box-shadow:0 2px 10px rgba(10,132,255,.18),inset 0 1px 0 rgba(255,255,255,.6)}
+.mnav.tl b{color:#0a4fb3;font-size:18px;font-weight:800}
+.mnav.tl button{background:var(--p);color:#fff;-webkit-text-stroke:.7px #fff;box-shadow:0 2px 6px rgba(10,132,255,.35)}
+.mnav.tl button:disabled{opacity:.35}
+html[data-theme=dark] .mnav.tl{background:linear-gradient(135deg,#12294a,#0e2342);box-shadow:inset 0 1px 0 rgba(255,255,255,.08)}
+html[data-theme=dark] .mnav.tl b{color:#6cb4ff}
 </style></head><body>
 <div id="lk"><div class="lkb"><div class="lkt" id="lkt"></div><div class="lkd" id="lkd"></div><div class="lke" id="lke"></div><div class="lkp" id="lkp"></div><button id="lkc" style="display:none" onclick="lkCancel()">Cancel</button></div></div>
 <div id="main"></div>
