@@ -405,7 +405,7 @@ return `<h2>कुल किराया बकाया</h2>`+(rows.map(x=>`<h3
 /* Tile2 list: payments received this month, per tenant */ rcvMonth:()=>{const m=today().slice(0,7),ps=db.payments.filter(x=>T(x.tenantId)&&String(x.pdate).slice(0,7)==m),tot=r2(ps.reduce((q,x)=>q+N(x.amount),0));
 const rows=db.props.map(p=>({p,ts:db.tenants.filter(t=>t.propId==p.id&&ps.some(x=>x.tenantId==t.id)).sort(byFlat)})).filter(x=>x.ts.length);
 return `<h2>${mname(m)} में किराया पाया</h2>`+(rows.map(x=>`<h3 class=ph>${E(x.p.name)}</h3><div class=card>${x.ts.map(t=>{const es=ps.filter(e=>e.tenantId==t.id).sort((u,v)=>String(u.pdate).localeCompare(String(v.pdate))),sum=r2(es.reduce((q,e)=>q+N(e.amount),0));
-return `<div class=item>${av(t.name)}<div class=gr><b class=fl>Flat ${E(t.flat)}</b><div class=nm>${E(t.name)}</div>${es.map(e=>`<div class=m>${fmtDL(e.pdate)} · ${N(e.amount)<0?'− ':''}${R(Math.abs(N(e.amount)))}${N(e.amount)<0?' (रद्द)':''}</div>`).join('')}</div><b style="color:#1b8a3d">${R(sum)}</b></div>`}).join('')}</div>`).join('')||'<div class=card><span class=m>इस महीने कोई भुगतान दर्ज नहीं</span></div>')},
+return `<div class=item onclick="PT.t=1;go('payTenant','${t.id}')">${av(t.name)}<div class=gr><b class=fl>Flat ${E(t.flat)}</b><div class=nm>${E(t.name)}</div>${es.map(e=>`<div class=m>${fmtDL(e.pdate)} · ${N(e.amount)<0?'− ':''}${R(Math.abs(N(e.amount)))}${N(e.amount)<0?' (रद्द)':''}</div>`).join('')}</div><b style="color:#1b8a3d">${R(sum)}</b></div>`}).join('')}</div>`).join('')||'<div class=card><span class=m>इस महीने कोई भुगतान दर्ज नहीं</span></div>')},
 
 /* (old Tile1 list, no longer on home) */ monthBills:(mode)=>{const all=mode=='all',mo=today().slice(0,7),mn=mname(mo),rows=db.props.map(p=>({p,ts:db.tenants.filter(t=>t.propId==p.id&&(t.active!='0'||db.bills.some(b=>b.tenantId==t.id&&b.month==mo))).sort(byFlat)})).filter(x=>x.ts.length);let tot=0,cnt=0;
 const cell='display:flex;flex-direction:column;align-items:center;gap:6px;width:104px';
@@ -971,7 +971,7 @@ async function recvPay(id,full){const dt=DV('rdt'),
   if(amt>bal){extra=r2(amt-bal);if(!await modal('रकम बकाया ('+R(bal)+') से '+R(extra)+' ज़्यादा है।\n\n'+R(extra)+' एडवांस के रूप में सेव होगा और अगले बिल में कट जाएगा।\n\nआगे बढ़ें?',1,{y:'हाँ, सेव करें',n:'Cancel',dim:1}))return}}
  let rem=amt;for(const x of ds){if(rem<=0)break;const a=Math.min(dueOf(x),rem);setPaid(x,paidAmt(x)+a);rem=r2(rem-a)}
  if(extra>0){const t=T(id);t.advance=String(r2(N(t.advance)+extra));save('tenants',t)}
- save('payments',{id:uid(),tenantId:id,amount:String(amt),pdate:dt,note:extra>0?'एडवांस '+R(extra)+' सहित':''});PT.t=1;draw();alert(extra>0?'भुगतान दर्ज हो गया ✅\nएडवांस '+R(extra)+' सेव हो गया':'भुगतान दर्ज हो गया ✅')}
+ save('payments',{id:uid(),tenantId:id,amount:String(amt),pdate:dt,note:extra>0?'एडवांस '+R(extra)+' सहित':''});{const q=cur();if(q.length>1&&q[q.length-2][0]=='payRenter'){PR.t=0;q.pop();dir='bck';draw()}else{PT.t=1;draw()}}alert(extra>0?'भुगतान दर्ज हो गया ✅\nएडवांस '+R(extra)+' सेव हो गया':'भुगतान दर्ज हो गया ✅')}
 /* advance paid earlier is taken off the next bill(s): oldest dues first. The cash was already logged as a payment, so nothing is logged again. */
 function applyAdv(tid,nb){const t=T(tid);let adv=r2(N(t&&t.advance));if(adv<=0)return;let used=0;
  const ds=db.bills.filter(b=>b.tenantId==tid&&dueOf(b)>0).sort((a,c)=>a.month.localeCompare(c.month)||String(a.date).localeCompare(String(c.date)));
