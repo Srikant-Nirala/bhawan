@@ -598,7 +598,7 @@ async function bulkGen(){const mo=today().slice(0,7),todo=[],bad=[];let skip=0;
  db.props.forEach(p=>active(p.id).filter(t=>!db.bills.some(b=>b.tenantId==t.id&&b.month==mo)).sort(byFlat).forEach(t=>{const ty=t.btype||'both';
   if(ty=='rent'){todo.push([t,ty,'','']);return}
   const el=document.getElementById('bk_'+t.id),v=el?el.value.replace(/-/g,'').trim():'';if(v===''){skip++;return}
-  const pv=lastRead(t.id);if(N(v)<N(pv))bad.push('Flat '+t.flat+' · '+t.name);else todo.push([t,ty,pv,v])}));
+  const pv=lastRead(t.id);if(N(v)<N(pv))bad.push('Flat '+t.flat);else todo.push([t,ty,pv,v])}));
  if(bad.length)return alert('इनकी रीडिंग पिछली रीडिंग से कम है:\n'+bad.join('\n'));
  if(!todo.length)return alert('कम से कम एक मीटर रीडिंग डालें');
  if(todo.some(x=>x[1]!='rent')&&!N(db.profile.rate))return alert('पहले Profile में बिजली की दर डालें');
@@ -619,8 +619,8 @@ mrAmt=(mo,rate)=>r2(mrUnits(mo).reduce((q,x)=>q+r2(x.u*rate),0));
 async function saveReadings(){const mo=today().slice(0,7),s={_ok:1},bad=[],miss=[];
  mrPend(mo).forEach(t=>{if((t.btype||'both')=='rent')return;const el=document.getElementById('bk_'+t.id),v=el?el.value.replace(/-/g,'').trim():'',lb='Flat '+t.flat+' · '+t.name;
   if(v===''||isNaN(Number(v))){miss.push(lb);return}
-  if(N(v)<N(lastRead(t.id)))bad.push(lb);else{s[t.id]=v;s['d_'+t.id]=today()}});
- if(miss.length)return alert('सभी फ्लैट की मीटर रीडिंग डालना ज़रूरी है। ये बाकी हैं:\n'+miss.join('\n'));
+  if(N(v)<N(lastRead(t.id)))bad.push('Flat '+t.flat);else{s[t.id]=v;s['d_'+t.id]=today()}});
+ if(miss.length)return alert('इनका मीटर रीडिंग डालें:\n'+miss.join('\n'));
  if(bad.length)return alert('इनकी रीडिंग पिछली रीडिंग से कम है:\n'+bad.join('\n'));
  db.mr[mo]=s;persist();
  /* also save to the Google Sheet (readings tab); a failed save is queued and retried automatically */
@@ -648,8 +648,8 @@ async function askBills(){const mo=today().slice(0,7),s={_ok:1},bad=[],miss=[],t
  mrPend(mo).forEach(t=>{const ty=t.btype||'both';if(ty=='rent'){todo.push([t,ty,'','',mo+'-01']);return}
   const el=document.getElementById('bk_'+t.id),v=el?el.value.replace(/-/g,'').trim():'';
   if(v===''||isNaN(Number(v))){miss.push({flat:t.flat,txt:t.name});return}
-  if(N(v)<N(lastRead(t.id)))bad.push({flat:t.flat,txt:t.name+' · पिछली '+fmtR(lastRead(t.id))});else{s[t.id]=v;s['d_'+t.id]=today();todo.push([t,ty,lastRead(t.id),v,today()])}});
- if(miss.length)return listDlg('इन फ्लैट की मीटर रीडिंग डालनी बाकी है:',miss);
+  if(N(v)<N(lastRead(t.id)))bad.push({flat:t.flat,txt:'पिछली रीडिंग '+fmtR(lastRead(t.id))});else{s[t.id]=v;s['d_'+t.id]=today();todo.push([t,ty,lastRead(t.id),v,today()])}});
+ if(miss.length)return listDlg('इनका मीटर रीडिंग डालें:',miss);
  if(bad.length)return listDlg('इनकी रीडिंग पिछली रीडिंग से कम है:',bad);
  const rate=N(db.profile.rate);
  if(todo.some(x=>x[1]!='rent')&&!(rate>0))return alert('पहले Profile में बिजली की दर डालें');
@@ -945,7 +945,7 @@ function genBill(id,type){if(db.bills.some(b=>b.tenantId==id&&b.month==V('bm')))
 function msg(b,sms){const t=T(b.tenantId),p=db.profile,mm=(d=>d.toLocaleString('hi',{month:'long'})+'-'+d.getFullYear())(new Date(b.month+'-01T00:00')),
  L=[`Hello ${String(t.name).trim().split(/\s+/)[0]} जी, नमस्कार!`,'',`आपका ${mm} का बिल।`,'',`फ्लैट संख्या: ${t.flat||'-'}`,''];
  if(b.type!='elec')L.push(`किराया = ${R(b.rent)}`);
- if(b.type!='rent')L.push(`बिजली बिल = ${R(b.elec)}`,'',`( रीडिंग: ${b.prev} → ${b.cur} = ${b.units} Unit × ${R(b.rate)} = ${R(b.elec)} )`);
+ if(b.type!='rent')L.push(`बिजली बिल = ${R(b.elec)}`,'',`(रीडिंग: ${b.prev} → ${b.cur} = ${b.units} Unit × ${R(b.rate)} = ${R(b.elec)})`);
  if(N(b.arrear)>0){let ar=[];try{ar=JSON.parse(b.arrNote||'[]')}catch(e){}L.push('','*पिछला बकाया (Arrear):*');ar.forEach(x=>L.push(`${ML(x[0])}: ${R(x[1])}`));if(ar.length!=1)L.push(`कुल पिछला बकाया: ${R(b.arrear)}`)}
  L.push('',`*कुल: ${R(b.total)}*`);
  if(N(b.adv)>0)L.push(`एडवांस कटौती: − ${R(b.adv)}`,`*देय राशि: ${R(payable(b))}*`);
