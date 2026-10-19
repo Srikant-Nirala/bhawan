@@ -439,15 +439,16 @@ return `<div class="card cp clk" onclick="togCard(this)"><div style="display:fle
   hist=dv+`<div style="font-weight:900;font-size:15px;margin-top:14px">पिछले 12 महीने का पेमेंट डिटेल्स</div>`+pay12(t.id,mm);
   return `<div class="card cp clk" onclick="togCard(this)">${hd}${sr}<div class=xp><div>${bs.length?dv:''}${body}${hist}</div></div></div>`},
  tb=(on,c,tx,i)=>`<button class="${on?'on':''}" style="font-weight:700;${on?`background:${c.b};color:#fff`:`color:${c.t}`}" onclick="PR.t=${i};draw()">${tx}</button>`,
- tabs=`<div class="seg big" style="margin-top:22px">${tb(!pr.t,{b:'#e8590c',t:'#e8590c'},'बकाया',0)}${tb(pr.t,{b:'#30b858',t:'#1b8a3d'},'चुकाया',1)}</div>`,
- list=pr.t?act.filter(t=>tdue(t)<=0).map(ck).join('')||'<div class=card><span class=m>अभी कोई नहीं</span></div>':act.filter(t=>tdue(t)>0).map(bk).join('')||'<div class=card><span class=m>कोई पेमेंट बाकी नहीं 🎉</span></div>';
-const lab=pr.t?`${mname(m)} में कुल पाया = <span style="color:#1b8a3d">${R(r2(ps.reduce((q,x)=>q+N(x.amount),0)))}</span>`:`कुल किराया बकाया = <span style="color:#e8590c">${R(r2(db.bills.filter(b=>T(b.tenantId)).reduce((q,b)=>q+dueOf(b),0)))}</span>`;return `<h2>${pr.t?'किराया चुकाया':'पेमेंट नोट करें'}</h2>${tabs}<div style="font-size:17px;font-weight:800;text-align:left;margin:22px 19px 20px;color:var(--t)">${lab}</div>${list}`},
+ tabs=`<div class="seg big" style="margin-top:22px">${tb(!pr.t,{b:'#e8590c',t:'#e8590c'},'बकाया',0)}${tb(pr.t,{b:'#30b858',t:'#1b8a3d'},'हिसाब किताब',1)}</div>`,
+ /* बकाया tab: every tenant; those with dues first (tap -> note payment), cleared tenants at the bottom ("<माह> तक चुकाया", tap -> expand). हिसाब किताब tab: every tenant. */
+ list=pr.t?act.map(ck).join('')||'<div class=card><span class=m>कोई किरायेदार नहीं</span></div>':(act.filter(t=>tdue(t)>0).map(bk).join('')+act.filter(t=>tdue(t)<=0).map(ck).join(''))||'<div class=card><span class=m>कोई किरायेदार नहीं</span></div>';
+const lab=pr.t?`${mname(m)} में कुल पाया = <span style="color:#1b8a3d">${R(r2(ps.reduce((q,x)=>q+N(x.amount),0)))}</span>`:`कुल किराया बकाया = <span style="color:#e8590c">${R(r2(db.bills.filter(b=>T(b.tenantId)).reduce((q,b)=>q+dueOf(b),0)))}</span>`;return `<h2>${pr.t?'किराया का हिसाब':'पेमेंट नोट करें'}</h2>${tabs}<div style="font-size:17px;font-weight:800;text-align:left;margin:22px 19px 20px;color:var(--t)">${lab}</div>${list}`},
 payTenant:id=>{const t=T(id)||{},ps=db.payments.filter(x=>x.tenantId==id).sort((p,q)=>String(q.pdate).localeCompare(String(p.pdate))||String(q.id).localeCompare(String(p.id)));
-const hd=`<h2>${E(t.name)}</h2><div class=m style="margin:-6px 2px 8px">${E(P(t.propId)?.name)} · Flat ${E(t.flat)}</div><div class="seg big"><button class="${PT.t?'':'on'}" onclick="PT.t=0;draw()">पेमेंट नोट करें</button><button class="${PT.t?'on':''}" onclick="PT.t=1;draw()">पेमेंट हिस्ट्री</button></div>`;
+const hd=`<h2>${E(t.name)}</h2><div class=m style="margin:-6px 2px 8px;padding-left:54px;font-size:16px">${E(P(t.propId)?.name)} · Flat ${E(t.flat)}</div>`+(PT.t?'':`<div class="seg big"><button onclick="PT.t=1;draw()">पेमेंट हिस्ट्री</button></div>`);
 if(PT.t)return hd+(ps.map(x=>{const n=N(x.amount);return `<div class="card payc" data-pid="${E(x.id)}"><div class=item style="border-bottom:0;padding:0"><div class=gr><b>${fmtDL(x.pdate)}</b>${x.note?`<div class=m>${E(x.note)}</div>`:''}</div><b style="color:${n<0?'var(--r)':'#1b8a3d'}">${n<0?'− ':''}${R(Math.abs(n))}</b></div></div>`}).join('')||'<div class=card><span class=m>अभी कोई भुगतान दर्ज नहीं</span></div>');
 const bs=tbills(id).slice(0,12),due=r2(db.bills.filter(b=>b.tenantId==id).reduce((q,b)=>q+dueOf(b),0));const dl=db.bills.filter(b=>b.tenantId==id&&dueOf(b)>0).sort((p,q)=>String(p.month).localeCompare(String(q.month))||String(p.date).localeCompare(String(q.date)));
-return hd+`<div class="card ot${dl.length?' tap':''}" style="text-align:center;margin:28px 0 20px"${dl.length?' onclick="togDue()"':''}><div style="font-size:18.7px;font-weight:800;position:relative;display:flex;justify-content:center;align-items:center">कुल बकाया = ${R(due)}${dl.length?'<span class=xc id=xc_d style="font-size:22px;position:absolute;right:4px;top:50%;translate:0 -50%;line-height:1">›</span>':''}</div>${dl.length?`<div class=xp id=xp_d><div><div style="border-top:1px solid rgba(194,90,0,.3);margin-top:14px;padding-top:6px;text-align:left">${dl.map(x=>`<div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-top:10px;font-size:16px;font-weight:700"><span>${ML(x.month)}</span><span>${R(dueOf(x))}</span></div>`).join('')}</div></div></div>`:''}</div>${N(t.advance)>0?`<div class=card style="text-align:center;margin:-4px 0 20px;padding:12px"><b class=dkg style="font-size:17px">एडवांस = ${R(t.advance)}</b></div>`:''}<div class=card><input id=rdt class=dp readonly placeholder="पेमेंट डेट डालें *" value="" data-v="" onclick="pickDate('rdt')"><div style="display:flex;gap:10px;margin:14px 0 0"><button class=btn style="flex:1;margin:0;padding:15px 6px;font-size:16px;background:var(--p)" onclick="recvPay('${id}')">पेमेंट रकम डालें</button><button class=btn style="flex:1;margin:0;padding:15px 6px;font-size:16px;background:var(--g)" onclick="recvPay('${id}',1)">पूरा पेमेंट किया</button></div></div>
-<div class="card clk" onclick="togX('r')" style="margin-top:32px;padding:22px 20px"><div style="font-size:16px;font-weight:800;display:flex;justify-content:space-between;align-items:center">पिछले 12 महीने का पेमेंट डिटेल्स देखें<span class=xc id=xc_r style="font-size:22px">›</span></div><div class=xp id=xp_r><div><div style="border-top:1px solid rgba(128,128,128,.3);margin-top:14px">${pay12(id,today().slice(0,7))}</div></div></div></div>`},
+return hd+`<div class="card ot${dl.length?' tap':''}" style="text-align:center;margin:28px 0 20px"${dl.length?' onclick="togDue()"':''}><div style="font-size:18.7px;font-weight:800;position:relative;display:flex;justify-content:center;align-items:center">कुल बकाया = ${R(due)}${dl.length?'<span class="xc open" id=xc_d style="font-size:22px;position:absolute;right:4px;top:50%;translate:0 -50%;line-height:1">›</span>':''}</div>${dl.length?`<div class="xp open" id=xp_d><div><div style="border-top:1px solid rgba(194,90,0,.3);margin-top:14px;padding-top:6px;text-align:left">${dl.map(x=>`<div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-top:10px;font-size:16px;font-weight:700"><span>${ML(x.month)}</span><span>${R(dueOf(x))}</span></div>`).join('')}</div></div></div>`:''}</div>${N(t.advance)>0?`<div class=card style="text-align:center;margin:-4px 0 20px;padding:12px"><b class=dkg style="font-size:17px">एडवांस = ${R(t.advance)}</b></div>`:''}<div class=card><div style="display:flex;align-items:center;gap:10px"><input id=rdt class=dp readonly placeholder="पेमेंट डेट डालें *" value="" data-v="" onclick="pickDate('rdt')" style="flex:0 0 42%;width:42%;min-width:0;margin:0;padding:15px 10px;font-size:15px"><button class=btn style="flex:1;margin:0;padding:15px 6px;font-size:16px;background:var(--g)" onclick="recvPay('${id}',1)">पेमेंट नोट करें</button></div></div>
+<div class="card clk" onclick="togX('r')" style="margin-top:32px;padding:22px 20px"><div style="font-size:16px;font-weight:800;display:flex;justify-content:space-between;align-items:center">पिछले 12 महीने का पेमेंट डिटेल्स देखें<span class=xc id=xc_r style="font-size:22px">›</span></div><div class=xp id=xp_r><div><div style="border-top:1px solid rgba(128,128,128,.3);margin-top:14px">${pay12(id,today().slice(0,7))}</div></div></div></div><button class=btn style="margin:28px 0 12px" onclick="billReceipt('${id}')">बिल रसीद देखें व भेजें</button>`},
 
 /* Tile6 */ billHist:()=>`<h2>बिल देखें व भेजें</h2>${histFlat(1)}`,
 
@@ -701,6 +702,10 @@ const listDlg=(title,rows)=>new Promise(res=>{const o=document.createElement('di
  rows.forEach(x=>{const r=document.createElement('div');r.style.cssText='display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:10px 4px;border-bottom:1px solid rgba(128,128,128,.3);font-size:16px';const a=document.createElement('b');a.textContent='Flat '+(x.flat||'-');const b=document.createElement('span');b.style.cssText='text-align:right;min-width:0;word-break:break-word';b.textContent=x.txt;r.append(a,b);L.appendChild(r)});
  o.querySelector('.mo').onclick=()=>{o.remove();res(true)};document.body.appendChild(o);o.querySelector('.mo').focus()});
 const mrBilled=mo=>!mrPend(mo).some(t=>(t.btype||'both')!='rent')&&db.bills.some(b=>b.month==mo&&b.type!='rent'&&T(b.tenantId));
+/* payment page, bottom button: open this month's generated bill (receipt) or explain that it is not made yet */
+async function billReceipt(id){const t=T(id);if(!t)return;const m=today().slice(0,7),b=db.bills.find(x=>x.tenantId==id&&x.month==m);
+ if(!b)return modal(String(t.name).trim().split(/\s+/)[0]+' का '+mname(m)+' का बिल अभी नहीं बना, रसीद देखने या भेजने के लिए पहले बिल बनाएँ।',0);
+ go('sent',b.id)}
 async function noBill(id){const t=T(id);await modal(String(t.name).trim().split(/\s+/)[0]+' का बिल नहीं बना है\nकृपया पहले बिल बनाएँ!',0);NB.t=0;go('notBilled')}
 async function askBills(){const mo=today().slice(0,7),s={_ok:1},bad=[],miss=[],todo=[];
  mrPend(mo).forEach(t=>{const ty=t.btype||'both';if(ty=='rent'){todo.push([t,ty,'','',mo+'-01']);return}
@@ -1020,8 +1025,9 @@ function payPick(id){const t=T(id);if(!t)return;
 async function recvPay(id,full){const dt=DV('rdt'),
  ds=db.bills.filter(b=>b.tenantId==id&&dueOf(b)>0).sort((a,c)=>a.month.localeCompare(c.month)||String(a.date).localeCompare(String(c.date))),bal=r2(ds.reduce((q,x)=>q+dueOf(x),0));let amt,extra=0;
  if(!dt)return alert('पेमेंट का डेट चुनें');
- if(full){if(!ds.length)return alert('इस किरायेदार का कोई बकाया नहीं');amt=bal;if(!await modal('पूरा किराया '+R(bal)+' मिला?',1,{y:'हाँ',n:'नहीं',dim:1}))return}
- else{const v=await askAmt();if(v===null)return;amt=r2(N(v));
+ /* "पेमेंट नोट करें": first ask "पूरा किराया मिला?" (हाँ left, नहीं right). हाँ = full due; नहीं = ask for the amount received. */
+ if(full&&ds.length&&await modal('पूरा किराया '+R(bal)+' मिला?',1,{y:'हाँ',n:'नहीं',dim:1,sw:1}))amt=bal;
+ else{const v=await askAmt({t:'पेमेंट की रकम डालें!',y:'पेमेंट सेव करें'});if(v===null)return;amt=r2(N(v));
   if(!(amt>0))return alert('सही रकम लिखें');
   if(amt>bal){extra=r2(amt-bal);if(!await modal('रकम बकाया ('+R(bal)+') से '+R(extra)+' ज़्यादा है।\n\n'+R(extra)+' एडवांस के रूप में सेव होगा और अगले बिल में कट जाएगा।\n\nआगे बढ़ें?',1,{y:'हाँ, सेव करें',n:'Cancel',dim:1}))return}}
  let rem=amt;for(const x of ds){if(rem<=0)break;const a=Math.min(dueOf(x),rem);setPaid(x,paidAmt(x)+a);rem=r2(rem-a)}
@@ -1196,7 +1202,7 @@ function pay12(tid,m){let [y,q]=m.split('-').map(Number);q-=11;if(q<1){q+=12;y--
  return `<span>${isNaN(d)?E(String(x.pdate)):pd2(d.getDate())+'-'+pd2(d.getMonth()+1)+'-'+d.getFullYear()}</span><span style="text-align:right">${n<0?'− ':''}${R(Math.abs(n))}</span>`}).join('')+'</div>'}
 /* accordion: opening one payment card closes any other */
 /* while any collapsible card is open, nothing outside it can be tapped; the Back button (and phone back) only closes it */
-const lockPage=()=>{const q=cur(),v=q.length?q[q.length-1][0]:'';return v=='payView'||(v=='payRenter'&&PR.t==1)||(v=='notBilled'&&(NB.t==1||mrBilled(today().slice(0,7))))};
+const lockPage=()=>{const q=cur(),v=q.length?q[q.length-1][0]:'';return v=='payView'||v=='payRenter'||(v=='notBilled'&&(NB.t==1||mrBilled(today().slice(0,7))))};
 function colRoots(){const r=[];if(!lockPage())return r;document.querySelectorAll('#main .xp.open').forEach(x=>{if(x.id=='apx'){r.push(x);const b=document.getElementById('apb');if(b)r.push(b)}else r.push(x.closest('.card')||x)});
  document.querySelectorAll('#rbox').forEach(x=>{if(x.dataset.o=='1'){r.push(x.closest('.card'));const k=document.getElementById('ka');if(k)r.push(k.closest('.card'))}});return r}
 function collapseAll(){let any=false;const M=document.getElementById('main');
@@ -1261,17 +1267,18 @@ new MutationObserver(ms=>ms.forEach(m=>m.addedNodes.forEach(trNode))).observe(do
 const offB=()=>{const b=document.getElementById('offb');if(b)b.style.display=offline()?'block':'none'};
 addEventListener('offline',offB);addEventListener('online',()=>{offB();sync()});offB(); /* when internet returns the phone only READS the latest data from Google; nothing is ever pushed later */
 const modal=(msg,ask,op)=>new Promise(res=>{const o=document.createElement('div');o.className='mdl';op=op||{};
- o.innerHTML='<div class=mbx role=alertdialog aria-modal=true><div class=mtx></div><div class=mbt>'+(ask?'<button class="mb mc">'+(op.n||'Cancel')+'</button>':'')+'<button class="mb mo">'+(op.y||'OK')+'</button></div></div>';
+ {const bn=ask?'<button class="mb mc">'+(op.n||'Cancel')+'</button>':'',by='<button class="mb mo">'+(op.y||'OK')+'</button>';
+ o.innerHTML='<div class=mbx role=alertdialog aria-modal=true><div class=mtx></div><div class=mbt>'+(op.sw?by+bn:bn+by)+'</div></div>'} /* op.sw: confirm button on the left, the other on the right */
  if(op.dim){o.style.background='rgba(0,0,0,.82)';o.style.backdropFilter='blur(8px)';o.style.webkitBackdropFilter='blur(8px)'}
  o.querySelector('.mtx').textContent=String(msg);if(op.left)o.querySelector('.mtx').style.textAlign='left';const c=v=>{o.remove();res(v)};
  o.querySelector('.mo').onclick=()=>c(true);const k=o.querySelector('.mc');if(k)k.onclick=()=>c(false);
  document.body.appendChild(o);o.querySelector('.mo').focus()});
 window.alert=m=>modal(typeof trMsg=='function'?trMsg(String(m)):m,0);
 {const _a=window.alert;window.alert=m=>(TX&&TX.w)?(TX.msgs.push(m),Promise.resolve(true)):_a(m)} /* a success message waits until Google has confirmed the save */
-const askAmt=()=>new Promise(res=>{const o=document.createElement('div');o.className='mdl';
+const askAmt=(op)=>new Promise(res=>{const o=document.createElement('div');o.className='mdl';op=op||{};
  o.innerHTML='<div class=mbx role=dialog aria-modal=true><div class=mtx style="margin-bottom:14px"></div><input id=pmAmt type=number inputmode=decimal placeholder="" style="font-size:22px;text-align:center;margin:0 0 18px"><div class=mbt><button class="mb mc">Cancel</button><button class="mb mo">Save</button></div></div>';
  o.style.background='rgba(0,0,0,.82)';o.style.backdropFilter='blur(8px)';o.style.webkitBackdropFilter='blur(8px)';
- o.querySelector('.mtx').textContent='मिले हुए पेमेंट की रकम डालें';const c=v=>{o.remove();res(v)};
+ o.querySelector('.mtx').textContent=op.t||'मिले हुए पेमेंट की रकम डालें';if(op.y)o.querySelector('.mo').textContent=op.y;const c=v=>{o.remove();res(v)};
  o.querySelector('.mo').onclick=()=>c(o.querySelector('#pmAmt').value);o.querySelector('.mc').onclick=()=>c(null);
  document.body.appendChild(o);o.querySelector('#pmAmt').focus()});
 let busy=0;
