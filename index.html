@@ -191,15 +191,21 @@ html[data-theme=dark] .slim.run::after{background:#aeaeb2}
 /* home: big tile = top row (बकाया | पाया) + bottom third strip (बिजली बिल) */
 .quad.one>div:nth-child(-n+2){min-height:112px;padding:14px 12px;gap:6px}
 .quad.one>#Tile8{grid-column:1/-1;min-height:56px;padding:8px 12px;flex-direction:row;justify-content:center;border-top:1px solid rgba(255,255,255,.28)!important;border-right:0!important}
-.quad.one>#Tile8 span{font-size:14px;font-weight:700;min-height:0;color:#fff;display:block}
-.quad.one>#Tile8 b{font-size:14px;font-weight:800;letter-spacing:0;color:#ffcc00;text-shadow:none}
+.quad.one>#Tile8 span{font-size:15px;font-weight:700;min-height:0;color:rgba(255,255,255,.78);display:block}
+.quad.one>#Tile8 b{font-size:15px;font-weight:800;letter-spacing:0;color:#fff;text-shadow:none}
+#Tile1 b,#Tile2 b{color:#fff!important}
+/* glossy big tile: light sheen over the top half + soft inner edge highlights */
+.quad.one{position:relative;background:linear-gradient(160deg,#8e8bff 0%,#5e5ce6 48%,#0a6cf0 100%);box-shadow:0 12px 30px rgba(94,92,230,.42),inset 0 1px 0 rgba(255,255,255,.4),inset 0 -2px 6px rgba(0,0,70,.2)}
+.quad.one::before{content:"";position:absolute;left:0;right:0;top:0;height:50%;background:linear-gradient(180deg,rgba(255,255,255,.22) 0%,rgba(255,255,255,.07) 70%,rgba(255,255,255,.02) 100%);border-radius:24px 24px 50% 50%/24px 24px 14px 14px;pointer-events:none;z-index:0}
+.quad.one>div{position:relative;z-index:1}
+.quad.one>#Tile1 span,.quad.one>#Tile2 span{color:rgba(255,255,255,.78)}
 /* home: thin status tile - squarish, taller, iOS yellow (bills pending) / green (all bills made) */
 #Tile3s{border-radius:8px;min-height:42px;padding:8px 14px}
 #Tile3s,#Tile3s span{font-size:17px!important}#Tile3s span{white-space:nowrap}
-#Tile3s.run{background:#ffcc00}#Tile3s.ok{background:#34c759}
+#Tile3s.run{background:#ffb800}#Tile3s.ok{background:#24a148}
 #Tile3s.run,#Tile3s.run span{color:#1c1c1e!important}#Tile3s.ok,#Tile3s.ok span{color:#0b3a1a!important}
-#Tile3s.run::after{background:#ffcc00;border-radius:6.5px}
-html[data-theme=dark] #Tile3s.run{background:#ffd60a}html[data-theme=dark] #Tile3s.ok{background:#30d158}html[data-theme=dark] #Tile3s.run::after{background:#ffd60a}
+#Tile3s.run::after{background:#ffb800;border-radius:6.5px}
+html[data-theme=dark] #Tile3s.run{background:#ffb000}html[data-theme=dark] #Tile3s.ok{background:#2fb552}html[data-theme=dark] #Tile3s.run::after{background:#ffb000}
 
 .mnav.an button{background:#d1d1d6;color:#3a3a3c;box-shadow:none}html[data-theme=dark] .mnav.an button{background:#3a3a3c;color:#f5f5f7}.mnav.an button:disabled{opacity:.35}
 .bdx,#main h2 .h2t{transition:opacity .3s ease,filter .3s ease}
