@@ -387,8 +387,8 @@ const views={
    menu1..menu4 = Tenants Information, Rent Analytics, Add tenant, Add property */
 menu:()=>{const mo=today().slice(0,7),mn=mname(mo),ok=db.bills.filter(b=>T(b.tenantId)),mb=ok.filter(b=>b.month==mo),act=db.tenants.filter(t=>t.active!='0'),bi=new Set(mb.map(b=>b.tenantId)),
 b1=r2(ok.reduce((a,b)=>a+dueOf(b),0)),b3=r2(db.payments.filter(x=>T(x.tenantId)&&String(x.pdate).slice(0,7)==mo).reduce((a,x)=>a+N(x.amount),0)),b4=act.filter(t=>!bi.has(t.id)).length,oc=db.tenants.filter(t=>t.active!='0'&&P(t.propId)).length,em=db.props.reduce((a,p)=>{const fl=flatList(p),o=new Set(active(p.id).map(t=>String(t.flat).trim().toLowerCase()));return a+fl.filter(n=>!o.has(String(n).trim().toLowerCase())).length+(fl.length?0:Math.max(0,N(p.flats)-active(p.id).length))},0),p=db.profile,h=new Date().getHours();
-/* कुल बिजली बिल: same figure as the बिल बनाएँ page (made bills' electricity, else units noted x rate) */
-const eb=mrBilled(mo)?r2(db.bills.filter(b=>b.month==mo&&b.type!='rent'&&T(b.tenantId)).reduce((q,b)=>q+N(b.elec),0)):mrAmt(mo,N(db.profile.rate));
+/* कुल बिजली बिल: calculated by elecDetails(), exactly the same figure as the बिजली बिल डिटेल्स page (includes tenants who joined or left during the month) */
+const eb=elecDetails(mo,1);
 const tl=(i,k,ic,c,t,d,x='')=>`<button class=tile id=${i} onclick="${x}go('${k}')"><span class=ic style="background:${c}">${ic}</span><span class=tx><b>${t}</b><small>${d}</small></span><span class=ch>›</span></button>`;
 return `<h2 style="margin-bottom:2px">Rent Manager</h2><div style="margin:0 2px 12px;font-weight:600;font-size:15px;opacity:.5">${h<12?'Good morning':h<17?'Good afternoon':'Good evening'}${p.name?', '+E(p.name.trim().split(/\s+/).pop())+' जी':''}</div>
 <div class="quad one">
@@ -530,7 +530,7 @@ addTen:()=>!db.props.length?`<h2>किरायेदार ऐड करें
 <label>Tenant name *</label><input id=tn><label>Property *</label><select id=tp required onchange="renderFlat()"><option value="">मकान चुनें</option>${db.props.map(p=>`<option value="${p.id}">${E(p.name)}</option>`).join('')}</select>
 <label>Phone * (10 digits)</label><div style="display:flex;align-items:center;gap:8px;margin:5px 0 14px"><input id=tph type=tel inputmode=numeric maxlength=10 style="margin:0;flex:1;min-width:0" oninput="this.value=this.value.replace(/\\D/g,'').slice(0,10)"><button type=button class=cam id=ph2b aria-label="Secondary phone number" style="background:var(--bg);color:var(--t);font-size:24px;font-weight:600;width:48px;height:48px;border-radius:12px" onclick="showPh2()">+</button></div><div id=ph2w style="display:none"><label>Secondary phone number (10 digits)</label><input id=tph2 type=tel inputmode=numeric maxlength=10 oninput="this.value=this.value.replace(/\\D/g,'').slice(0,10)"></div><label>Flat number</label><div id=fw></div><label>प्रवेश तिथि *</label><input id=te class=dp readonly placeholder="प्रवेश तिथि डालें" onclick="pickDate('te')">
 <label>Monthly rent *</label><input id=tr type=number inputmode=decimal><label>Security deposit (optional)</label><input id=td type=number inputmode=decimal>
-<div id=bw><label>बिल का प्रकार *</label><input type=hidden id=tb value=""><input id=tbd class=dp readonly placeholder="किराया टाइप चुनें" onclick="pickBill()"></div><div id=mw style="display:none"><label>Initial meter reading *</label><input id=tm type=text inputmode=decimal autocomplete=off class=rdg oninput="fmtIn(this)"></div><label>Aadhar number (12 digits)</label><input id=ta inputmode=numeric maxlength=12 oninput="this.value=this.value.replace(/\\D/g,'').slice(0,12)">
+<div id=bw><label>बिल का प्रकार *</label><input type=hidden id=tb value=""><input id=tbd class=dp readonly placeholder="किराया टाइप चुनें" onclick="pickBill()"></div><div id=mw style="display:none"><label>Initial meter reading *</label><input id=tm type=text inputmode=decimal autocomplete=off class=rdg oninput="fmtIn(this);this.dataset.auto=''"></div><label>Aadhar number (12 digits)</label><input id=ta inputmode=numeric maxlength=12 oninput="this.value=this.value.replace(/\\D/g,'').slice(0,12)">
 <label>Aadhar photo</label><input type=file accept="image/*" onchange="pickPhoto(this)">
 <label>Other documents (optional)</label><div id=dl></div><input type=file id=df multiple accept="image/*,application/pdf" onchange="addDocs(this)" hidden><button class="btn o" type=button onclick="$('#df').click()">(+) Add document</button>
 <button class=btn onclick="addTen()">Save tenant</button></div><script>renderFlat();prefillTen()<\/script>`,
@@ -863,7 +863,7 @@ return `<div class="tile${click?' tap':''}"${click?` onclick="${click}"`:''}>${a
 /* बिजली बिल का डिटेल्स: per tenant of rent+electricity properties, units used and units x rate of that month's bill */
 function shiftEM(d){const[y,m]=EM.m.split('-').map(Number),x=new Date(y,m-1+d,1),k=x.getFullYear()+'-'+pd2(x.getMonth()+1);if(k>today().slice(0,7))return;EM.m=k;draw()}
 function swpE(e){if(colRoots().length)return;const d=e.changedTouches[0].clientX-tx;if(Math.abs(d)>70)shiftEM(d>0?-1:1)}
-function elecDetails(){const m=EM.m,cm=today().slice(0,7),s=(db.mr&&db.mr[m])||{},nf=x=>String(parseFloat(N(x).toFixed(2))),
+function elecDetails(mm,onlyTot){const m=mm||EM.m,cm=today().slice(0,7),s=(db.mr&&db.mr[m])||{},nf=x=>String(parseFloat(N(x).toFixed(2))),
 uOf=b=>b.units!==''&&b.units!=null?N(b.units):Math.max(0,N(b.cur)-N(b.prev)),
 inM=t=>(!t.entry||String(t.entry).slice(0,7)<=m||db.bills.some(b=>b.tenantId==t.id&&b.month==m))&&(t.active!='0'||db.bills.some(b=>b.tenantId==t.id&&b.month==m)||(String(t.exit||'').slice(0,7)>=m&&(!t.entry||String(t.entry).slice(0,7)<=m))),
 card=(nm,fl,l1,l2,e)=>`<div class="card cp"><div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px">${l1}<b class=fl style="font-size:16px;white-space:nowrap">${fl===''?'':'Flat '+E(fl)}</b></div><div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-top:10px">${l2}<b class=fl style="font-size:16px;text-align:right${e?';opacity:.6':''}">${E(nm)}</b></div></div>`,
@@ -882,6 +882,7 @@ let tot=0,rate=null;const eps=db.props.filter(p=>p.rentOnly!='1'),body=eps.sort(
   rows.push({f:t.flat,h:card(t.name,t.flat,l1,l2,0)})});
   rows.sort((a,b)=>String(a.f).localeCompare(String(b.f),undefined,{numeric:true}));
  return rows.length?`${eps.length>1?`<h3>${E(p.name)}</h3>`:''}${rows.map(x=>x.h).join('')}`:''}).join('');
+if(onlyTot)return r2(tot);
 const rt=rate!==null?rate:N(db.profile.rate);
 return `<div ontouchstart="tx=event.touches[0].clientX" ontouchend="swpE(event)" style="min-height:50vh"><div class="mnav tl"><button onclick="shiftEM(-1)">‹</button><b>${mlabel(m)}</b><button onclick="shiftEM(1)" ${m>=cm?'disabled':''}>›</button></div><div style="font-size:17px;font-weight:800;margin:6px 4px 14px;color:var(--t);text-align:center">कुल बिजली बिल = <span style="color:#0a84ff">${R(r2(tot))}</span>&nbsp;&nbsp;&nbsp;@${nf(rt)}/यूनिट</div>${body||'<div class=card>कोई फ्लैट नहीं</div>'}</div>`}
 /* "कुल बकाया" tile, identical to the one on the tenant payment page */
@@ -1038,7 +1039,7 @@ function prefillTen(){if(!PRE)return;const q=PRE;PRE=null;$('#tp').value=q.p;ren
 const flatList=p=>{try{return JSON.parse(p?.flatNames||'[]')}catch(e){return[]}};
 function renderFlat(){const p=P(V('tp')),fl=flatList(p),occ=n=>db.tenants.some(t=>t.active!='0'&&t.propId==p?.id&&String(t.flat).trim().toLowerCase()==String(n).trim().toLowerCase());
  {const bw=$('#bw'),tb=$('#tb'),mw=$('#mw');if(bw&&tb&&mw){if(p&&p.rentOnly=='1'){setTb('rent');bw.style.display='none';mw.style.display='none'}else{if(bw.style.display=='none')setTb('');bw.style.display='';mw.style.display=tb.value=='both'?'':'none'}}}
- $('#fw').innerHTML=fl.length?`<select id=tf required onchange="chkFlat()"><option value="">Select flat</option>${fl.map(n=>`<option value="${E(n)}">${E(n)}${occ(n)?' (occupied)':''}</option>`).join('')}</select>`:'<input id=tf onchange="chkFlat()">'}
+ $('#fw').innerHTML=fl.length?`<select id=tf required onchange="chkFlat()"><option value="">Select flat</option>${fl.map(n=>`<option value="${E(n)}">${E(n)}${occ(n)?' (occupied)':''}</option>`).join('')}</select>`:'<input id=tf onchange="chkFlat()">';fillMeter()}
 function showPh2(){const w=document.getElementById('ph2w'),b=document.getElementById('ph2b');if(!w)return;w.style.display='';if(b)b.style.display='none';document.getElementById('tph2').focus()}
 function pickPhoto(i){const f=i.files[0];if(!f)return;const im=new Image;im.onload=()=>{const c=document.createElement('canvas'),k=Math.min(1,900/im.width);c.width=im.width*k;c.height=im.height*k;c.getContext('2d').drawImage(im,0,0,c.width,c.height);photo=c.toDataURL('image/jpeg',.7)};im.src=URL.createObjectURL(f)}
 /* ---- in-app calendar: tapping a date fills the field immediately (no OK button) ---- */
@@ -1056,7 +1057,17 @@ function pickDate(id){const el=document.getElementById(id);if(!el)return;
  draw();document.body.appendChild(o)}
 /* billing type chooser with its own heading */
 const BT={both:'किराया + बिजली',rent:'सिर्फ़ किराया'};
-function setTb(v){const t=document.getElementById('tb'),d=document.getElementById('tbd'),mw=document.getElementById('mw');if(!t)return;t.value=v;if(d)d.value=BT[v]||'';if(mw)mw.style.display=v=='both'?'':'none'}
+function setTb(v){const t=document.getElementById('tb'),d=document.getElementById('tbd'),mw=document.getElementById('mw');if(!t)return;t.value=v;if(d)d.value=BT[v]||'';if(mw)mw.style.display=v=='both'?'':'none';fillMeter()}
+/* last meter reading of the selected flat (from the tenant who lived there before: latest electricity bill, else his joining meter) */
+function flatLastRead(){const f=String(V('tf')).trim().toLowerCase(),p=V('tp');if(!f||!p)return null;
+ const ts=db.tenants.filter(t=>t.propId==p&&String(t.flat).trim().toLowerCase()==f&&(t.btype||'both')!='rent'&&(db.bills.some(b=>b.tenantId==t.id&&b.type!='rent'&&String(b.cur??'')!=='')||String(t.meter??'')!==''));
+ if(!ts.length)return null;
+ const key=t=>{const bs=db.bills.filter(b=>b.tenantId==t.id&&b.type!='rent'&&String(b.cur??'')!=='');return (bs.length?bs.map(b=>String(b.month)).sort().pop():'')+'|'+String(t.exit||'')+'|'+String(t.entry||'')};
+ ts.sort((a,b)=>key(a).localeCompare(key(b)));const v=lastRead(ts[ts.length-1].id);return String(v??'')===''||isNaN(Number(v))?null:String(v)}
+function fillMeter(){const m=document.getElementById('tm');if(!m||V('tb')!='both')return;
+ if(m.value!==''&&m.dataset.auto!='1')return; /* never overwrite what the user typed */
+ const v=flatLastRead();if(v===null){if(m.dataset.auto=='1'){m.value='';m.dataset.auto=''}return}
+ m.value=fmtR(v);m.dataset.auto='1'}
 function pickBill(){const cv=(document.getElementById('tb')||{}).value||'',o=document.createElement('div');o.className='mdl';o.style.background='rgba(0,0,0,.6)';
  o.innerHTML='<div class=mbx><div class=mtx style="margin-bottom:16px">बिल का प्रकार चुनें</div><div style="display:flex;flex-direction:column;gap:10px">'+Object.keys(BT).map(k=>`<button type=button class="mb ${k==cv?'mo':'mc'}" style="flex:none" data-v="${k}">${BT[k]}</button>`).join('')+'<button type=button class="mb mo" style="flex:none;margin-top:6px" data-x=1>Cancel</button></div></div>';
  o.onclick=e=>{const t=e.target.closest('button');if(t&&t.dataset.v){setTb(t.dataset.v);o.remove()}else if(e.target==o||(t&&t.dataset.x))o.remove()};document.body.appendChild(o)}
@@ -1069,11 +1080,13 @@ function seqGuard(e){const el=e.target&&e.target.closest&&e.target.closest('inpu
  const m=seqMissing(el.id);if(!m)return;e.preventDefault();e.stopPropagation();if(el.blur)el.blur();
  const now=Date.now();if(now-seqT<600)return;seqT=now;
  modal('पहले "'+m[1]+'" भरें').then(()=>{const t=document.getElementById(m[0]);if(t){t.scrollIntoView({block:'center'});if(t.tagName!='SELECT'&&t.id!='te')t.focus()}})}
-function chkFlat(){const f=V('tf').trim().toLowerCase();if(f&&db.tenants.some(t=>t.active!='0'&&t.propId==V('tp')&&String(t.flat).trim().toLowerCase()==f)){alert('Flat number '+V('tf').trim()+' is already occupied.');$('#tf').value='';return true}return false}
+function chkFlat(){const f=V('tf').trim().toLowerCase();if(f&&db.tenants.some(t=>t.active!='0'&&t.propId==V('tp')&&String(t.flat).trim().toLowerCase()==f)){alert('Flat number '+V('tf').trim()+' is already occupied.');$('#tf').value='';fillMeter();return true}fillMeter();return false}
 async function addTen(){{const need=seqMissing('__end__');if(need)return alert('कृपया "'+need[1]+'" भरें')}
  const pn10=V('tph').replace(/\D/g,'');if(pn10.length!=10)return alert('Phone number must be exactly 10 digits.');const p2=V('tph2').replace(/\D/g,'');if(p2&&p2.length!=10)return alert('Secondary phone number must be exactly 10 digits.');
  const ad=V('ta').replace(/\D/g,'');if(ad&&ad.length!=12)return alert('Aadhar number must be exactly 12 digits.');
  if(chkFlat())return;
+ if(V('tb')=='both'){const lr=flatLastRead(),nr=V('tm').replace(/-/g,'').trim();
+  if(lr!==null&&N(nr)<N(lr)&&!await modal('आपने फ्लैट '+V('tf').trim()+' का रीडिंग '+fmtR(nr)+' डाला है जो कि पिछली रीडिंग से कम है, अगर नई रीडिंग सही है तो आगे बढ़ें',1,{y:'OK',n:'Cancel',dim:1}))return}
  const ed=DV('te'),pdt=ed;
  if(docs.some(d=>!String(d.name||'').trim()))return alert('हर डॉक्यूमेंट का नाम लिखना ज़रूरी है');docs.forEach(d=>d.name=d.name.trim());
  const id=uid();let ph=photo;if(ph&&url){const r=await post({a:'upload',name:V('tn')+'_'+id,data:ph});ph=r.url||ph}
