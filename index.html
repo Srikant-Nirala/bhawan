@@ -889,7 +889,7 @@ let tot=0,rate=null;const eps=db.props.filter(p=>p.rentOnly!='1'),body=eps.sort(
  return rows.length?`${eps.length>1?`<h3>${E(p.name)}</h3>`:''}${rows.map(x=>x.h).join('')}`:''}).join('');
 if(onlyTot)return r2(tot);
 const rt=rate!==null?rate:N(db.profile.rate);
-return `<div ontouchstart="tx=event.touches[0].clientX" ontouchend="swpE(event)" style="min-height:50vh"><div class="mnav tl"><button onclick="shiftEM(-1)">‹</button><b>${mlabel(m)}</b><button onclick="shiftEM(1)" ${m>=cm?'disabled':''}>›</button></div><div style="font-size:17px;font-weight:800;margin:6px 4px 14px;color:var(--t);text-align:center">कुल बिजली बिल = <span style="color:#0a84ff">${R(r2(tot))}</span>&nbsp;&nbsp;&nbsp;@${nf(rt)}/यूनिट</div>${body||'<div class=card>कोई फ्लैट नहीं</div>'}</div>`}
+return `<div ontouchstart="tx=event.touches[0].clientX" ontouchend="swpE(event)" style="min-height:50vh"><div class="mnav tl"><button onclick="shiftEM(-1)">‹</button><b>${mlabel(m)}</b><button onclick="shiftEM(1)" ${m>=cm?'disabled':''}>›</button></div><div style="font-size:17px;font-weight:800;margin:22px 4px 14px;color:var(--t);text-align:center">कुल बिजली बिल = <span style="color:#0a84ff">${R(r2(tot))}</span>&nbsp;&nbsp;&nbsp;@${nf(rt)}/यूनिट</div>${body||'<div class=card>कोई फ्लैट नहीं</div>'}</div>`}
 /* "कुल बकाया" tile, identical to the one on the tenant payment page */
 function dueCard(id,mg){const t=T(id)||{},due=r2(db.bills.filter(b=>b.tenantId==id).reduce((q,b)=>q+dueOf(b),0)),dl=db.bills.filter(b=>b.tenantId==id&&dueOf(b)>0),mc=today().slice(0,7),nb=db.bills.some(x=>x.tenantId==id)?missingMonths(t,nextM(mc)):(t.active!='0'?[mc]:[]),
 rows=[...dl.map(x=>({m:String(x.month),a:dueOf(x)})),...nb.map(m=>({m,n:1}))].sort((p,q)=>p.m.localeCompare(q.m));
