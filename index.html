@@ -869,18 +869,18 @@ inM=t=>(!t.entry||String(t.entry).slice(0,7)<=m||db.bills.some(b=>b.tenantId==t.
 card=(nm,fl,l1,l2,e)=>`<div class="card cp"><div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px">${l1}<b class=fl style="font-size:16px;white-space:nowrap">${fl===''?'':'Flat '+E(fl)}</b></div><div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-top:10px">${l2}<b class=fl style="font-size:16px;text-align:right${e?';opacity:.6':''}">${E(nm)}</b></div></div>`,
 u1=u=>`<div class=gr style="font-size:15.75px">कुल यूनिट: <b style="color:var(--t);font-weight:800">${nf(u)}</b></div>`,
 a1=a=>`<div class=gr style="font-size:15.75px">बिजली बिल: <b style="color:var(--t);font-weight:800">${R(a)}</b></div>`,
-nb=`<div class=gr style="font-size:15.75px;color:var(--p)">बिल नहीं बना</div>`;
+nb=`<div class=gr style="font-size:15.75px;color:var(--p)">बिल नहीं बना</div>`,
+nf1=`<div class=gr style="font-size:15.75px;color:var(--p)">पहले महीना है</div>`,
+firstM=t=>{const e=String(t.entry||'').slice(0,7);if(e)return e==m;const ms=db.bills.filter(b=>b.tenantId==t.id).map(b=>String(b.month)).sort();return ms.length>0&&ms[0]==m};
 let tot=0,rate=null;const eps=db.props.filter(p=>p.rentOnly!='1'),body=eps.sort((a,b)=>String(a.name).localeCompare(String(b.name))).map(p=>{
  const all=db.tenants.filter(t=>t.propId==p.id&&inM(t)),occ=new Set(all.map(t=>String(t.flat).trim().toLowerCase())),rows=[];
  all.filter(t=>(t.btype||'both')!='rent').forEach(t=>{const bs=db.bills.filter(b=>b.tenantId==t.id&&b.month==m&&b.type!='rent');let l1,l2;
-  if(bs.length){const u=bs.reduce((q,b)=>q+uOf(b),0),a=r2(bs.reduce((q,b)=>q+r2(uOf(b)*N(b.rate)),0));if(rate===null&&N(bs[0].rate)>0)rate=N(bs[0].rate);tot+=a;l1=u1(u);l2=a1(a)}
+  if(firstM(t)){l1=u1(0);l2=nf1}
+  else if(bs.length){const u=bs.reduce((q,b)=>q+uOf(b),0),a=r2(bs.reduce((q,b)=>q+r2(uOf(b)*N(b.rate)),0));if(rate===null&&N(bs[0].rate)>0)rate=N(bs[0].rate);tot+=a;l1=u1(u);l2=a1(a)}
   else if(m==cm&&s[t.id]!==undefined){const u=Math.max(0,r2(N(s[t.id])-N(lastRead(t.id)))),a=r2(u*N(db.profile.rate));tot+=a;l1=u1(u);l2=a1(a)}
-  else{l1=nb;l2='<span></span>'}
+  else{l1=u1(0);l2=nb}
   rows.push({f:t.flat,h:card(t.name,t.flat,l1,l2,0)})});
- const fl=flatList(p),emp=fl.filter(n=>!occ.has(String(n).trim().toLowerCase()));
- emp.forEach(n=>rows.push({f:n,h:card('खाली फ्लैट',n,u1(0),a1(0),1)}));
- if(!fl.length)for(let i=Math.max(0,N(p.flats)-all.length);i>0;i--)rows.push({f:'\uffff',h:card('खाली फ्लैट','',u1(0),a1(0),1)});
- rows.sort((a,b)=>String(a.f).localeCompare(String(b.f),undefined,{numeric:true}));
+  rows.sort((a,b)=>String(a.f).localeCompare(String(b.f),undefined,{numeric:true}));
  return rows.length?`${eps.length>1?`<h3>${E(p.name)}</h3>`:''}${rows.map(x=>x.h).join('')}`:''}).join('');
 const rt=rate!==null?rate:N(db.profile.rate);
 return `<div ontouchstart="tx=event.touches[0].clientX" ontouchend="swpE(event)" style="min-height:50vh"><div class="mnav tl"><button onclick="shiftEM(-1)">‹</button><b>${mlabel(m)}</b><button onclick="shiftEM(1)" ${m>=cm?'disabled':''}>›</button></div><div style="font-size:17px;font-weight:800;margin:6px 4px 14px;color:var(--t);text-align:center">कुल बिजली बिल = <span style="color:#0a84ff">${R(r2(tot))}</span>&nbsp;&nbsp;&nbsp;@${nf(rt)}/यूनिट</div>${body||'<div class=card>कोई फ्लैट नहीं</div>'}</div>`}
