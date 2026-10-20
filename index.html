@@ -406,12 +406,14 @@ dm=v=>{const x=new Date(String(v)+'T00:00');return isNaN(x)?String(v):pd2(x.getD
 dv='<div style="border-top:1px solid rgba(128,128,128,.3);margin:12px 0 0"></div>';
 const rows=db.props.filter(p=>p.rentOnly!='1').map(p=>{const names=[...flatList(p)];db.tenants.filter(t=>t.propId==p.id).forEach(t=>{if(!names.some(n=>k(n)==k(t.flat)))names.push(t.flat)});names.sort((a,b)=>String(a).localeCompare(String(b),undefined,{numeric:true}));
 return {p,fl:names.map(n=>{const ts=db.tenants.filter(t=>t.propId==p.id&&k(t.flat)==k(n)),ac=ts.find(t=>t.active!='0'),lt=ac||ts.slice().sort((a,c)=>String(c.entry||'').localeCompare(String(a.entry||'')))[0],ok=!lt||(lt.btype||'both')=='both',rs=[];
- db.bills.forEach(b=>{if(ts.some(t=>t.id==b.tenantId)&&b.type!='rent'&&String(b.cur??'')!=='')rs.push({m:String(b.month),d:ymd(b.date)||String(b.month)+'-01',v:b.cur,b:b.id})});
- ts.forEach(t=>{if(String(t.meter??'')!=='')rs.push({m:String(t.entry||'').slice(0,7),d:String(t.entry||'').slice(0,10)||d0,v:t.meter})});
- {const mo0=today().slice(0,7),mr0=db.mr&&db.mr[mo0];if(ac&&mr0&&mr0[ac.id]!==undefined&&!db.bills.some(b=>b.tenantId==ac.id&&b.month==mo0))rs.push({m:mo0,d:String(mr0['d_'+ac.id]||mo0+'-01').slice(0,10),v:mr0[ac.id],n:ac.id})}
+ db.bills.forEach(b=>{if(ts.some(t=>t.id==b.tenantId)&&b.type!='rent'&&String(b.cur??'')!=='')rs.push({m:String(b.month),d:ymd(b.date)||String(b.month)+'-01',v:b.cur,b:b.id,o:b.tenantId})});
+ ts.forEach(t=>{if(String(t.meter??'')!=='')rs.push({m:String(t.entry||'').slice(0,7),d:String(t.entry||'').slice(0,10)||d0,v:t.meter,o:t.id,j:(t.active!='0'&&(t.btype||'both')!='rent'&&String(t.entry||'').slice(0,7)==today().slice(0,7)&&!db.bills.some(b=>b.tenantId==t.id&&b.type!='rent'))?t.id:''})});
+ {const mo0=today().slice(0,7),mr0=db.mr&&db.mr[mo0];if(ac&&mr0&&mr0[ac.id]!==undefined&&!db.bills.some(b=>b.tenantId==ac.id&&b.month==mo0))rs.push({m:mo0,d:String(mr0['d_'+ac.id]||mo0+'-01').slice(0,10),v:mr0[ac.id],n:ac.id,o:ac.id})}
+ /* a leaving tenant's reading was taken on his exit date, whenever the bill was made - so it never sorts after the next tenant's joining reading */
+ rs.forEach(r=>{const o=ts.find(t=>t.id==r.o);if(o&&o.active=='0'&&o.exit&&r.d>String(o.exit).slice(0,10))r.d=String(o.exit).slice(0,10)});
  rs.sort((a,c)=>c.m.localeCompare(a.m)||c.d.localeCompare(a.d)||N(c.v)-N(a.v));
  return{n,t:ac,ok,rs}}).filter(f=>f.ok)}}).filter(x=>x.fl.length);
-const card=f=>{const l=f.rs[0],hist=f.rs.slice(0,6),ea=l&&l.m==today().slice(0,7)?(l.b?`updMeter('${E(l.b)}')`:l.n?`updNoted('${E(l.n)}')`:''):'';
+const card=f=>{const l=f.rs[0],hist=f.rs.slice(0,6),tg=f.t?f.rs.find(r=>r.o==f.t.id):l,ea=tg&&tg.m==today().slice(0,7)?(tg.b?`updMeter('${E(tg.b)}')`:tg.n?(canJoin(f.t)?`pickRead('${E(tg.n)}')`:`updNoted('${E(tg.n)}')`):tg.j?`updJoin('${E(tg.j)}')`:''):'';
  return `<div class="card cp clk" style="margin:10px 0;padding:14px" onclick="togCard(this)"><div style="display:flex;align-items:center;gap:14px"><span class=av${ea?` role=button aria-label="मीटर रीडिंग बदलें" onclick="event.stopPropagation();${ea}"`:''}>${f.t?String(f.t.name||'?')[0].toUpperCase():'?'}</span><span style="flex:1;min-width:0;min-height:60px;display:flex;flex-direction:column;justify-content:center;gap:10px"><span class=nm>${f.t?E(f.t.name):'खाली फ्लैट'}</span><span style="font-size:15.75px">${fmtDL(l?l.d:d0)}</span></span><span style="flex:none;min-height:60px;display:flex;flex-direction:column;justify-content:center;align-items:flex-end;gap:10px"><span style="display:inline-flex;align-items:center;gap:6px"><b class=fl style="font-size:17px;white-space:nowrap">Flat ${E(f.n)}</b><svg class=cv width=16 height=16 viewBox="0 0 16 16" fill=none stroke=currentColor stroke-width=2 stroke-linecap=round stroke-linejoin=round><path d="M3 6l5 5 5-5"/></svg></span><b class=glw style="font-size:15.75px;font-weight:800;padding-right:32px">${E(fmtR(l?l.v:'0'))}</b></span></div>
 <div class=xp><div>${dv}<div style="font-weight:900;font-size:15px;margin-top:14px;padding-left:42px">पिछली 6 मीटर रीडिंग</div>${hist.length?'<div style="display:grid;grid-template-columns:1fr auto;column-gap:12px;row-gap:10px;align-items:baseline;margin-top:12px;padding-left:42px;font-size:15.75px;font-variant-numeric:tabular-nums">'+hist.map(x=>`<span style="display:inline-flex;align-items:baseline;gap:8px;text-align:left"><span style="flex:none;width:6px;text-align:left;overflow:visible">•</span><span>${dm(x.d)}</span></span><span style="text-align:right;padding-right:32px">${E(fmtR(x.v))}</span>`).join('')+'</div>':'<div class=m style="margin-top:10px;padding-left:42px">अभी कोई रीडिंग दर्ज नहीं</div>'}</div></div></div>`};
 return `<h2>मीटर रीडिंग</h2>`+(rows.map(x=>`${db.props.filter(p=>p.rentOnly!='1').length>1?`<h3 class=ph>${E(x.p.name)}</h3>`:''}${x.fl.map(card).join('')}`).join('')||'<div class=card>कोई फ्लैट नहीं</div>')},
@@ -1022,8 +1024,25 @@ const askReading=(t,b)=>new Promise(res=>{const o=document.createElement('div');
  o.querySelector('.mtx').textContent='मीटर रीडिंग अपडेट करें\n\n'+(t.name?t.name+' · ':'')+'Flat '+(t.flat||'')+'\nअभी दर्ज रीडिंग: '+fmtR(b.cur);const c=v=>{o.remove();res(v)};
  o.querySelector('.mo').onclick=()=>c(o.querySelector('#mrAmt').value.replace(/-/g,''));o.querySelector('.mc').onclick=()=>c(null);
  document.body.appendChild(o)});
+/* joining reading can be corrected only for a tenant who joined this month and has no electricity bill yet */
+function canJoin(t){return !!t&&t.active!='0'&&(t.btype||'both')!='rent'&&String(t.meter??'')!==''&&String(t.entry||'').slice(0,7)==today().slice(0,7)&&!db.bills.some(b=>b.tenantId==t.id&&b.type!='rent')}
+/* tenant has both a joining reading and a noted reading this month -> ask which one to change */
+function pickRead(tid){const t=T(tid),s=(db.mr&&db.mr[today().slice(0,7)])||{};if(!t)return;
+ const o=document.createElement('div');o.className='mdl';o.style.background='rgba(0,0,0,.6)';
+ o.innerHTML='<div class=mbx><div class=mtx style="margin-bottom:16px">कौन सी रीडिंग बदलनी है?</div><div style="display:flex;flex-direction:column;gap:10px"><button type=button class="mb mc" style="flex:none" data-k=n>नोट की हुई रीडिंग ('+E(fmtR(s[tid]))+')</button><button type=button class="mb mc" style="flex:none" data-k=j>शुरुआती रीडिंग ('+E(fmtR(t.meter))+')</button><button type=button class="mb mo" style="flex:none;margin-top:6px" data-x=1>Cancel</button></div></div>';
+ o.onclick=e=>{const b=e.target.closest('button');if(b&&b.dataset.k){o.remove();b.dataset.k=='n'?updNoted(tid):updJoin(tid)}else if(e.target==o||(b&&b.dataset.x))o.remove()};document.body.appendChild(o)}
+/* correct the joining (initial) meter reading */
+async function updJoin(tid){const t=T(tid),mo=today().slice(0,7);
+ if(!canJoin(t))return;
+ const v=await askReading(t,{cur:t.meter});if(v===null)return;
+ const x=String(v).trim();if(x===''||isNaN(Number(x))||Number(x)<0)return alert('सही मीटर रीडिंग डालें');
+ const nt=db.mr&&db.mr[mo];if(nt&&nt[tid]!==undefined&&N(x)>N(nt[tid]))return alert('यह रीडिंग इस महीने नोट की गई रीडिंग ('+fmtR(nt[tid])+') से ज़्यादा नहीं हो सकती');
+ const pr=flatLastRead(t.propId,t.flat,tid);
+ if(pr!==null&&N(x)<N(pr)&&!await modal('आपने फ्लैट '+t.flat+' का रीडिंग '+fmtR(x)+' डाला है जो कि पिछली रीडिंग से कम है, अगर नई रीडिंग सही है तो आगे बढ़ें',1,{y:'OK',n:'Cancel',dim:1}))return;
+ t.meter=x;save('tenants',t);draw()}
 async function updMeter(bid){const b=db.bills.find(x=>x.id==bid);if(!b||b.type=='rent'||String(b.cur??'')===''||b.month!=today().slice(0,7))return;
- const t=T(b.tenantId)||{};const v=await askReading(t,b);if(v===null)return;
+ const t=T(b.tenantId)||{};if(t.active=='0'&&db.tenants.some(x=>x.active!='0'&&x.propId==t.propId&&String(x.flat).trim().toLowerCase()==String(t.flat).trim().toLowerCase()))return alert('यह पिछले किरायेदार ('+(t.name||'')+') का आखिरी बिल है। इस फ्लैट में अब नया किरायेदार है, इसलिए यह रीडिंग यहाँ से नहीं बदली जा सकती।');
+ const v=await askReading(t,b);if(v===null)return;
  const s=String(v).trim();if(s===''||isNaN(Number(s))||Number(s)<0)return alert('सही मीटर रीडिंग डालें');
  const nc=Number(s);if(nc<N(b.prev))return alert('नई रीडिंग पिछली रीडिंग ('+fmtR(b.prev)+') से कम नहीं हो सकती');
  const paid0=paidAmt(b),rate=N(b.rate)>0?N(b.rate):N(db.profile.rate); /* money already received on this bill (cash + advance) */
@@ -1059,8 +1078,8 @@ function pickDate(id){const el=document.getElementById(id);if(!el)return;
 const BT={both:'किराया + बिजली',rent:'सिर्फ़ किराया'};
 function setTb(v){const t=document.getElementById('tb'),d=document.getElementById('tbd'),mw=document.getElementById('mw');if(!t)return;t.value=v;if(d)d.value=BT[v]||'';if(mw)mw.style.display=v=='both'?'':'none';fillMeter()}
 /* last meter reading of the selected flat (from the tenant who lived there before: latest electricity bill, else his joining meter) */
-function flatLastRead(){const f=String(V('tf')).trim().toLowerCase(),p=V('tp');if(!f||!p)return null;
- const ts=db.tenants.filter(t=>t.propId==p&&String(t.flat).trim().toLowerCase()==f&&(t.btype||'both')!='rent'&&(db.bills.some(b=>b.tenantId==t.id&&b.type!='rent'&&String(b.cur??'')!=='')||String(t.meter??'')!==''));
+function flatLastRead(p0,f0,ex){const f=String(f0??V('tf')).trim().toLowerCase(),p=p0??V('tp');if(!f||!p)return null;
+ const ts=db.tenants.filter(t=>t.id!=ex&&t.propId==p&&String(t.flat).trim().toLowerCase()==f&&(t.btype||'both')!='rent'&&(db.bills.some(b=>b.tenantId==t.id&&b.type!='rent'&&String(b.cur??'')!=='')||String(t.meter??'')!==''));
  if(!ts.length)return null;
  const key=t=>{const bs=db.bills.filter(b=>b.tenantId==t.id&&b.type!='rent'&&String(b.cur??'')!=='');return (bs.length?bs.map(b=>String(b.month)).sort().pop():'')+'|'+String(t.exit||'')+'|'+String(t.entry||'')};
  ts.sort((a,b)=>key(a).localeCompare(key(b)));const v=lastRead(ts[ts.length-1].id);return String(v??'')===''||isNaN(Number(v))?null:String(v)}
@@ -1411,7 +1430,7 @@ const guard=f=>function(...a){if(busy)return;busy=1;document.body.classList.add(
  if(r&&r.then)r.then(rel,rel);else rel();return r};
 const XW=f=>guard(function(...a){return exclusive(()=>txCore(()=>f.apply(this,a)))}); /* every changing action = one guarded, all-or-nothing transaction */
 askBills=XW(askBills);bdRegen=XW(bdRegen);delPay=XW(delPay);
-addTen=XW(addTen);genBill=XW(genBill);bulkGen=XW(bulkGen);recvPay=XW(recvPay);applyPart=XW(applyPart);payFull=XW(payFull);payNone=XW(payNone);updMeter=XW(updMeter);saveReadings=XW(saveReadings);ackPN=XW(ackPN);updNoted=XW(updNoted);confirmBills=XW(confirmBills);
+addTen=XW(addTen);genBill=XW(genBill);bulkGen=XW(bulkGen);recvPay=XW(recvPay);applyPart=XW(applyPart);payFull=XW(payFull);payNone=XW(payNone);updMeter=XW(updMeter);updJoin=XW(updJoin);saveReadings=XW(saveReadings);ackPN=XW(ackPN);updNoted=XW(updNoted);confirmBills=XW(confirmBills);
 permDelete=XW(permDelete);saveTenDocs=XW(saveTenDocs);archive=XW(archive);restore=XW(restore);updPhone=XW(updPhone);updPhone2=XW(updPhone2);updRent=XW(updRent);saveProf=XW(saveProf);addProp=XW(addProp);updProp=XW(updProp);saveUrl=guard(saveUrl);syncNow=guard(syncNow);
 if('serviceWorker' in navigator){const had=!!navigator.serviceWorker.controller;let rl=false;
  navigator.serviceWorker.addEventListener('controllerchange',()=>{if(had&&!rl){rl=true;location.reload()}});
