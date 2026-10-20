@@ -1146,8 +1146,10 @@ async function recvPay(id,full){const dt=DV('rdt'),
  /* "पेमेंट नोट करें": first ask "पूरा किराया मिला?" (हाँ left, नहीं right). हाँ = full due; नहीं = ask for the amount received. */
  if(full&&ds.length&&await modal('पूरा किराया '+R(bal)+' मिला?',1,{y:'हाँ',n:'नहीं',dim:1,sw:1}))amt=bal;
  else{const v=await askAmt({t:'पेमेंट की रकम डालें!',y:'पेमेंट सेव करें'});if(v===null)return;amt=r2(N(v));
-  if(!(amt>0))return alert('सही रकम लिखें');
-  if(amt<bal&&(T(id)||{}).active=='0'){waive=r2(bal-amt);if(!await modal(String(T(id).name).trim().split(/\s+/)[0]+' का बाकी '+R(waive)+' माफ़ कर दिया गया है।',1,{y:'ठीक है',n:'Cancel',dim:1}))return}
+  /* a tenant who has left may be let off the whole unpaid amount: 0 is allowed for him (but the box must not be empty); active tenants still need an amount above 0 */
+  const gone=(T(id)||{}).active=='0';
+  if(gone?(String(v).trim()===''||!(amt>=0)||(amt==0&&!(bal>0))):!(amt>0))return alert('सही रकम लिखें');
+  if(amt<bal&&gone){waive=r2(bal-amt);if(!await modal(String(T(id).name).trim().split(/\s+/)[0]+' का बाकी '+R(waive)+' माफ़ कर दिया गया है।',1,{y:'ठीक है',n:'Cancel',dim:1}))return}
   if(amt>bal){extra=r2(amt-bal);if(!await modal('रकम बकाया ('+R(bal)+') से '+R(extra)+' ज़्यादा है।\n\n'+R(extra)+' एडवांस के रूप में सेव होगा और अगले बिल में कट जाएगा।\n\nआगे बढ़ें?',1,{y:'हाँ, सेव करें',n:'Cancel',dim:1}))return}}
  let rem=amt;for(const x of ds){if(rem<=0)break;const a=Math.min(dueOf(x),rem);setPaid(x,paidAmt(x)+a);rem=r2(rem-a)}
  if(waive>0){for(const x of ds){const d=dueOf(x);if(d>0){x.waived=String(r2(N(x.waived)+d));setPaid(x,paidAmt(x))}}}
