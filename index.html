@@ -233,9 +233,11 @@ html[data-theme=dark] .mnav.tl button{background:rgba(120,120,128,.32);color:#f5
 
 #offb{display:none;position:fixed;top:calc(env(safe-area-inset-top,0px) + 3px);left:50%;transform:translateX(-50%);z-index:60;background:#ff453a;color:#fff;font-size:11.5px;font-weight:700;padding:3px 12px;border-radius:999px;pointer-events:none;white-space:nowrap}
 .pfb{position:relative;top:12px;margin-right:10px!important;flex:none;width:40px;height:40px;border-radius:50%;border:0;padding:0;margin:0;display:grid;place-items:center;background:#d1d1d6;color:var(--p);transition:transform .12s,opacity .2s}.pfb:active{transform:scale(.9);opacity:.8}html[data-theme=dark] .pfb{background:#3a3a3c}
+nav{z-index:20}body:not(.nonav){padding-bottom:calc(78px + env(safe-area-inset-bottom,0px))}
 </style></head><body><div id=offb>ऑफ़लाइन · सिर्फ़ देख सकते हैं (View only)</div>
 <div id="lk"><div class="lkb"><div class="lkt" id="lkt"></div><div class="lkd" id="lkd"></div><div class="lke" id="lke"></div><div class="lkp" id="lkp"></div><button id="lkc" style="display:none" onclick="lkCancel()">Cancel</button></div></div>
 <div id="main"></div>
+<nav><button type=button id=nb0 onclick="tabTo(0)"><i>🏠</i>प्रबंधन</button><span class=dv></span><button type=button id=nb1 onclick="tabTo(1)"><i>👤</i>प्रोफ़ाइल</button></nav>
 
 <script>
 /* APP LOCK: the 4-digit code is chosen by you on first open and is NOT stored in this file.
@@ -982,7 +984,7 @@ function fitH2(){const h=document.querySelector('#main h2');if(!h)return;h.style
  while(t.offsetWidth>av&&f>10){f-=1;h.style.fontSize=f+'px'}}
 function draw(){const y0=scrollY,nv=!!dir,rb=dir=='bck';if(cur().length&&cur()[cur().length-1][0]=='addTen'){docs=[];photo=''}
  const s=cur(),[v,a]=s.length?s[s.length-1]:[tab?'profile':'menu'];
- document.body.classList.toggle('nonav',s.length>0);$('#main').classList.remove('fxo','bdo');const ov=rb?mkOv(y0):null;$('#main').innerHTML=views[v](a);fitSlim();if(s.length||tab){const bh='<button type=button class="bkc@@" aria-label="वापस" onclick="backBtn()"><svg width=19 height=19 viewBox=\"0 0 24 24\" aria-hidden=true><path d=\"M19 12H5M11 6l-6 6 6 6\" fill=none stroke=currentColor stroke-width=2.4 stroke-linecap=round stroke-linejoin=round /></svg></button>',h2=$('#main').querySelector('h2');if(h2){h2.style.position='relative';h2.style.paddingLeft='54px';h2.style.paddingRight='0';h2.insertAdjacentHTML('afterbegin',bh.replace('@@',''))}else $('#main').insertAdjacentHTML('afterbegin',bh.replace('@@',' st'))}
+ document.body.classList.toggle('nonav',s.length>0);document.querySelectorAll('nav button').forEach((b,i)=>b.classList.toggle('on',i==tab));$('#main').classList.remove('fxo','bdo');const ov=rb?mkOv(y0):null;$('#main').innerHTML=views[v](a);fitSlim();if(s.length||tab){const bh='<button type=button class="bkc@@" aria-label="वापस" onclick="backBtn()"><svg width=19 height=19 viewBox=\"0 0 24 24\" aria-hidden=true><path d=\"M19 12H5M11 6l-6 6 6 6\" fill=none stroke=currentColor stroke-width=2.4 stroke-linecap=round stroke-linejoin=round /></svg></button>',h2=$('#main').querySelector('h2');if(h2){h2.style.position='relative';h2.style.paddingLeft='54px';h2.style.paddingRight='0';h2.insertAdjacentHTML('afterbegin',bh.replace('@@',''))}else $('#main').insertAdjacentHTML('afterbegin',bh.replace('@@',' st'))}
  if(dir){const M=$('#main');M.className='';void M.offsetWidth;M.className=dir;dir=''}
  $('#main').querySelectorAll('script').forEach(x=>{eval(x.textContent)});fitH2();scrollTo(0,rb?topSY():nv?0:y0);navShow();if(ov)runOv(ov);syncHist()}
 /* page transitions: forward = new page slides in from the left; back = current page slides out to the right */
