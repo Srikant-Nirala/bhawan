@@ -599,18 +599,19 @@ return `<h2>Rent Analytics</h2><div class=card><div class="mnav an"><button oncl
 
 history:()=>`<h2>Mark Paid & Bill History</h2><div class="seg big"><button class="${H.t?'':'on'}" onclick="H.t=0;draw()">By flat</button><button class="${H.t?'on':''}" onclick="H.t=1;draw()">By renter</button></div>${H.t?histRenter():histFlat()}`,
 
-ownerMenu:()=>`<h2>Saved Profile</h2><button class=tile onclick="go('savedProfile')"><span class=ic style="background:#0a84ff">🪪</span><span class=tx><b>प्रोफ़ाइल बनाएँ</b><small>Name, phone, electricity rate, UPI</small></span><span class=ch>›</span></button><button class=tile onclick="go('addProp')"><span class=ic style="background:#5e5ce6">🏢</span><span class=tx><b>मकान ऐड करें</b><small>Name and address</small></span><span class=ch>›</span></button><button class=tile onclick="go('oldBill')"><span class=ic style="background:#ff9f0a">🧾</span><span class=tx><b>बैकडेटेड बिल बनाएँ</b><small>किरायेदार चुनकर अलग से बिल बनाएँ</small></span><span class=ch>›</span></button><button class=tile onclick="go('archived')"><span class=ic style="background:#8e8e93">🗄️</span><span class=tx><b>पुराने किरायेदार देखें</b><small>Past tenants and their details</small></span><span class=ch>›</span></button>`,
-profile:()=>`<h2>Profile</h2><button class=tile onclick="go('ownerMenu')"><span class=ic style="background:#0a84ff">🪪</span><span class=tx><b>Saved Profile</b><small>Name, phone, electricity rate, UPI</small></span><span class=ch>›</span></button>
-<button class=tile onclick="go('advance')"><span class=ic style="background:#636366">⚙️</span><span class=tx><b>Advance</b><small>ऐप लॉक और कीज़</small></span><span class=ch>›</span></button>`,
+ownerMenu:()=>`<h2>Saved Profile</h2><button class=tile onclick="go('savedProfile')"><span class=ic style="background:#0a84ff">🪪</span><span class=tx><b>प्रोफ़ाइल बनाएँ</b><small>Name, phone, UPI</small></span><span class=ch>›</span></button><button class=tile onclick="go('addProp')"><span class=ic style="background:#5e5ce6">🏢</span><span class=tx><b>मकान ऐड करें</b><small>Name and address</small></span><span class=ch>›</span></button><button class=tile onclick="go('oldBill')"><span class=ic style="background:#ff9f0a">🧾</span><span class=tx><b>बैकडेटेड बिल बनाएँ</b><small>किरायेदार चुनकर अलग से बिल बनाएँ</small></span><span class=ch>›</span></button><button class=tile onclick="go('archived')"><span class=ic style="background:#8e8e93">🗄️</span><span class=tx><b>पुराने किरायेदार देखें</b><small>Past tenants and their details</small></span><span class=ch>›</span></button>`,
+profile:()=>`<h2>Profile</h2><button class=tile onclick="go('ownerMenu')"><span class=ic style="background:#0a84ff">🪪</span><span class=tx><b>Saved Profile</b><small>Name, phone, UPI</small></span><span class=ch>›</span></button>
+<button class=tile onclick="go('advance')"><span class=ic style="background:#636366">⚙️</span><span class=tx><b>Advance</b><small>ऐप लॉक और कीज़</small></span><span class=ch>›</span></button>
+<button class=tile onclick="go('rateSet')"><span class=ic style="background:#ffb000">⚡</span><span class=tx><b>बिजली रेट डालें</b><small>${N(db.profile.rate)?'अभी: ₹'+E(db.profile.rate)+' / यूनिट':'रेट अभी नहीं डाला'}</small></span><span class=ch>›</span></button>`,
 profForm:()=>{const p=db.profile;return `<h2>Profile</h2><div class=card>
 <label>Full name *</label><input id=pf value="${E(p.name)}"><label>Phone *</label><input id=pph type=tel value="${E(p.phone)}">
-<label>Electricity rate (₹ per unit)</label><input id=pr type=number step=0.01 value="${E(p.rate)}">
 <label>UPI ID *</label><input id=pu value="${E(p.upi)}"><label>UPI name *</label><input id=pun value="${E(p.upiName)}">
 <button class=btn onclick="saveProf()">Save profile</button></div>`},
 savedProfile:()=>{const p=db.profile;if(!(p.name&&p.phone&&p.upi&&p.upiName))return views.profForm();
  const row=(l,v)=>`<div style="margin-bottom:16px"><div class=m>${l}</div><div style="font-size:18px;font-weight:700;overflow-wrap:anywhere">${E(v)}</div></div>`;
- return `<h2>Profile</h2><div class=card>${row('Full name',p.name)}${row('Phone',p.phone)}${row('Electricity rate (₹ per unit)',N(p.rate)?'₹'+p.rate:'-')}${row('UPI ID',p.upi)}${row('UPI name',p.upiName)}\n<button class=btn onclick="go('profEdit')" style="margin-bottom:0">Update</button></div>`},
+ return `<h2>Profile</h2><div class=card>${row('Full name',p.name)}${row('Phone',p.phone)}${row('UPI ID',p.upi)}${row('UPI name',p.upiName)}\n<button class=btn onclick="go('profEdit')" style="margin-bottom:0">Update</button></div>`},
 profEdit:()=>views.profForm(),
+rateSet:()=>{const r=N(db.profile.rate)>0?db.profile.rate:'';return `<h2>बिजली रेट डालें</h2><div class=card><label>बिजली का रेट डालें</label><input id=brate type=number step=0.01 min=0 inputmode=decimal placeholder="₹ प्रति यूनिट" value="${E(r)}"><button class=btn onclick="saveRate()" style="margin-bottom:0">${r!==''?'Update':'Add'}</button></div>`},
 advance:()=>`<h2>Advance</h2><button class=tile onclick="go('appLock')"><span class=ic style="background:#ff9f0a">🔒</span><span class=tx><b>ऐप लॉक</b><small>ऐप लॉक चालू/बंद करें और कोड बदलें</small></span><span class=ch>›</span></button>
 <button class=tile onclick="go('appearance')"><span class=ic style="background:#5e5ce6">🌓</span><span class=tx><b>ऐप अपीयरेंस मोड</b><small>लाइट / डार्क मोड बदलें</small></span><span class=ch>›</span></button>
 <button class=tile onclick="go('keys')"><span class=ic style="background:#636366">🔑</span><span class=tx><b>कीज़ डालें</b><small>Backend सिंक की कीज़</small></span><span class=ch>›</span></button>`,
@@ -884,7 +885,7 @@ uOf=b=>b.units!==''&&b.units!=null?N(b.units):Math.max(0,N(b.cur)-N(b.prev)),
 inM=t=>(!t.entry||String(t.entry).slice(0,7)<=m||db.bills.some(b=>b.tenantId==t.id&&b.month==m))&&(t.active!='0'||db.bills.some(b=>b.tenantId==t.id&&b.month==m)||(String(t.exit||'').slice(0,7)>=m&&(!t.entry||String(t.entry).slice(0,7)<=m))),
 card=(nm,fl,l1,l2,e)=>`<div class="card cp"><div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px">${l1}<b class=fl style="font-size:16px;white-space:nowrap">${fl===''?'':'Flat '+E(fl)}</b></div><div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-top:10px">${l2}<b class=fl style="font-size:16px;text-align:right${e?';opacity:.6':''}">${E(nm)}</b></div></div>`,
 u1=u=>`<div class=gr style="font-size:15.75px">कुल यूनिट: <b style="color:var(--t);font-weight:800">${nf(u)}</b></div>`,
-a1=a=>`<div class=gr style="font-size:15.75px">बिजली बिल: <b style="color:var(--t);font-weight:800">${R(a)}</b></div>`,
+a1=a=>`<div class=gr style="font-size:15.75px">बिजली बिल: <b style="color:#0a84ff;font-weight:400">${R(a)}</b></div>`,
 nb=`<div class=gr style="font-size:15.75px;color:var(--p)">बिल नहीं बना</div>`,
 nf1=`<div class=gr style="font-size:15.75px;color:var(--p)">पहले महीना है</div>`,
 firstM=t=>{const e=String(t.entry||'').slice(0,7);if(e)return e==m;const ms=db.bills.filter(b=>b.tenantId==t.id).map(b=>String(b.month)).sort();return ms.length>0&&ms[0]==m};
@@ -1393,7 +1394,9 @@ async function saveProf(){
  for(const[k,l]of [['pf','पूरा नाम'],['pph','फ़ोन नंबर'],['pu','UPI ID'],['pun','UPI नाम']]){if(!V(k).trim()){await alert('कृपया "'+l+'" भरें');const e=document.getElementById(k);if(e)e.focus();return}}
  const upi=V('pu').trim();
  if(!await modal('कृपया कन्फर्म करें कि UPI ID सही है - '+upi,1,{y:'हाँ, सही है',n:'Cancel'}))return;
- setProf('name',V('pf').trim());setProf('phone',V('pph').trim());setProf('rate',V('pr'));setProf('upi',upi);setProf('upiName',V('pun').trim());await alert('Profile saved');const c=cur();if(c.length&&c[c.length-1][0]=='profEdit')back();else draw()}
+ setProf('name',V('pf').trim());setProf('phone',V('pph').trim());setProf('upi',upi);setProf('upiName',V('pun').trim());await alert('Profile saved');const c=cur();if(c.length&&c[c.length-1][0]=='profEdit')back();else draw()}
+async function saveRate(){const v=N(V('brate'));if(!(v>0)){await alert('कृपया सही बिजली रेट डालें');const e=document.getElementById('brate');if(e)e.focus();return}
+ setProf('rate',String(v));await alert('बिजली का रेट सेव हो गया');back()}
 async function syncNow(){if(!url)return alert('पहले कीज़ डालें');const ok=await sync();alert(ok?'Backend से सिंक हो गया ✅':'सिंक नहीं हो सका। इंटरनेट जाँचकर दोबारा कोशिश करें।')}
 async function saveUrl(){const u=V('su').trim();
  if(!u)return alert('Paste your Apps Script URL first (it ends with /exec).');
