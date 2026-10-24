@@ -408,7 +408,7 @@ return `<div style="display:flex;align-items:center;gap:12px"><h2 style="margin:
 <div class="slim${b4>0?' run':' ok'}" id=Tile3s onclick="NB.t=0;go('notBilled')"><span>${b4>0?'⚡ '+mn+' माह में '+b4+' किरायेदार का बिल बनाना बाकी':'✓ '+mn+' माह के सब बिल बन गए'}</span></div>
 <div class=duo><button class=tile id=Tile3 onclick="NB.t=0;go('notBilled')"><span class=ic style="background:#ff9500">🧾</span>बिल बनाएँ</button><button class=tile id=Tile4 onclick="PR.t=0;go('payRenter')"><span class=ic style="background:#30b858">💰</span>पेमेंट नोट करें</button></div>
 <div class="slim two" id=Tile7s style="margin-top:28px"><div onclick="go('occ')">🏠 ${oc} फ्लैट भरे हुए</div><i></i><div onclick="go('empty')">🔑 ${em} फ्लैट खाली</div></div>
-${tl('menu1','analytics','📊','#bf5af2','Rent Analytics','Paid vs pending by month')}${tl('menu2','listTen','👥','#0ea5b7','किरायेदार की जानकारी','कॉल करें और सूचना देखें')}${tl('menu3','addRemove','👤','#0a84ff','किरायेदार जोड़ें या हटाएँ','नया किरायेदार जोड़ें या पुराना हटाएँ')}${tl('menu5','qrSend','📲','#25d366','QR code भेजें','UPI QR WhatsApp पर भेजें')}`},
+${tl('menu1','analytics','📊','#8a6bb0','Rent Analytics','Paid vs pending by month')}${tl('menu2','listTen','👥','#0ea5b7','किरायेदार की जानकारी','कॉल करें और सूचना देखें')}${tl('menu3','addRemove','👤','#4f7fb3','किरायेदार जोड़ें या हटाएँ','नया किरायेदार जोड़ें या पुराना हटाएँ')}${tl('menu5','qrSend','📲','#5b9a70','QR code भेजें','UPI QR WhatsApp पर भेजें')}`},
 
 meterRead:()=>{const k=x=>String(x).trim().toLowerCase(),d0='2016-04-01',
 ymd=v=>{const x=new Date(v);return isNaN(x)?'':x.getFullYear()+'-'+pd2(x.getMonth()+1)+'-'+pd2(x.getDate())},
