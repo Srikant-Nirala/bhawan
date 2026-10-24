@@ -890,11 +890,11 @@ function swpE(e){if(colRoots().length)return;const d=e.changedTouches[0].clientX
 function elecDetails(mm,onlyTot,fixed){const m=mm||EM.m,cm=today().slice(0,7),s=(db.mr&&db.mr[m])||{},nf=x=>String(parseFloat(N(x).toFixed(2))),
 uOf=b=>b.units!==''&&b.units!=null?N(b.units):Math.max(0,N(b.cur)-N(b.prev)),
 inM=t=>(!t.entry||String(t.entry).slice(0,7)<=m||db.bills.some(b=>b.tenantId==t.id&&b.month==m))&&(t.active!='0'||db.bills.some(b=>b.tenantId==t.id&&b.month==m)||(String(t.exit||'').slice(0,7)>=m&&(!t.entry||String(t.entry).slice(0,7)<=m))),
-card=(nm,fl,l1,l2,e)=>`<div class="card cp" style="margin:10px 0"><div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px">${l1}<b class=fl style="font-size:16px;white-space:nowrap">${fl===''?'':'Flat '+E(fl)}</b></div><div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-top:10px">${l2}<b class=fl style="font-size:16px;text-align:right${e?';opacity:.6':''}">${E(nm)}</b></div></div>`,
+card=(nm,fl,l1,l2,e)=>`<div class="card cp" style="margin:10px 0;padding:14px 19px"><div style="display:flex;align-items:center;gap:14px">${av(nm)}<div style="flex:1;min-width:0;display:grid;grid-template-columns:minmax(0,1fr) 122px;column-gap:8px;row-gap:10px;align-items:baseline"><span class=nm style="min-width:0">${E(nm)}</span><b class=fl style="font-size:16px;white-space:nowrap">${fl===''?'':'Flat '+E(fl)}</b>${l2}${l1}</div></div></div>`,
 u1=u=>`<div class=gr style="font-size:15.75px">कुल यूनिट: <b style="color:var(--t);font-weight:800">${nf(u)}</b></div>`,
-a1=a=>`<div class=gr style="font-size:15.75px">बिजली बिल: <b style="color:#0a84ff;font-weight:400">${R(a)}</b></div>`,
-nb=`<div class=gr style="font-size:15.75px">बिजली बिल: <b style="color:#0a84ff;font-weight:400">बिल नहीं बना</b></div>`,
-nf1=`<div class=gr style="font-size:15.75px">बिजली बिल: <b style="color:#0a84ff;font-weight:400">पहले महीना है</b></div>`,
+a1=a=>`<div class="gr ef" style="font-size:15.75px;white-space:nowrap;overflow:hidden">बिजली बिल: <b style="color:#0a84ff;font-weight:400">${R(a)}</b></div>`,
+nb=`<div class="gr ef" style="font-size:15.75px;white-space:nowrap;overflow:hidden">बिजली बिल: <b style="color:#0a84ff;font-weight:400">बिल नहीं बना</b></div>`,
+nf1=`<div class="gr ef" style="font-size:15.75px;white-space:nowrap;overflow:hidden">बिजली बिल: <b style="color:#0a84ff;font-weight:400">पहले महीना है</b></div>`,
 firstM=t=>{const e=String(t.entry||'').slice(0,7);if(e)return e==m;const ms=db.bills.filter(b=>b.tenantId==t.id).map(b=>String(b.month)).sort();return ms.length>0&&ms[0]==m};
 let tot=0,rate=null;const eps=db.props.filter(p=>p.rentOnly!='1'),body=eps.sort((a,b)=>String(a.name).localeCompare(String(b.name))).map(p=>{
  const all=db.tenants.filter(t=>t.propId==p.id&&inM(t)),occ=new Set(all.map(t=>String(t.flat).trim().toLowerCase())),rows=[];
@@ -986,7 +986,7 @@ function fitH2(){const h=document.querySelector('#main h2');if(!h)return;h.style
  while(t.offsetWidth>av&&f>10){f-=1;h.style.fontSize=f+'px'}}
 function draw(){const y0=scrollY,nv=!!dir,rb=dir=='bck';if(cur().length&&cur()[cur().length-1][0]=='addTen'){docs=[];photo=''}
  const s=cur(),[v,a]=s.length?s[s.length-1]:[tab?'profile':'menu'];
- document.body.classList.toggle('nonav',s.length>0);document.querySelectorAll('nav button').forEach((b,i)=>b.classList.toggle('on',i==tab));$('#main').classList.remove('fxo','bdo');const ov=rb?mkOv(y0):null;$('#main').innerHTML=views[v](a);fitSlim();if(s.length||tab){const bh='<button type=button class="bkc@@" aria-label="वापस" onclick="backBtn()"><svg width=19 height=19 viewBox=\"0 0 24 24\" aria-hidden=true><path d=\"M19 12H5M11 6l-6 6 6 6\" fill=none stroke=currentColor stroke-width=2.4 stroke-linecap=round stroke-linejoin=round /></svg></button>',h2=$('#main').querySelector('h2');if(h2){h2.style.position='relative';h2.style.paddingLeft='54px';h2.style.paddingRight='0';h2.insertAdjacentHTML('afterbegin',bh.replace('@@',''))}else $('#main').insertAdjacentHTML('afterbegin',bh.replace('@@',' st'))}
+ document.body.classList.toggle('nonav',s.length>0);document.querySelectorAll('nav button').forEach((b,i)=>b.classList.toggle('on',i==tab));$('#main').classList.remove('fxo','bdo');const ov=rb?mkOv(y0):null;$('#main').innerHTML=views[v](a);fitSlim();fitEf();if(s.length||tab){const bh='<button type=button class="bkc@@" aria-label="वापस" onclick="backBtn()"><svg width=19 height=19 viewBox=\"0 0 24 24\" aria-hidden=true><path d=\"M19 12H5M11 6l-6 6 6 6\" fill=none stroke=currentColor stroke-width=2.4 stroke-linecap=round stroke-linejoin=round /></svg></button>',h2=$('#main').querySelector('h2');if(h2){h2.style.position='relative';h2.style.paddingLeft='54px';h2.style.paddingRight='0';h2.insertAdjacentHTML('afterbegin',bh.replace('@@',''))}else $('#main').insertAdjacentHTML('afterbegin',bh.replace('@@',' st'))}
  if(dir){const M=$('#main');M.className='';void M.offsetWidth;M.className=dir;dir=''}
  $('#main').querySelectorAll('script').forEach(x=>{eval(x.textContent)});fitH2();scrollTo(0,rb?topSY():nv?0:y0);navShow();if(ov)runOv(ov);syncHist()}
 /* page transitions: forward = new page slides in from the left; back = current page slides out to the right */
@@ -1160,6 +1160,7 @@ function msg(b,sms){const t=T(b.tenantId),p=db.profile,mm=(d=>d.toLocaleString('
 function setPaid(x,v){const o=own(x);v=r2(Math.max(0,Math.min(v,o)));x.paid=String(v);x.status=v>=o?'paid':'pending';save('bills',x)}
 function payFull(id){const b=db.bills.find(x=>x.id==id),amt=r2(olderDue(b).reduce((q,x)=>q+dueOf(x),0)+dueOf(b));olderDue(b).forEach(x=>setPaid(x,own(x)));setPaid(b,own(b));if(amt>0)logPay(b.tenantId,amt);cur().pop();dir='bck';draw()}
 /* shrink the home status line (only if needed) so it always stays on one line */
+function fitEf(){const L=[...document.querySelectorAll('.ef')];if(!L.length)return;let m=15.75;L.forEach(e=>{let f=15.75;e.style.fontSize=f+'px';while(e.scrollWidth>e.clientWidth&&f>9){f-=.25;e.style.fontSize=f+'px'}if(f<m)m=f});L.forEach(e=>e.style.fontSize=m+'px')}
 function fitSlim(){const e=document.querySelector('#Tile3s span');if(!e)return;const w=e.parentElement.clientWidth-28;let f=17;e.style.setProperty('font-size',f+'px','important');while(e.scrollWidth>w&&f>9){f-=.5;e.style.setProperty('font-size',f+'px','important')}}
 function payPick(id){const t=T(id);if(!t)return;PT.t=0;go('payTenant',id)}
 async function recvPay(id,full){const dt=DV('rdt'),
