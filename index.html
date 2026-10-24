@@ -203,12 +203,10 @@ html[data-theme=dark] .slim.run::after{background:#aeaeb2}
 .quad.one>div{position:relative;z-index:1}
 .quad.one>#Tile1 span,.quad.one>#Tile2 span{color:rgba(255,255,255,.88)}.quad.one>#Tile1 span,.quad.one>#Tile2 span{color:#fff!important;font-weight:800!important;font-size:16.5px!important}
 /* home: thin status tile - squarish, taller, iOS yellow (bills pending) / green (all bills made) */
-#Tile3s{border-radius:10px;min-height:30px;padding:5px 14px;margin-left:3px;margin-right:3px}
+#Tile3s{border-radius:9px;min-height:30px;padding:5px 14px;margin-left:3px;margin-right:3px}
 #Tile3s,#Tile3s span{font-size:15px!important;line-height:1.2!important}#Tile3s span{white-space:nowrap}
-#Tile3s.run,#Tile3s.pay{background:#ffb400}#Tile3s.ok{background:#30b858}
-#Tile3s.run,#Tile3s.run span,#Tile3s.pay,#Tile3s.pay span{color:#1c1c1e!important}#Tile3s.ok,#Tile3s.ok span{color:#0b3a1a!important}
-#Tile3s.run::after{background:#ffb400;border-radius:8.5px}
-html[data-theme=dark] #Tile3s.run,html[data-theme=dark] #Tile3s.pay{background:#ffb400}html[data-theme=dark] #Tile3s.ok{background:#30b858}html[data-theme=dark] #Tile3s.run::after{background:#ffb400}
+#Tile3s.run::after{border-radius:7.5px}
+#Tile7s{border-radius:9px}
 
 .mnav.an button{background:#d1d1d6;color:#3a3a3c;box-shadow:none}html[data-theme=dark] .mnav.an button{background:#3a3a3c;color:#f5f5f7}.mnav.an button:disabled{opacity:.35}
 .bdx,#main h2 .h2t{transition:opacity .3s ease,filter .3s ease}
@@ -236,9 +234,9 @@ html[data-theme=dark] .mnav.tl button{background:rgba(120,120,128,.32);color:#f5
 nav{z-index:20}body:not(.nonav){padding-bottom:calc(78px + env(safe-area-inset-bottom,0px))}
 .cam.gy{background:#d1d1d6}html[data-theme=dark] .cam.gy{background:#3a3a3c}
 /* banner: slides in from the left into the gap between the big tile and the बिल बनाएँ tile when payments are pending / bills not made */
-#tbn{position:absolute;z-index:70;box-sizing:border-box;padding:0 14px;display:flex;align-items:center;justify-content:center;text-align:center;border-radius:14px;background:rgba(142,142,147,.7);-webkit-backdrop-filter:blur(14px) saturate(160%);backdrop-filter:blur(14px) saturate(160%);box-shadow:0 6px 20px rgba(0,0,0,.2),inset 0 0 0 1px rgba(255,255,255,.35);color:#1c1c1e;touch-action:pan-y;cursor:pointer;-webkit-user-select:none;user-select:none;will-change:transform}
-#tbn .tbt{font-size:15px;font-weight:800;line-height:1.3;letter-spacing:-.01em}
-html[data-theme=dark] #tbn{background:rgba(58,58,60,.7);color:#f5f5f7;box-shadow:0 6px 20px rgba(0,0,0,.45),inset 0 0 0 1px rgba(255,255,255,.14)}
+#tbn{position:absolute;z-index:70;box-sizing:border-box;padding:0 14px;display:flex;align-items:center;justify-content:center;text-align:center;border-radius:14px;background:rgba(255,59,48,.8);-webkit-backdrop-filter:blur(14px) saturate(160%);backdrop-filter:blur(14px) saturate(160%);box-shadow:0 8px 24px rgba(255,59,48,.38),inset 0 0 0 1px rgba(255,255,255,.4);color:#fff;touch-action:pan-y;cursor:pointer;-webkit-user-select:none;user-select:none;will-change:transform}
+#tbn .tbt{font-size:15px;font-weight:800;line-height:1.3;letter-spacing:-.01em;text-shadow:0 1px 2px rgba(0,0,0,.28)}
+html[data-theme=dark] #tbn{background:rgba(255,69,58,.8);color:#fff;box-shadow:0 8px 24px rgba(255,69,58,.35),inset 0 0 0 1px rgba(255,255,255,.3)}
 </style></head><body><div id=offb>ऑफ़लाइन · सिर्फ़ देख सकते हैं (View only)</div>
 <div id="lk"><div class="lkb"><div class="lkt" id="lkt"></div><div class="lkd" id="lkd"></div><div class="lke" id="lke"></div><div class="lkp" id="lkp"></div><button id="lkc" style="display:none" onclick="lkCancel()">Cancel</button></div></div>
 <div id="main"></div>
