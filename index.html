@@ -193,7 +193,9 @@ html[data-theme=dark] .slim.run::after{background:#aeaeb2}
 @media(prefers-reduced-motion:reduce){.slim.run::before{display:none}}
 /* home: big tile = top row (बकाया | पाया) + bottom third strip (बिजली बिल) */
 .quad.one>div:nth-child(-n+2){min-height:140px;padding:14px 12px;gap:6px}
-.quad.one>#Tile8{grid-column:1/-1;min-height:56px;padding:8px 12px;flex-direction:row;justify-content:center;border-top:1px solid rgba(255,255,255,.28)!important;border-right:0!important}
+.quad.one>#Tile8{grid-column:1/-1;min-height:56px;padding:8px 12px;flex-direction:row;justify-content:center;border-top:0!important;border-right:0!important}
+.quad.one>#Tile8::before{content:"";position:absolute;left:0;right:0;top:0;height:6px;background:linear-gradient(90deg,#ff9500 0,#ff9500 var(--pp,0%),#3ddc6c var(--pp,0%),#3ddc6c 100%)}
+.quad.one>#Tile8.np::before{background:rgba(255,255,255,.28)}
 .quad.one>#Tile8 span{font-size:16px;font-weight:700;min-height:0;color:rgba(255,255,255,.88);display:block}
 .quad.one>#Tile8 b{font-size:16px;font-weight:800;letter-spacing:0;color:#fff;text-shadow:none}
 #Tile1 b{color:#ff9500!important}#Tile2 b{color:#3ddc6c!important}#Tile1 b,#Tile2 b{text-shadow:none!important;filter:none!important}
@@ -404,7 +406,7 @@ return `<div style="display:flex;align-items:center;gap:12px"><h2 style="margin:
 <div class="quad one">
 <div class=tap id=Tile1 onclick="PR.t=0;go('payRenter')"><span>कुल किराया बकाया</span><b>${R(b1)}</b></div>
 <div class=tap id=Tile2 onclick="RM.m=today().slice(0,7);go('rcvMonth')"><span>${mn} में पेमेंट</span><b>${R(b3)}</b></div>
-<div class=tap id=Tile8 onclick="go('elecMonth')"><span>${mname(prevM(mo))} का बिजली बिल = <b>${R(eb)}</b></span></div></div>
+<div class="tap${b1+b3>0?'':' np'}" id=Tile8 style="--pp:${b1+b3>0?(b1/(b1+b3)*100).toFixed(1):0}%" onclick="go('elecMonth')"><span>${mname(prevM(mo))} का बिजली बिल = <b>${R(eb)}</b></span></div></div>
 <div class="slim${b4>0?' run':' ok'}" id=Tile3s onclick="NB.t=0;go('notBilled')"><span>${b4>0?'⚡ '+mn+' माह में '+b4+' किरायेदार का बिल बनाना बाकी':'✓ '+mn+' माह के सब बिल बन गए'}</span></div>
 <div class=duo><button class=tile id=Tile3 onclick="NB.t=0;go('notBilled')"><span class=ic style="background:#ff9500">🧾</span>बिल बनाएँ</button><button class=tile id=Tile4 onclick="PR.t=0;go('payRenter')"><span class=ic style="background:#30b858">💰</span>पेमेंट नोट करें</button></div>
 <div class="slim two" id=Tile7s style="margin-top:28px"><div onclick="go('occ')">🏠 ${oc} फ्लैट भरे हुए</div><i></i><div onclick="go('empty')">🔑 ${em} फ्लैट खाली</div></div>
