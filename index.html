@@ -1466,12 +1466,13 @@ permDelete=XW(permDelete);saveTenDocs=XW(saveTenDocs);archive=XW(archive);restor
 if('serviceWorker' in navigator){const had=!!navigator.serviceWorker.controller;let rl=false;
  navigator.serviceWorker.addEventListener('controllerchange',()=>{if(had&&!rl){rl=true;location.reload()}});
  addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(r=>r.update()).catch(()=>{}))}
-draw();loadUrl().then(()=>{if(url&&cur().length&&cur()[cur().length-1][0]=='keys')draw();sync()});
-/* BANNER: once per app open, 1s after the app is open (after the lock is passed), if the thin tile says payments are
+draw();window.__bnSync=loadUrl().then(()=>{if(url&&cur().length&&cur()[cur().length-1][0]=='keys')draw();return sync()}).catch(()=>{});
+/* BANNER: once per app open (and again when the app is opened after being minimised for 30s or more), 1s after the app is open (after the lock is passed), if the thin tile says payments are
    pending / bills are not made. Slides in from the left into the gap between the big tile and the बिल बनाएँ tile, hides
    itself after 5s, swipe left to dismiss, tap opens the same page as the thin tile. */
 (function(){
-let done=0,el=null,hideT=0,off=0;
+let done=0,el=null,hideT=0,off=0,pend=0,shown=0,away=0,ready=window.__bnSync||Promise.resolve();
+const cap=p=>Promise.race([Promise.resolve(p).catch(()=>0),new Promise(r=>setTimeout(r,3000))]); /* wait for Google sync, but never more than 3s */
 const locked=()=>{const l=document.getElementById('lk');return !!l&&l.style.display!='none'};
 function close(){if(!el)return;clearTimeout(hideT);const e=el;el=null;e.style.transition='transform .4s cubic-bezier(.4,0,.2,1),opacity .4s ease';e.style.transform='translateX(-'+off+'px)';e.style.opacity='0';setTimeout(()=>e.remove(),450)}
 function open(){
@@ -1483,7 +1484,7 @@ function open(){
  const b=document.createElement('div');b.id='tbn';off=Math.round(r.right+30);
  b.style.cssText='left:'+Math.round(r.left+scrollX)+'px;top:'+Math.round(top+scrollY)+'px;width:'+Math.round(r.width)+'px;height:'+h+'px;transform:translateX(-'+off+'px)';
  const m=document.createElement('div');m.className='tbt';m.textContent=msg;b.appendChild(m);
- document.body.appendChild(b);el=b;void b.offsetHeight;
+ document.body.appendChild(b);el=b;shown=1;void b.offsetHeight;
  b.style.transition='transform .55s cubic-bezier(.22,.8,.3,1)';b.style.transform='translateX(0)';
  hideT=setTimeout(close,5000);
  let x0=0,y0=0,dx=0,t0=0,drag=0;
@@ -1495,7 +1496,16 @@ function open(){
   b.style.transition='transform .3s ease';b.style.transform='translateX(0)';hideT=setTimeout(close,3000)};
  b.addEventListener('pointerup',up);b.addEventListener('pointercancel',up);
 }
-function arm(){if(done)return;if(locked()){setTimeout(arm,300);return}done=1;setTimeout(open,1000)}
-setTimeout(arm,0);
+function arm(){if(done)return;if(locked()){pend=setTimeout(arm,300);return}done=1;Promise.all([new Promise(r=>{pend=setTimeout(r,1000)}),cap(ready)]).then(()=>{if(!document.hidden)open()})}
+/* also when the app is minimised for 30s or more and then opened again */
+document.addEventListener('visibilitychange',()=>{
+ if(document.hidden){away=Date.now();clearTimeout(pend);clearTimeout(hideT);if(el){el.remove();el=null}if(!shown)done=0;return}
+ const long=away&&Date.now()-away>=30000;away=0;
+ ready=Promise.resolve();
+ if(document.getElementById('Tile3s')){try{draw()}catch(e){} /* home screen is open: redraw it now, then read the latest data from Google (which redraws again) */
+  if(url&&!offline())ready=sync()}
+ if(long){shown=0;done=0}
+ if(!done)arm()});
+pend=setTimeout(arm,0);
 })();
 </script></body></html>
