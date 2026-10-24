@@ -235,6 +235,12 @@ html[data-theme=dark] .mnav.tl button{background:rgba(120,120,128,.32);color:#f5
 .pfb{position:relative;top:12px;margin-right:10px!important;flex:none;width:40px;height:40px;border-radius:50%;border:0;padding:0;margin:0;display:grid;place-items:center;background:#d1d1d6;color:#2a4d75;transition:transform .12s,opacity .2s}.pfb:active{transform:scale(.9);opacity:.8}html[data-theme=dark] .pfb{background:#3a3a3c;color:var(--p)}
 nav{z-index:20}body:not(.nonav){padding-bottom:calc(78px + env(safe-area-inset-bottom,0px))}
 .cam.gy{background:#d1d1d6}html[data-theme=dark] .cam.gy{background:#3a3a3c}
+/* top banner: slides down 1s after the app opens when the thin tile shows pending payments / bills not made */
+#tbn{position:fixed;top:0;left:0;right:0;margin:0 auto;max-width:560px;z-index:70;box-sizing:border-box;padding:env(safe-area-inset-top,0px) 22px 0;display:flex;align-items:center;justify-content:center;text-align:center;border-radius:0 0 26px 26px;background:linear-gradient(180deg,rgba(255,196,40,.66),rgba(255,170,0,.52));-webkit-backdrop-filter:blur(22px) saturate(180%);backdrop-filter:blur(22px) saturate(180%);box-shadow:0 10px 30px rgba(120,70,0,.22),inset 0 -1px 0 rgba(255,255,255,.5);color:#1c1c1e;touch-action:none;cursor:pointer;-webkit-user-select:none;user-select:none;will-change:transform}
+#tbn .tbt{font-size:16px;font-weight:800;line-height:1.35;letter-spacing:-.01em;padding-bottom:12px}
+#tbn .tbg{position:absolute;left:50%;bottom:7px;width:38px;height:4px;margin-left:-19px;border-radius:2px;background:rgba(28,28,30,.28)}
+html[data-theme=dark] #tbn{background:linear-gradient(180deg,rgba(78,56,8,.72),rgba(54,38,6,.62));color:#ffc93c;box-shadow:0 10px 30px rgba(0,0,0,.45),inset 0 -1px 0 rgba(255,201,60,.22)}
+html[data-theme=dark] #tbn .tbg{background:rgba(255,201,60,.38)}
 </style></head><body><div id=offb>ऑफ़लाइन · सिर्फ़ देख सकते हैं (View only)</div>
 <div id="lk"><div class="lkb"><div class="lkt" id="lkt"></div><div class="lkd" id="lkd"></div><div class="lke" id="lke"></div><div class="lkp" id="lkp"></div><button id="lkc" style="display:none" onclick="lkCancel()">Cancel</button></div></div>
 <div id="main"></div>
@@ -405,7 +411,7 @@ return `<div style="display:flex;align-items:center;gap:12px"><h2 style="margin:
 <div class=tap id=Tile1 onclick="PR.t=0;go('payRenter')"><span>कुल किराया बकाया</span><b>${R(b1)}</b></div>
 <div class=tap id=Tile2 onclick="RM.m=today().slice(0,7);go('rcvMonth')"><span>${mn} में पेमेंट</span><b>${R(b3)}</b></div>
 <div class=tap id=Tile8 onclick="go('elecMonth')"><span>${mname(prevM(mo))} का बिजली बिल = <b>${R(eb)}</b></span></div></div>
-<div class="slim${b4>0||nd>0?' run':' ok'}" id=Tile3s onclick="${sp?"PR.t=0;go('payRenter')":"NB.t=0;go('notBilled')"}"><span>${sp?'💰 अभी '+nd+' किरायेदारों का पेमेंट होना बाकी है':b4>0?'🧾 '+mn+' में '+b4+' किरायेदार का बिल बनाना बाकी':'🎉 '+mn+' महीने का सारा पेमेंट क्लियर है'}</span></div>
+<div class="slim${b4>0||nd>0?' run':' ok'}" id=Tile3s data-al="${sp||b4>0?1:0}" onclick="${sp?"PR.t=0;go('payRenter')":"NB.t=0;go('notBilled')"}"><span>${sp?'💰 अभी '+nd+' किरायेदारों का पेमेंट होना बाकी है':b4>0?'🧾 '+mn+' में '+b4+' किरायेदार का बिल बनाना बाकी':'🎉 '+mn+' महीने का सारा पेमेंट क्लियर है'}</span></div>
 <div class=duo><button class=tile id=Tile3 onclick="NB.t=0;go('notBilled')"><span class=ic style="background:#0a84ff">🧾</span>बिल बनाएँ</button><button class=tile id=Tile4 onclick="PR.t=0;go('payRenter')"><span class=ic style="background:#30b858">💰</span>पेमेंट नोट करें</button></div>
 <div class="slim two" id=Tile7s style="margin-top:28px"><div onclick="go('occ')">🏠 ${oc} फ्लैट भरे हुए</div><i></i><div onclick="go('empty')">🔑 ${em} फ्लैट खाली</div></div>
 ${tl('menu1','analytics','📊','#8a6bb0','Rent Analytics','Paid vs pending by month')}${tl('menu2','listTen','👥','#4f7fb3','किरायेदार की जानकारी','कॉल करें और सूचना देखें')}${tl('menu3','addRemove','👤','#0ea5b7','किरायेदार जोड़ें या हटाएँ','नया किरायेदार जोड़ें या पुराना हटाएँ')}${tl('menu5','qrSend','📲','#5b9a70','QR code भेजें','UPI QR WhatsApp पर भेजें')}`},
@@ -1463,4 +1469,32 @@ if('serviceWorker' in navigator){const had=!!navigator.serviceWorker.controller;
  navigator.serviceWorker.addEventListener('controllerchange',()=>{if(had&&!rl){rl=true;location.reload()}});
  addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(r=>r.update()).catch(()=>{}))}
 draw();loadUrl().then(()=>{if(url&&cur().length&&cur()[cur().length-1][0]=='keys')draw();sync()});
+/* TOP BANNER: once per app open, 1s after the app is open (after the lock is passed), if the thin tile says payments are
+   pending / bills are not made. Slides down, hides itself after 5s, swipe up to dismiss, tap opens the same page as the tile. */
+(function(){
+let done=0,el=null,hideT=0;
+const locked=()=>{const l=document.getElementById('lk');return !!l&&l.style.display!='none'};
+function close(){if(!el)return;clearTimeout(hideT);const e=el;el=null;e.style.transition='transform .4s cubic-bezier(.4,0,.2,1),opacity .4s ease';e.style.transform='translateY(-110%)';e.style.opacity='0';setTimeout(()=>e.remove(),450)}
+function open(){
+ const t=document.getElementById('Tile3s'),t1=document.querySelector('#Tile1 span');
+ if(!t||t.dataset.al!='1'||!t1||locked()||el)return;
+ const sp=t.querySelector('span'),msg=((sp||t).textContent||'').trim();if(!msg)return;
+ const h=Math.max(72,Math.round(t1.getBoundingClientRect().top-6));
+ const b=document.createElement('div');b.id='tbn';b.style.height=h+'px';
+ const m=document.createElement('div');m.className='tbt';m.textContent=msg;const g=document.createElement('i');g.className='tbg';b.append(m,g);
+ b.style.transform='translateY(-110%)';document.body.appendChild(b);el=b;void b.offsetHeight;
+ b.style.transition='transform .55s cubic-bezier(.22,.8,.3,1)';b.style.transform='translateY(0)';
+ hideT=setTimeout(close,5000);
+ let y0=0,x0=0,dy=0,t0=0,drag=0;
+ b.addEventListener('pointerdown',e=>{if(b!==el)return;drag=1;y0=e.clientY;x0=e.clientX;dy=0;t0=Date.now();clearTimeout(hideT);b.style.transition='none';try{b.setPointerCapture(e.pointerId)}catch(_){}});
+ b.addEventListener('pointermove',e=>{if(!drag||b!==el)return;dy=Math.min(0,e.clientY-y0);b.style.transform='translateY('+dy+'px)'});
+ const up=e=>{if(!drag||b!==el)return;drag=0;
+  if(e.type=='pointerup'&&Math.abs(e.clientY-y0)<8&&Math.abs(e.clientX-x0)<8&&Date.now()-t0<600){close();const tl=document.getElementById('Tile3s');if(tl)tl.click();return}
+  if(dy<-30){close();return}
+  b.style.transition='transform .3s ease';b.style.transform='translateY(0)';hideT=setTimeout(close,3000)};
+ b.addEventListener('pointerup',up);b.addEventListener('pointercancel',up);
+}
+function arm(){if(done)return;if(locked()){setTimeout(arm,300);return}done=1;setTimeout(open,1000)}
+setTimeout(arm,0);
+})();
 </script></body></html>
