@@ -890,7 +890,7 @@ function swpE(e){if(colRoots().length)return;const d=e.changedTouches[0].clientX
 function elecDetails(mm,onlyTot,fixed){const m=mm||EM.m,cm=today().slice(0,7),s=(db.mr&&db.mr[m])||{},nf=x=>String(parseFloat(N(x).toFixed(2))),
 uOf=b=>b.units!==''&&b.units!=null?N(b.units):Math.max(0,N(b.cur)-N(b.prev)),
 inM=t=>(!t.entry||String(t.entry).slice(0,7)<=m||db.bills.some(b=>b.tenantId==t.id&&b.month==m))&&(t.active!='0'||db.bills.some(b=>b.tenantId==t.id&&b.month==m)||(String(t.exit||'').slice(0,7)>=m&&(!t.entry||String(t.entry).slice(0,7)<=m))),
-card=(nm,fl,l1,l2,e)=>`<div class="card cp" style="margin:10px 0;padding:14px 19px"><div style="display:flex;align-items:center;gap:14px">${av(nm)}<div style="flex:1;min-width:0;display:grid;grid-template-columns:minmax(0,1fr) 122px;column-gap:8px;row-gap:10px;align-items:baseline"><span class=nm style="min-width:0">${E(nm)}</span><b class=fl style="font-size:16px;white-space:nowrap">${fl===''?'':'Flat '+E(fl)}</b>${l2}${l1}</div></div></div>`,
+card=(nm,fl,l1,l2,e)=>`<div class="card cp" style="margin:10px 0;padding:14px 19px"><div style="display:flex;align-items:center;gap:14px">${av(nm)}<div style="flex:1;min-width:0;display:grid;grid-template-columns:minmax(0,1fr) 148px;column-gap:8px;row-gap:10px;align-items:baseline"><span class=nm style="min-width:0">${E(nm)}</span>${l2}<b class=fl style="font-size:16px;white-space:nowrap">${fl===''?'':'Flat '+E(fl)}</b>${l1}</div></div></div>`,
 u1=u=>`<div class=gr style="font-size:15.75px">कुल यूनिट: <b style="color:var(--t);font-weight:800">${nf(u)}</b></div>`,
 a1=a=>`<div class="gr ef" style="font-size:15.75px;white-space:nowrap;overflow:hidden">बिजली बिल: <b style="color:#0a84ff;font-weight:400">${R(a)}</b></div>`,
 nb=`<div class="gr ef" style="font-size:15.75px;white-space:nowrap;overflow:hidden">बिजली बिल: <b style="color:#0a84ff;font-weight:400">बिल नहीं बना</b></div>`,
@@ -1160,7 +1160,7 @@ function msg(b,sms){const t=T(b.tenantId),p=db.profile,mm=(d=>d.toLocaleString('
 function setPaid(x,v){const o=own(x);v=r2(Math.max(0,Math.min(v,o)));x.paid=String(v);x.status=v>=o?'paid':'pending';save('bills',x)}
 function payFull(id){const b=db.bills.find(x=>x.id==id),amt=r2(olderDue(b).reduce((q,x)=>q+dueOf(x),0)+dueOf(b));olderDue(b).forEach(x=>setPaid(x,own(x)));setPaid(b,own(b));if(amt>0)logPay(b.tenantId,amt);cur().pop();dir='bck';draw()}
 /* shrink the home status line (only if needed) so it always stays on one line */
-function fitEf(){const L=[...document.querySelectorAll('.ef')];if(!L.length)return;let m=15.75;L.forEach(e=>{let f=15.75;e.style.fontSize=f+'px';while(e.scrollWidth>e.clientWidth&&f>9){f-=.25;e.style.fontSize=f+'px'}if(f<m)m=f});L.forEach(e=>e.style.fontSize=m+'px')}
+function fitEf(){document.querySelectorAll('.ef').forEach(e=>{let f=15.75;e.style.fontSize=f+'px';while(e.scrollWidth>e.clientWidth&&f>9){f-=.25;e.style.fontSize=f+'px'}})}
 function fitSlim(){const e=document.querySelector('#Tile3s span');if(!e)return;const w=e.parentElement.clientWidth-28;let f=17;e.style.setProperty('font-size',f+'px','important');while(e.scrollWidth>w&&f>9){f-=.5;e.style.setProperty('font-size',f+'px','important')}}
 function payPick(id){const t=T(id);if(!t)return;PT.t=0;go('payTenant',id)}
 async function recvPay(id,full){const dt=DV('rdt'),
