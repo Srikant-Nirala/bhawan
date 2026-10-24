@@ -203,7 +203,7 @@ html[data-theme=dark] .slim.run::after{background:#aeaeb2}
 .quad.one>div{position:relative;z-index:1}
 .quad.one>#Tile1 span,.quad.one>#Tile2 span{color:rgba(255,255,255,.88)}.quad.one>#Tile1 span,.quad.one>#Tile2 span{color:#fff!important;font-weight:800!important;font-size:16.5px!important}
 /* home: thin status tile - squarish, taller, iOS yellow (bills pending) / green (all bills made) */
-#Tile3s{border-radius:13px;min-height:36px;padding:5px 14px;margin-left:3px;margin-right:3px}
+#Tile3s{border-radius:13px;min-height:30px;padding:4px 14px;margin-left:3px;margin-right:3px}
 #Tile3s,#Tile3s span{font-size:17px!important}#Tile3s span{white-space:nowrap}
 #Tile3s.run,#Tile3s.pay{background:#ff9500}#Tile3s.ok{background:#30b858}
 #Tile3s.run,#Tile3s.run span,#Tile3s.pay,#Tile3s.pay span{color:#1c1c1e!important}#Tile3s.ok,#Tile3s.ok span{color:#0b3a1a!important}
@@ -908,7 +908,7 @@ let tot=0,rate=null;const eps=db.props.filter(p=>p.rentOnly!='1'),body=eps.sort(
  return rows.length?`${eps.length>1?`<h3>${E(p.name)}</h3>`:''}${rows.map(x=>x.h).join('')}`:''}).join('');
 if(onlyTot)return r2(tot);
 const rt=rate!==null?rate:N(db.profile.rate);
-return `<div ${fixed?'':'ontouchstart="tx=event.touches[0].clientX" ontouchend="swpE(event)" '}style="min-height:50vh">${fixed?'':`<div class="mnav tl"><button onclick="shiftEM(-1)">‹</button><b>${mlabel(prevM(m))}</b><button onclick="shiftEM(1)" ${m>=cm?'disabled':''}>›</button></div>`}${fixed?`<div style="margin:6px 2px 14px;text-align:center"><div style="font-size:17px;font-weight:900;color:var(--t)">कुल बिजली बिल = <span style="color:#0a84ff">${R(r2(tot))}</span></div><div style="font-size:14px;font-weight:800;color:var(--m);margin-top:4px">(बिजली दर = ${R(rt)}/यूनिट)</div></div>`:`<div style="margin:22px 2px 14px;text-align:center;font-size:17px;font-weight:800;color:var(--t)">कुल बिजली बिल = <span style="color:#0a84ff">${R(r2(tot))}</span> @${nf(rt)}/यूनिट</div>`}${body||'<div class=card>कोई फ्लैट नहीं</div>'}</div>`}
+return `<div ${fixed?'':'ontouchstart="tx=event.touches[0].clientX" ontouchend="swpE(event)" '}style="min-height:50vh">${fixed?`<div style="margin:6px 2px 14px;text-align:center"><div style="font-size:17px;font-weight:900;color:var(--t)">कुल बिजली बिल = <span style="color:#0a84ff">${R(r2(tot))}</span></div><div style="font-size:14px;font-weight:800;color:var(--m);margin-top:4px">(बिजली दर = ${R(rt)}/यूनिट)</div></div>`:`<div style="margin:22px 2px 14px;text-align:center;font-size:17px;font-weight:800;color:var(--t)">कुल बिजली बिल = <span style="color:#0a84ff">${R(r2(tot))}</span> @${nf(rt)}/यूनिट</div>`}${fixed?'':`<div class="mnav tl"><button onclick="shiftEM(-1)">‹</button><b>${mlabel(prevM(m))}</b><button onclick="shiftEM(1)" ${m>=cm?'disabled':''}>›</button></div>`}${body||'<div class=card>कोई फ्लैट नहीं</div>'}</div>`}
 /* "कुल बकाया" tile, identical to the one on the tenant payment page */
 function dueCard(id,mg){const t=T(id)||{},due=r2(db.bills.filter(b=>b.tenantId==id).reduce((q,b)=>q+dueOf(b),0)),dl=db.bills.filter(b=>b.tenantId==id&&dueOf(b)>0),mc=today().slice(0,7),nb=db.bills.some(x=>x.tenantId==id)?missingMonths(t,nextM(mc)):(t.active!='0'?[mc]:[]),
 rows=[...dl.map(x=>({m:String(x.month),a:dueOf(x)})),...nb.map(m=>({m,n:1}))].sort((p,q)=>p.m.localeCompare(q.m));
