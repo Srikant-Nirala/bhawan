@@ -489,7 +489,7 @@ return `<div class="card cp clk" onclick="togCard(this)"><div style="display:fle
  /* बकाया tab, tenant with no dues: same line "<माह> तक का बकाया = ₹0", opens the payment page like a tenant with dues */
  nd=t=>bt(t,'#1b8a3d'),
  tb=(on,c,tx,i)=>`<button class="${on?'on':''}" style="font-weight:700;${on?`background:${c.b};color:#fff`:`color:${c.t}`}" onclick="PR.t=${i};${i?`EM.m=today().slice(0,7);`:''}draw()">${tx}</button>`,
- tabs=`<div class="seg big" style="margin-top:22px">${tb(!pr.t,{b:'#30b858',t:'#30b858'},'पेमेंट नोट करें',0)}${tb(pr.t,{b:'linear-gradient(135deg,#7aa7ff,#5b6cff)',t:'#6a8aff'},'बिजली बिल देखें',1)}</div>`,
+ tabs=`<div class="seg big" style="margin-top:22px">${tb(!pr.t,{b:'#0a84ff',t:'#0a84ff'},'पेमेंट नोट करें',0)}${tb(pr.t,{b:'linear-gradient(135deg,#7aa7ff,#5b6cff)',t:'#6a8aff'},'बिजली बिल देखें',1)}</div>`,
  /* बकाया tab: every tenant; those with dues first (tap -> note payment), cleared tenants at the bottom ("<माह> तक चुकाया", tap -> expand). हिसाब किताब tab: every tenant. */
  list=pr.t?'':(act.filter(t=>tdue(t)>0).map(bk).join('')+old.map(bk).join('')+act.filter(t=>tdue(t)<=0).map(nd).join(''))||'<div class=card><span class=m>कोई किरायेदार नहीं</span></div>';
 const lab=pr.t?'':`कुल किराया बकाया = <span style="color:#e8590c">${R(r2(db.bills.filter(b=>T(b.tenantId)).reduce((q,b)=>q+dueOf(b),0)))}</span>`;if(pr.t)return `<h2>बिजली बिल डिटेल्स</h2>${tabs}${elecDetails()}`;return `<h2>किरायेदार चुनें</h2>${tabs}${`<div style="font-size:17px;font-weight:800;text-align:center;margin:22px 19px 20px;color:var(--t)">${lab}</div>`}${list}`},
