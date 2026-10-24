@@ -406,7 +406,7 @@ return `<div style="display:flex;align-items:center;gap:12px"><h2 style="margin:
 <div class=tap id=Tile2 onclick="RM.m=today().slice(0,7);go('rcvMonth')"><span>${mn} में पेमेंट</span><b>${R(b3)}</b></div>
 <div class=tap id=Tile8 onclick="go('elecMonth')"><span>${mname(prevM(mo))} का बिजली बिल = <b>${R(eb)}</b></span></div></div>
 <div class="slim${b4>0?' run':' ok'}" id=Tile3s onclick="NB.t=0;go('notBilled')"><span>${b4>0?'⚡ '+mn+' माह में '+b4+' किरायेदार का बिल बनाना बाकी':'✓ '+mn+' माह के सब बिल बन गए'}</span></div>
-<div class=duo><button class=tile id=Tile3 onclick="NB.t=0;go('notBilled')"><span class=ic style="background:linear-gradient(135deg,#7aa7ff,#5b6cff)">🧾</span>बिल बनाएँ</button><button class=tile id=Tile4 onclick="PR.t=0;go('payRenter')"><span class=ic style="background:#30b858">💰</span>पेमेंट नोट करें</button></div>
+<div class=duo><button class=tile id=Tile3 onclick="NB.t=0;go('notBilled')"><span class=ic style="background:#0a84ff">🧾</span>बिल बनाएँ</button><button class=tile id=Tile4 onclick="PR.t=0;go('payRenter')"><span class=ic style="background:#30b858">💰</span>पेमेंट नोट करें</button></div>
 <div class="slim two" id=Tile7s style="margin-top:28px"><div onclick="go('occ')">🏠 ${oc} फ्लैट भरे हुए</div><i></i><div onclick="go('empty')">🔑 ${em} फ्लैट खाली</div></div>
 ${tl('menu1','analytics','📊','#8a6bb0','Rent Analytics','Paid vs pending by month')}${tl('menu2','listTen','👥','#0ea5b7','किरायेदार की जानकारी','कॉल करें और सूचना देखें')}${tl('menu3','addRemove','👤','#4f7fb3','किरायेदार जोड़ें या हटाएँ','नया किरायेदार जोड़ें या पुराना हटाएँ')}${tl('menu5','qrSend','📲','#5b9a70','QR code भेजें','UPI QR WhatsApp पर भेजें')}`},
 
