@@ -236,11 +236,11 @@ html[data-theme=dark] .mnav.tl button{background:rgba(120,120,128,.32);color:#f5
 nav{z-index:20}body:not(.nonav){padding-bottom:calc(78px + env(safe-area-inset-bottom,0px))}
 .cam.gy{background:#d1d1d6}html[data-theme=dark] .cam.gy{background:#3a3a3c}
 /* top banner: slides down 1s after the app opens when the thin tile shows pending payments / bills not made */
-#tbn{position:fixed;top:0;left:0;right:0;margin:0 auto;max-width:560px;z-index:70;box-sizing:border-box;padding:env(safe-area-inset-top,0px) 22px 0;display:flex;align-items:center;justify-content:center;text-align:center;border-radius:0 0 26px 26px;background:linear-gradient(180deg,rgba(255,196,40,.66),rgba(255,170,0,.52));-webkit-backdrop-filter:blur(22px) saturate(180%);backdrop-filter:blur(22px) saturate(180%);box-shadow:0 10px 30px rgba(120,70,0,.22),inset 0 -1px 0 rgba(255,255,255,.5);color:#1c1c1e;touch-action:none;cursor:pointer;-webkit-user-select:none;user-select:none;will-change:transform}
+#tbn{position:fixed;top:0;left:0;right:0;margin:0 auto;max-width:560px;z-index:70;box-sizing:border-box;padding:env(safe-area-inset-top,0px) 22px 0;display:flex;align-items:center;justify-content:center;text-align:center;border-radius:0 0 26px 26px;background:rgba(142,142,147,.7);-webkit-backdrop-filter:blur(14px) saturate(160%);backdrop-filter:blur(14px) saturate(160%);box-shadow:0 10px 30px rgba(0,0,0,.2),inset 0 -1px 0 rgba(255,255,255,.4);color:#1c1c1e;touch-action:none;cursor:pointer;-webkit-user-select:none;user-select:none;will-change:transform}
 #tbn .tbt{font-size:16px;font-weight:800;line-height:1.35;letter-spacing:-.01em;padding-bottom:12px}
 #tbn .tbg{position:absolute;left:50%;bottom:7px;width:38px;height:4px;margin-left:-19px;border-radius:2px;background:rgba(28,28,30,.28)}
-html[data-theme=dark] #tbn{background:linear-gradient(180deg,rgba(78,56,8,.72),rgba(54,38,6,.62));color:#ffc93c;box-shadow:0 10px 30px rgba(0,0,0,.45),inset 0 -1px 0 rgba(255,201,60,.22)}
-html[data-theme=dark] #tbn .tbg{background:rgba(255,201,60,.38)}
+html[data-theme=dark] #tbn{background:rgba(58,58,60,.7);color:#f5f5f7;box-shadow:0 10px 30px rgba(0,0,0,.45),inset 0 -1px 0 rgba(255,255,255,.14)}
+html[data-theme=dark] #tbn .tbg{background:rgba(255,255,255,.35)}
 </style></head><body><div id=offb>ऑफ़लाइन · सिर्फ़ देख सकते हैं (View only)</div>
 <div id="lk"><div class="lkb"><div class="lkt" id="lkt"></div><div class="lkd" id="lkd"></div><div class="lke" id="lke"></div><div class="lkp" id="lkp"></div><button id="lkc" style="display:none" onclick="lkCancel()">Cancel</button></div></div>
 <div id="main"></div>
@@ -1476,10 +1476,10 @@ let done=0,el=null,hideT=0;
 const locked=()=>{const l=document.getElementById('lk');return !!l&&l.style.display!='none'};
 function close(){if(!el)return;clearTimeout(hideT);const e=el;el=null;e.style.transition='transform .4s cubic-bezier(.4,0,.2,1),opacity .4s ease';e.style.transform='translateY(-110%)';e.style.opacity='0';setTimeout(()=>e.remove(),450)}
 function open(){
- const t=document.getElementById('Tile3s'),t1=document.querySelector('#Tile1 span');
- if(!t||t.dataset.al!='1'||!t1||locked()||el)return;
+ const t=document.getElementById('Tile3s');
+ if(!t||t.dataset.al!='1'||locked()||el)return;
  const sp=t.querySelector('span'),msg=((sp||t).textContent||'').trim();if(!msg)return;
- const h=Math.max(72,Math.round(t1.getBoundingClientRect().top-6));
+ const h=Math.max(72,Math.min(Math.round(t.getBoundingClientRect().top-3),innerHeight-140));
  const b=document.createElement('div');b.id='tbn';b.style.height=h+'px';
  const m=document.createElement('div');m.className='tbt';m.textContent=msg;const g=document.createElement('i');g.className='tbg';b.append(m,g);
  b.style.transform='translateY(-110%)';document.body.appendChild(b);el=b;void b.offsetHeight;
