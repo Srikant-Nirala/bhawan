@@ -12,6 +12,7 @@ applyTheme(getTheme())</script>
 <meta name="apple-mobile-web-app-title" content="Rent Manager"><meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="apple-touch-icon" href="icon-180.png"><link rel="icon" type="image/png" href="icon-192.png">
 <style>
+/* STYLES: colours/theme variables first (light + dark), then base elements, shared components, then per-screen rules */
 :root{color-scheme:light;--bg:#f2f2f7;--c:#fff;--t:#111827;--m:#8a8f9c;--p:#0a84ff;--g:#30b858;--r:#ff453a;--b:#ececf1;--sh:0 1px 2px rgba(0,0,0,.04),0 6px 20px rgba(20,30,60,.06);--f:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Helvetica Neue",Helvetica,Arial,sans-serif}
 html[data-theme=dark]{color-scheme:dark;--bg:#000;--c:#1c1c1e;--t:#f5f5f7;--m:#98989f;--b:#2c2c2e;--sh:none}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -20,7 +21,7 @@ input[type=date],input[type=month]{min-height:50px}
 input[type=date]::-webkit-calendar-picker-indicator,input[type=month]::-webkit-calendar-picker-indicator{opacity:1;cursor:pointer}
 body{min-height:100vh;min-height:100dvh;overscroll-behavior:none;margin:0;font:17px/1.35 var(--f);letter-spacing:-.022em;-webkit-font-smoothing:antialiased;background:var(--bg);color:var(--t);padding-bottom:30px}
 input,select,button{font-family:var(--f);letter-spacing:inherit}
-#main{max-width:560px;margin:auto;padding:12px 16px;animation:in .25s ease}
+#main{max-width:560px;margin:auto;padding:12px 16px}
 @keyframes in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 h2{white-space:nowrap;font-size:32px;font-weight:700;letter-spacing:-.035em;margin:8px 2px 14px}
 .glw{color:#0a84ff!important}
@@ -52,7 +53,7 @@ input:focus,select:focus{border-color:var(--p);background:var(--c);box-shadow:0 
 .stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0}.stat{min-height:86px;background:var(--c);border-radius:18px;padding:14px;box-shadow:var(--sh)}
 .stat b{display:block;font-size:22px;letter-spacing:-.03em}.stat span{font-size:13px;color:var(--m)}
 .stat.hero{flex:1.4;background:linear-gradient(135deg,#ffa30a,#ff7a00);color:#fff}.stat.hero span{color:rgba(255,255,255,.8)}
-nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:color-mix(in srgb,var(--c) 95%,transparent);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);border-top:1px solid var(--b);padding:6px 0 calc(env(safe-area-inset-bottom,0px) + 4px)}
+nav{position:fixed;bottom:0;left:0;right:0;background:color-mix(in srgb,var(--c) 95%,transparent);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);border-top:1px solid var(--b);padding:6px 0 calc(env(safe-area-inset-bottom,0px) + 4px)}
 nav button{flex:1;border:0;background:none;color:var(--m);font-size:11px;font-weight:500;display:flex;flex-direction:column;align-items:center;gap:2px}
 nav i{font-style:normal;font-size:19px;filter:grayscale(1);opacity:.7}nav .on{color:#2a4d75}html[data-theme=dark] nav .on{color:var(--p)}nav .on i{filter:none;opacity:1}
 .bar{height:8px;border-radius:5px;background:rgba(255,69,58,.25);overflow:hidden;margin:10px 0}.bar i{display:block;height:100%;background:var(--g);border-radius:5px}
@@ -196,12 +197,12 @@ html[data-theme=dark] .slim.run::after{background:#aeaeb2}
 .quad.one>#Tile8{grid-column:1/-1;min-height:56px;padding:8px 12px;flex-direction:row;justify-content:center;border-top:1px solid rgba(255,255,255,.28)!important;border-right:0!important}
 .quad.one>#Tile8 span{font-size:16px;font-weight:700;min-height:0;color:rgba(255,255,255,.88);display:block}
 .quad.one>#Tile8 b{font-size:16px;font-weight:800;letter-spacing:0;color:#fff;text-shadow:none}
-#Tile1 b,#Tile2 b{color:#fff!important}#Tile1 b,#Tile2 b{text-shadow:none!important;filter:none!important}
+#Tile1 b,#Tile2 b{color:#fff!important;text-shadow:none!important;filter:none!important}
 /* glossy big tile: light sheen over the top half + soft inner edge highlights */
 .quad.one{position:relative;background:#2a4d75;box-shadow:inset 0 1px 0 rgba(255,255,255,.35),inset 0 -2px 6px rgba(0,0,70,.16)}
 .quad.one::before{content:"";position:absolute;left:0;right:0;top:0;height:50%;background:linear-gradient(180deg,rgba(255,255,255,.16) 0%,rgba(255,255,255,.05) 70%,rgba(255,255,255,.015) 100%);border-radius:24px 24px 50% 50%/24px 24px 14px 14px;pointer-events:none;z-index:0}
 .quad.one>div{position:relative;z-index:1}
-.quad.one>#Tile1 span,.quad.one>#Tile2 span{color:rgba(255,255,255,.88)}.quad.one>#Tile1 span,.quad.one>#Tile2 span{color:#fff!important;font-weight:800!important;font-size:16.5px!important}
+.quad.one>#Tile1 span,.quad.one>#Tile2 span{color:#fff!important;font-weight:800!important;font-size:16.5px!important}
 /* home: thin status tile - squarish, taller, iOS yellow (bills pending) / green (all bills made) */
 #Tile3s{border-radius:9px;min-height:30px;padding:5px 14px;margin-left:3px;margin-right:3px}
 #Tile3s,#Tile3s span{font-size:15px!important;line-height:1.2!important}#Tile3s span{white-space:nowrap}
@@ -217,9 +218,9 @@ html[data-theme=dark] .slim.run::after{background:#aeaeb2}
 #main>*{transition:opacity .25s ease,filter .25s ease}
 #main.fxo>*:not(h2):not(.bkc):not(.ex):not([ontouchstart]){opacity:.12;filter:grayscale(1)}
 .card.cp.bh{padding-bottom:12px}
-.mnav.tl{justify-content:space-between;background:var(--c);border-radius:18px;padding:8px 34px;margin:6px 0 12px;box-shadow:var(--sh)}
+.mnav.tl{background:var(--c);border-radius:18px;margin:6px 0 12px;box-shadow:var(--sh)}
 .mnav.tl b{color:var(--t);font-size:17px;font-weight:700;letter-spacing:-.01em}
-.mnav.tl button{width:68px;height:32px;padding:0 0 2px;background:rgba(120,120,128,.16);color:var(--t);font-size:21px;font-weight:600;-webkit-text-stroke:0;box-shadow:none}
+.mnav.tl button{background:rgba(120,120,128,.16);color:var(--t);-webkit-text-stroke:0;box-shadow:none}
 .mnav.tl button:disabled{opacity:.35}
 html[data-theme=dark] .mnav.tl button{background:rgba(120,120,128,.32);color:#f5f5f7}
 /* month toggles: arrow only (no pill), larger, sitting closer to the month */
@@ -299,6 +300,9 @@ const av=n=>`<span class=av>${String(n||'?')[0].toUpperCase()}</span>`;
 const $=s=>document.querySelector(s),E=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])),
 uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,5),N=x=>Number(x)||0,R=x=>'₹'+N(x).toLocaleString('en-IN'),
 V=id=>{const e=document.getElementById(id),v=e?.value||'';return e&&e.classList.contains('rdg')?v.replace(/-/g,''):v},pd2=n=>String(n).padStart(2,'0'),today=()=>{const d=new Date();return d.getFullYear()+'-'+pd2(d.getMonth()+1)+'-'+pd2(d.getDate())};
+/* ================================================================
+   1. STATE & LOCAL DATA - the in-memory database (db), saved in this phone's localStorage
+   ================================================================ */
 let db={props:[],tenants:[],bills:[],profile:{}},url='',tab=0,st=[[],[]],photo='';
 try{db=JSON.parse(localStorage.db||'null')||db}catch(e){}
 /* The Apps Script link is kept ENCRYPTED (AES-GCM). The encryption key is a non-extractable key held in IndexedDB,
@@ -367,6 +371,9 @@ async function txCore(f,quiet){
  if(t.w)persistNow();
  for(const m of t.msgs)await alert(m); /* success messages are shown only now, after Google confirmed */
  return true}
+/* ================================================================
+   2. DATA LAYER - save / sync with Google Sheets / write-lock (one change at a time)
+   ================================================================ */
 function save(s,row){if(!TX)throw new Error('A change was attempted outside a save');const a=db[s],i=a.findIndex(x=>x.id==row.id);i<0?a.push(row):a[i]=row;persist();post({a:'upsert',s,r:row})}
 function setProf(k,v){if(!TX)throw new Error('A change was attempted outside a save');db.profile[k]=v;persist();post({a:'upsert',s:'profile',r:{key:k,value:v}})}
 async function syncCore(){if(!url)return;let d;try{d=await post({a:'all'})}catch(e){return false}if(!d||!d.props)return false;
@@ -387,6 +394,9 @@ const T=id=>db.tenants.find(t=>t.id==id),P=id=>db.props.find(p=>p.id==id),active
 const tbills=id=>db.bills.filter(b=>b.tenantId==id).sort((a,b)=>b.month.localeCompare(a.month)||b.date.localeCompare(a.date));
 const badge=b=>b.status!='paid'&&N(b.paid)>0?`<span class="badge org">अधूरा</span>`:`<span class="badge ${b.status}">${b.status}</span>`;
 
+/* ================================================================
+   3. SCREENS (views) - one entry per screen; HTML strings drawn by draw(). Home screen map is right below.
+   ================================================================ */
 const views={
 /* HOME SCREEN MAP (top to bottom)
    Tile1 = "कुल किराया बकाया"   (big tile, left)    -> view totalDue
@@ -597,6 +607,9 @@ archived:()=>{const a=db.tenants.filter(t=>t.active=='0');return `<h2 style="whi
 ${t.photo?`<a target=_blank href="${E(t.photo)}">Aadhar photo</a>`:''}${docLinks(t)}${tbills(t.id).filter(b=>b.status=='pending').length?`<div class=m style="color:var(--r)">Has pending bills</div>`:''}
 <button class=btn style="background:var(--r);color:#fff" onclick="permDelete('${t.id}')">Permanent Delete करें</button></div>`).join('')||'<div class=card>None</div>'}`}
 };
+/* ================================================================
+   4. MONEY & BILL HELPERS - own / paid / due, older dues, arrears, month names
+   ================================================================ */
 const wa=p=>{p=String(p).replace(/\D/g,'');return p.length==10?'91'+p:p};
 const r2=x=>Math.round(N(x)*100)/100,own=b=>r2(Math.max(0,N(b.rent)+N(b.elec)-N(b.waived))),paidAmt=b=>b.status=='paid'?own(b):Math.min(own(b),r2(N(b.paid))),dueOf=b=>r2(Math.max(0,own(b)-paidAmt(b))),
 ML=m=>{const d=new Date(m+'-01T00:00');return d.toLocaleString('hi',{month:'long'})+'-'+d.getFullYear()},
@@ -608,6 +621,9 @@ missingMonths=(t,m)=>{const bs=db.bills.filter(b=>b.tenantId==t.id&&String(b.mon
 readAt=(id,m)=>{const b=tbills(id).find(b=>b.type!='rent'&&b.month<m);return b?b.cur:T(id).meter};
 const lastRead=id=>{const b=tbills(id).find(b=>b.type!='rent');return b?b.cur:T(id).meter};
 
+/* ================================================================
+   5. SCREEN STATE - which tab / month each screen is showing
+   ================================================================ */
 let NB={t:0},PR={t:0},A={m:null,l:[],o:0},tx=0,PT={t:0},RC={m:null,id:null},PV={m:today().slice(0,7)},PRE=null,EM={m:today().slice(0,7)},RM={m:today().slice(0,7)};
 const prevM=m=>{const[y,q]=String(m).split('-').map(Number),d=new Date(y,q-2,1);return d.getFullYear()+'-'+pd2(d.getMonth()+1)};
 const fmtDL=d=>{const x=new Date(String(d)+'T00:00');return isNaN(x)?String(d):x.toLocaleDateString('hi',{day:'numeric',month:'long',year:'numeric'})},
@@ -813,6 +829,9 @@ function showDocs(){$('#dl').innerHTML=docs.map((d,i)=>`<div class=item style="a
 async function upDocs(t){let d=[];try{d=JSON.parse(t.docs||'[]')}catch(e){}for(const x of d)if(x.url&&x.url.startsWith('data:')){const r=await post({a:'upload',name:t.name+'_'+x.name.replace(/\.[^.]+$/,''),data:x.url});if(r.url)x.url=r.url}t.docs=JSON.stringify(d)}
 const docLis=t=>{let d=[];try{d=JSON.parse(t.docs||'[]')}catch(e){}return d.map(x=>`<li><a target=_blank href="${E(x.url)}" style="color:var(--p);text-decoration:underline;text-underline-offset:3px">${E(x.name)}</a></li>`).join('')},
 docLinks=t=>{let d=[];try{d=JSON.parse(t.docs||'[]')}catch(e){}return d.map(x=>`<a class=back style="display:block" target=_blank href="${E(x.url)}">📄 ${E(x.name)}</a>`).join('')};
+/* ================================================================
+   6. UPI LINK & QR CODE for bill payment
+   ================================================================ */
 const upiUri=b=>{const p=db.profile,t=T(b.tenantId),k={both:'Combined',rent:'Rent',elec:'Electricity'}[b.type];return `upi://pay?pa=${p.upi}&pn=${encodeURIComponent(p.upiName||p.name||'')}&am=${+(+payable(b)).toFixed(2)}&cu=INR&tn=${encodeURIComponent('Rent for - '+new Date(b.month+'-01T00:00').toLocaleString('en',{month:'short',year:'numeric'}))}`};
 const QR=(()=>{
 const EC=[10,16,26,18,24,16,18,22,22,26,30,22,22,24,24],NB=[1,1,1,2,2,4,4,4,5,5,5,8,9,9,10];
@@ -875,6 +894,9 @@ function fitH2(){const h=document.querySelector('#main h2');if(!h)return;h.style
  let t=h.querySelector(':scope>.h2t');if(!t){t=document.createElement('span');t.className='h2t';t.style.display='inline-block';[...h.childNodes].filter(n=>!(n.nodeType==1&&n.classList.contains('bkc'))).forEach(n=>t.appendChild(n));h.appendChild(t)}
  const cs=getComputedStyle(h),av=h.clientWidth-parseFloat(cs.paddingLeft)-parseFloat(cs.paddingRight);
  while(t.offsetWidth>av&&f>10){f-=1;h.style.fontSize=f+'px'}}
+/* ================================================================
+   7. RENDERING & NAVIGATION - draw(), screen stack, native back button, swipe, dialogs, popups
+   ================================================================ */
 function draw(){const y0=scrollY,nv=!!dir,rb=dir=='bck';if(cur().length&&cur()[cur().length-1][0]=='addTen'){docs=[];photo=''}
  const s=cur(),[v,a]=s.length?s[s.length-1]:[tab?'profile':'menu'];
  document.body.classList.toggle('nonav',s.length>0);document.querySelectorAll('nav button').forEach((b,i)=>b.classList.toggle('on',i==tab));$('#main').classList.remove('fxo','bdo');const ov=rb?mkOv(y0):null;$('#main').innerHTML=views[v](a);fitSlim();fitEf();if(s.length||tab){const bh='<button type=button class="bkc@@" aria-label="वापस" onclick="backBtn()"><svg width=19 height=19 viewBox=\"0 0 24 24\" aria-hidden=true><path d=\"M19 12H5M11 6l-6 6 6 6\" fill=none stroke=currentColor stroke-width=2.4 stroke-linecap=round stroke-linejoin=round /></svg></button>',h2=$('#main').querySelector('h2');if(h2){h2.style.position='relative';h2.style.paddingLeft='54px';h2.style.paddingRight='0';h2.insertAdjacentHTML('afterbegin',bh.replace('@@',''))}else $('#main').insertAdjacentHTML('afterbegin',bh.replace('@@',' st'))}
@@ -1034,6 +1056,9 @@ function genBill(id,type){if(db.bills.some(b=>b.tenantId==id&&b.month==V('bm')))
  {const t=T(id);missingMonths(t,V('bm')).forEach(m=>{const rd=type=='rent'?'':readAt(id,m);save('bills',mkBill(t,type,m,rd,rd))})}
  calc();const b={id:uid(),tenantId:id,month:V('bm'),type,prev:type=='rent'?'':V('bp'),cur:type=='rent'?'':V('bc'),units:B.units,rate:B.rate,elec:B.el,rent:B.rent,arrear:B.arrear,arrNote:JSON.stringify(B.arr.map(x=>[x[0],x[1]])),total:B.total,paid:'0',status:'pending',date:new Date().toISOString()};
  save('bills',b);applyAdv(id,b);rp('sent',b.id)}
+/* ================================================================
+   8. BILL TEXT (WhatsApp / SMS message) & bill actions
+   ================================================================ */
 function msg(b,sms){const t=T(b.tenantId),p=db.profile,mm=(d=>d.toLocaleString('hi',{month:'long'})+'-'+d.getFullYear())(new Date(b.month+'-01T00:00')),
  bdt=(d=>isNaN(d)||!b.date?'':pd2(d.getDate())+'-'+pd2(d.getMonth()+1)+'-'+d.getFullYear())(new Date(b.date)),L=[...(bdt?['Bill Date: '+bdt,'']:[]),`Hello ${String(t.name).trim().split(/\s+/)[0]} जी, नमस्कार!`,'',`आपका ${mm} का बिल।`,'',`फ्लैट संख्या: ${t.flat||'-'}`,''];
  if(b.type!='elec')L.push(`किराया = ${R(b.rent)}`);
@@ -1076,6 +1101,9 @@ function editPhone2(id){$('#pc2').innerHTML=`<label>Secondary phone number (10 d
 function updPhone2(id){const v=V('ep2').replace(/\D/g,'');if(v&&v.length!=10)return alert('Secondary phone number must be exactly 10 digits.');const t=T(id);t.phone2=v;save('tenants',t);alert('Secondary phone number updated.');draw()}
 function updRent(id){const v=V('er');if(!(N(v)>0))return alert('Enter a valid rent amount.');const t=T(id);t.rent=String(N(v));save('tenants',t);alert('Rent updated to '+R(t.rent)+'. It applies to new bills from now on.');draw()}
 function roBox(c){return `<label style="display:flex;align-items:center;gap:10px;margin:6px 2px 16px;font-size:13px;font-weight:800;color:var(--t);cursor:pointer"><input id=pro type=checkbox${c?' checked':''} style="width:22px;height:22px;min-height:0;margin:0;padding:0;flex:none;-webkit-appearance:checkbox;appearance:auto;accent-color:var(--p)"><span>इस मकान में सिर्फ़ किराया लें, अलग से बिजली नहीं</span></label>`}
+/* ================================================================
+   9. METER PHOTO READER (reads the LCD digits on the phone, no internet)
+   ================================================================ */
 /* Meter photo -> reading. The photo is read on the phone (no internet needed): find the green LCD glass, straighten it, and decode the seven-segment digits and the decimal point. */
 /* Seven-segment LCD reader. readLcd(px,W,H) -> {text, dbg}. px = RGBA bytes. */
 function readLcd(px,W,H,DBG){
@@ -1231,6 +1259,9 @@ function collapseAll(){let any=false;const M=document.getElementById('main');
  const rb=document.getElementById('rbox');if(rb&&rb.dataset.o=='1'){any=true;if(document.getElementById('rbelow'))togRate();else bdTog()}
  return any}
 function backBtn(){if(lockPage()&&collapseAll())return;if(cur().length)back();else tabTo(0)}
+/* ================================================================
+   10. GLOBAL EVENTS & SETTINGS ACTIONS (expand/collapse, back, keys, rate, sync)
+   ================================================================ */
 document.addEventListener('click',e=>{const R=colRoots();if(!R.length)return;const t=e.target;if(!t.closest||t.closest('.mdl')||t.closest('.bkc'))return;if(t.closest('#main h2')){e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();collapseAll();return}if(R.some(r=>r&&r.contains(t)))return;e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();collapseAll()},true);
 function togCard(c){const x=c.querySelector('.xp'),o=x.classList.contains('open');const M=document.getElementById('main');if(M)M.classList.toggle('fxo',!o);document.querySelectorAll('.cp.clk').forEach(e=>{e.classList.remove('ex');const q=e.querySelector('.xp');if(q)q.classList.remove('open')});if(!o){x.classList.add('open');c.classList.add('ex');c.style.scrollMarginBottom='24px';c.style.scrollMarginTop='72px';setTimeout(()=>{if(c.classList.contains('ex'))c.scrollIntoView({block:'nearest',behavior:'smooth'})},380)}}
 async function saveTenDocs(id){const t=T(id);let ch=0;
@@ -1297,6 +1328,9 @@ async function saveUrl(){const u=V('su').trim();
 document.addEventListener('click',e=>{if(e.target.closest('button,.item[onclick],.tap'))navigator.vibrate?.(8)});
 
 /* ---- Hindi translation layer: exact phrases first, then keyword fallback. <pre> (bill message) stays English. ---- */
+/* ================================================================
+   11. HINDI TEXT LAYER (replaces the remaining English labels on screen)
+   ================================================================ */
 const D={'Rent Manager':'Rent Manager','Edit':'Edit','Edit property':'Edit property','Save property':'Save property','Save tenant':'Save tenant','Save profile':'Save profile','Save & sync':'Save & sync','Update property':'Update property','Update rent':'Update rent','Update phone':'Update phone','Manage':'प्रबंधन','Back':'वापस','Profile':'प्रोफ़ाइल','Send Rent & Meter Bill':'किराया व मीटर बिल भेजें','Rent, electricity or both':'किराया, बिजली या दोनों','Mark Paid & Bill History':'भुगतान दर्ज करें','Update payments, every month':'हर महीने का भुगतान अपडेट करें','Tenants Information':'किरायेदार की जानकारी','Call and view bills':'कॉल करें और बिल देखें','Rent Analytics':'किराये की समीक्षा','Paid vs pending by month':'माह के अनुसार भुगतान बनाम बकाया','Add tenant':'किरायेदार ऐड करें','Details, deposit, Aadhar':'विवरण, जमा राशि, आधार','Add property':'संपत्ति जोड़ें','Name and address':'नाम और पता','Pending':'बकाया','Paid':'चुकाया','Settled':'चुकता','Mark paid':'चुकाया दर्ज करें','Flats occupied':'भरे हुए फ्लैट','Flats empty':'खाली फ्लैट','Elec Paid by Renter':'किरायेदार द्वारा बिजली भुगतान','Renter Electricity':'किरायेदार की बिजली','Select property':'संपत्ति चुनें','Properties':'संपत्तियाँ','Add new property':'नई संपत्ति जोड़ें','Property name *':'संपत्ति का नाम *','Address (optional)':'पता (वैकल्पिक)','Total number of flats':'कुल फ्लैट की संख्या','None yet':'अभी कोई नहीं','None':'कोई नहीं','Flat names (blank = 1, 2, 3…)':'फ्लैट के नाम (खाली = 1, 2, 3…)','Tenant name *':'किरायेदार का नाम *','Property *':'मकान *','Flat number':'फ्लैट नंबर','Select flat':'फ्लैट चुनें','Phone * (10 digits)':'फ़ोन * (10 अंक)','Phone':'फ़ोन','Phone number':'फ़ोन नंबर','Phone number (10 digits)':'फ़ोन नंबर (10 अंक)','Entry date':'प्रवेश तिथि','Payment date':'भुगतान तिथि','Payment date cannot be before entry date.':'भुगतान तिथि प्रवेश तिथि से पहले की नहीं हो सकती।','Monthly rent *':'मासिक किराया *','Monthly rent':'मासिक किराया','Monthly rent (₹)':'मासिक किराया (₹)','Security deposit (optional)':'सिक्योरिटी जमा (वैकल्पिक)','Billing type':'बिल का प्रकार','Rent + Electricity':'किराया + बिजली','Rent only':'सिर्फ़ किराया','Initial meter reading *':'प्रारंभिक मीटर रीडिंग *','Aadhar number (12 digits)':'आधार नंबर (12 अंक)','Archive tenant':'फ्लैट खाली करें','Aadhar photo':'आधार फ़ोटो','Other documents (optional)':'अन्य डॉक्यूमेंट (वैकल्पिक)','(+) Add document':'(+) डॉक्यूमेंट ऐड करें','Remove':'हटाएँ','Add a property first.':'पहले संपत्ति जोड़ें।','Month':'माह','Previous reading':'पिछली रीडिंग','Current reading':'वर्तमान रीडिंग','Generate bill':'बिल बनाएँ','Choose bill type':'बिल का प्रकार चुनें','Bill generated ✅':'बिल बन गया ✅','Send on WhatsApp':'व्हाट्सऐप पर भेजें','Send as Text Message':'टेक्स्ट मैसेज से भेजें','Share…':'शेयर करें…','Bill Sent':'बिल जा चुका','Send Bill':'बिल भेजें','View bill':'बिल देखें','Not raised':'बिल नहीं बना','Set electricity rate in Profile tab':'प्रोफ़ाइल टैब में बिजली की दर सेट करें','View Aadhar photo':'आधार फ़ोटो देखें','Cancel':'Cancel','Exit date':'निकासी तिथि','Archived tenants':'पुराने किरायेदार','Old tenants list':'पुराने किरायेदारों की सूची','Past tenants and their details':'पुराने किरायेदार और उनका विवरण','Restore':'वापस लाएँ','Has pending bills':'बकाया बिल हैं','By flat':'फ्लैट अनुसार','By renter':'किरायेदार अनुसार','No bill generated':'कोई बिल नहीं बना','No bills yet':'अभी कोई बिल नहीं','No flats yet':'अभी कोई फ्लैट नहीं','No occupied flats':'कोई भरा फ्लैट नहीं','No empty flats':'कोई खाली फ्लैट नहीं','Vacant':'खाली','Flat names not added for this property':'इस संपत्ति के फ्लैट नाम नहीं जोड़े गए','No electricity bill paid yet':'अभी तक बिजली बिल का भुगतान नहीं हुआ','Saved Profile':'मालिक की प्रोफ़ाइल','Full name':'पूरा नाम','Full name *':'पूरा नाम *','Phone *':'फ़ोन *','UPI ID *':'यूपीआई आईडी *','UPI name *':'यूपीआई नाम *','Electricity rate (₹ per unit)':'बिजली दर (₹ प्रति यूनिट)','UPI ID':'यूपीआई आईडी','UPI name':'यूपीआई नाम','Name, phone, electricity rate, UPI':'नाम, फ़ोन, बिजली दर, यूपीआई','Advance':'एडवांस','Keys':'कीज़','Keys and Google sync':'कीज़ और गूगल सिंक','Paste Google Apps Script URL (ends with /exec)':'Backend Keys डालें','Total':'कुल','Rent':'किराया','Tenant added':'किरायेदार जुड़ गया','Profile saved':'प्रोफ़ाइल सेव हो गई','Phone number updated.':'फ़ोन नंबर अपडेट हो गया।','Secondary phone number':'सेकंडरी फ़ोन नंबर','Secondary phone number (10 digits)':'सेकंडरी फ़ोन नंबर (10 अंक)','Secondary phone number updated.':'सेकंडरी फ़ोन नंबर अपडेट हो गया।','Secondary phone number must be exactly 10 digits.':'सेकंडरी फ़ोन नंबर ठीक 10 अंकों का होना चाहिए।','Aadhar number must be exactly 12 digits.':'आधार नंबर ठीक 12 अंकों का होना चाहिए।','Phone number must be exactly 10 digits.':'फ़ोन नंबर ठीक 10 अंकों का होना चाहिए।','Enter property name':'संपत्ति का नाम लिखें','Flat names must be unique.':'फ्लैट के नाम अलग-अलग होने चाहिए।','Enter total number of flats':'कुल फ्लैट की संख्या डालें','Flat names can only be numbers like 01, 02, 03.':'फ्लैट के नाम सिर्फ़ अंक हो सकते हैं, जैसे 01, 02, 03।','Total number of flats *':'कुल फ्लैट की संख्या *','Flat names (blank = 01, 02, 03…)':'फ्लैट के नाम (खाली = 01, 02, 03…)','Select a flat.':'फ्लैट चुनें।','Select exit date':'निकासी तिथि चुनें','Enter current reading':'वर्तमान रीडिंग लिखें','Current reading is lower than previous':'वर्तमान रीडिंग पिछली से कम है','Enter a valid rent amount.':'सही किराया राशि लिखें।','Share not supported':'शेयर की सुविधा उपलब्ध नहीं','Local storage full':'फ़ोन की मेमोरी भर गई','Paste your Apps Script URL first (it ends with /exec).':'पहले Backend Keys डालें।','Connected ✅ Synced with Backend.':'जुड़ गया ✅ Backend से सिंक हो गया।','Connected ✅ Your existing data was uploaded to Backend.':'जुड़ गया ✅ आपका मौजूदा डेटा Backend में अपलोड हो गया।','Could not connect to Backend. Re-deploy the script with Execute as "Me" and Who has access "Anyone", then paste the new /exec URL.':'Backend से नहीं जुड़ सका। स्क्रिप्ट को "Execute as: Me" और "Access: Anyone" के साथ दोबारा डिप्लॉय करें, फिर नया /exec URL चिपकाएँ।','This does not look right. The URL must start with https://script.google.com and end with /exec (not /dev, not the editor link).':'यह सही नहीं लग रहा। URL https://script.google.com से शुरू होकर /exec पर खत्म होना चाहिए (/dev या एडिटर लिंक नहीं)।'};
 const RX=[[/^A bill for this month has already been generated for (.*)\.$/,'इस महीने का बिल $1 के लिए पहले ही बन चुका है।'],[/^Flat number (.*) is already occupied\.$/,'फ्लैट नंबर $1 पहले से भरा हुआ है।'],[/^Flat (.*) is occupied by (.*)\. Keep it in the flat list\.$/,'फ्लैट $1 में $2 रहते हैं। इसे फ्लैट सूची में रखें।'],[/^Rent updated to (.*)\. It applies.*$/,'किराया $1 कर दिया गया। यह अब से बनने वाले बिलों पर लागू होगा।'],[/^Fill name, phone, rent and initial meter reading\.$/,'नाम, फ़ोन, किराया और प्रारंभिक मीटर रीडिंग भरें।'],[/^Fill name, phone, rent\.$/,'नाम, फ़ोन और किराया भरें।'],[/^(.*) is larger than 3 MB$/,'$1 3 MB से बड़ी है']];
 const SUB=[['Good morning','सुप्रभात'],['Good afternoon','शुभ दोपहर'],['Good evening','शुभ संध्या'],['Total Rent','कुल किराया'],['Renter Electricity','किरायेदार की बिजली'],['Rent + Electricity','किराया + बिजली'],['Electricity','बिजली'],['Deposit','जमा'],['Entry','प्रवेश'],['Exit','निकासी'],['Aadhar','आधार'],['Phone','फ़ोन'],['Flat ','फ्लैट '],['Total ','कुल '],['Rent ','किराया '],['units','यूनिट'],['tenants','किरायेदार'],['flats','फ्लैट'],['vacant','खाली'],['pending','बकाया'],['Rent','किराया']];
@@ -1327,6 +1361,9 @@ const guard=f=>function(...a){if(busy)return;busy=1;document.body.classList.add(
  const rel=()=>setTimeout(()=>{busy=0;document.body.classList.remove('busy')},700);let r;
  try{r=f.apply(this,a)}catch(e){rel();throw e}
  if(r&&r.then)r.then(rel,rel);else rel();return r};
+/* ================================================================
+   12. SAFE-WRITE WRAPPERS - every action that changes data runs one at a time inside a transaction
+   ================================================================ */
 const XW=f=>guard(function(...a){return exclusive(()=>txCore(()=>f.apply(this,a)))}); /* every changing action = one guarded, all-or-nothing transaction */
 askBills=XW(askBills);bdRegen=XW(bdRegen);delPay=XW(delPay);
 addTen=XW(addTen);genBill=XW(genBill);recvPay=XW(recvPay);updMeter=XW(updMeter);updJoin=XW(updJoin);ackPN=XW(ackPN);updNoted=XW(updNoted);confirmBills=XW(confirmBills);
@@ -1335,6 +1372,9 @@ if('serviceWorker' in navigator){const had=!!navigator.serviceWorker.controller;
  navigator.serviceWorker.addEventListener('controllerchange',()=>{if(had&&!rl){rl=true;location.reload()}});
  addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(r=>r.update()).catch(()=>{}))}
 draw();window.__bnSync=loadUrl().then(()=>{if(url&&cur().length&&cur()[cur().length-1][0]=='keys')draw();return sync()}).catch(()=>{});
+/* ================================================================
+   13. HOME BANNER (the pop-up above the thin tile)
+   ================================================================ */
 /* BANNER: once per app open (and again when the app is opened after being minimised for 30s or more), 0.1s after the app is open (after the lock is passed), if the thin tile says payments are
    pending / bills are not made. Slides in from the left into the gap between the big tile and the बिल बनाएँ tile, hides
    itself after 5s by shrinking back into the thin tile behind it, swipe left to dismiss, tap opens the same page as the thin tile. */
