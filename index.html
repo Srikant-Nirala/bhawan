@@ -221,7 +221,7 @@ html[data-theme=dark] .mnav.tl button{background:rgba(120,120,128,.32);color:#f5
 .mnav.an{gap:40px}
 .mnav.an button{width:40px;height:36px;font-size:30px;font-weight:600;-webkit-text-stroke:0;padding:0 0 4px}
 
-#offb{display:none;position:fixed;top:calc(env(safe-area-inset-top,0px) + 3px);left:50%;transform:translateX(-50%);z-index:60;background:#ff453a;color:#fff;font-size:11.5px;font-weight:700;padding:3px 12px;border-radius:999px;pointer-events:none;white-space:nowrap}
+#offb{display:none;position:fixed;top:calc(env(safe-area-inset-top,0px) + 3px);left:0;right:0;width:100%;box-sizing:border-box;text-align:center;z-index:60;background:#ff453a;color:#fff;font-size:11.5px;font-weight:700;padding:3px 12px;border-radius:0;pointer-events:none;white-space:nowrap}
 .pfb{position:relative;top:12px;margin-right:10px!important;flex:none;width:40px;height:40px;border-radius:50%;border:0;padding:0;margin:0;display:grid;place-items:center;background:#d1d1d6;color:#2a4d75;transition:transform .12s,opacity .2s}.pfb:active{transform:scale(.9);opacity:.8}html[data-theme=dark] .pfb{background:#3a3a3c;color:var(--p)}
 nav{z-index:20}body:not(.nonav){padding-bottom:calc(78px + env(safe-area-inset-bottom,0px))}
 .cam.gy{background:#d1d1d6}html[data-theme=dark] .cam.gy{background:#3a3a3c}
@@ -1378,12 +1378,12 @@ draw();window.__bnSync=loadUrl().then(()=>{if(url&&cur().length&&cur()[cur().len
    ================================================================ */
 /* BANNER RULES (the pop-up above the thin tile):
    0. The pop-up only appears after Google has answered with the latest data. From closed state it appears 0.2s after Google's answer.
-   1. App opened from closed state: the pop-up shows (as soon as Google answers + 0.2s) for 3s. After it disappears, if the person is still on the home screen, it shows again every 5s (3s visible, 5s hidden) until he leaves the home screen.
+   1. App opened from closed state: the pop-up shows (as soon as Google answers + 0.2s) for 3s. After it disappears, if the person is still on the home screen, it shows again every 3.5s (3s visible, 3.5s hidden) until he leaves the home screen.
    2. Every time before the pop-up appears the latest data is pulled from Google.
-   3. After leaving the home screen (minimising the app, or going to another page) and coming back, the pop-up shows after 2s on the home screen, then rule 1 repeats (every 5s after it disappears).
+   3. After leaving the home screen (minimising the app, or going to another page) and coming back, the pop-up shows after 2s on the home screen, then rule 1 repeats (every 3.5s after it disappears).
    It only shows when the thin tile says payments are pending / bills are not made. Swipe left to dismiss (it comes back by rule 1), tap opens the same page as the thin tile. */
 (function(){
-const SHOW=3000,GAP=5000,BACK=2000;
+const SHOW=3000,GAP=3500,BACK=2000;
 let el=null,hideT=0,homeSince=0,nextAt=0,first=1,pulling=0,fromClosed=0;
 const locked=()=>{const l=document.getElementById('lk');return !!l&&l.style.display!='none'};
 const homeOn=()=>!!document.getElementById('Tile3s')&&!document.hidden&&!locked();
@@ -1392,7 +1392,7 @@ function tileTf(e){const tl=document.getElementById('Tile3s');if(!tl)return'tran
  const a=tl.getBoundingClientRect(),w=e.offsetWidth,h=e.offsetHeight,bx=e.offsetLeft-scrollX+w/2,by=e.offsetTop-scrollY+h/2;
  return'translate('+Math.round(a.left+a.width/2-bx)+'px,'+Math.round(a.top+a.height/2-by)+'px) scale('+(a.width/w).toFixed(4)+','+(a.height/h).toFixed(4)+')'}
 function kill(){clearTimeout(hideT);if(el){el.remove();el=null}}
-function close(){if(!el)return;clearTimeout(hideT);const e=el;el=null;nextAt=Date.now()+GAP+460; /* 5s counted from when it has fully disappeared */
+function close(){if(!el)return;clearTimeout(hideT);const e=el;el=null;nextAt=Date.now()+GAP+460; /* 3.5s counted from when it has fully disappeared */
  const m=e.querySelector('.tbt');if(m){m.style.transition='opacity .18s ease';m.style.opacity='0'}
  e.style.transition='transform .42s cubic-bezier(.4,0,.2,1),opacity .42s ease-in,border-radius .42s ease';e.style.transform=tileTf(e);e.style.opacity='0';e.style.borderRadius='8px';setTimeout(()=>e.remove(),460)}
 const tileMsg=()=>{const t=document.getElementById('Tile3s');if(!t||t.dataset.al!='1')return'';const sp=t.querySelector('span');return((sp||t).textContent||'').trim()};
@@ -1427,7 +1427,7 @@ function pull(p){if(pulling)return Promise.resolve(false);pulling=1;
  return Promise.race([Promise.resolve(q).catch(()=>false),new Promise(r=>setTimeout(()=>r(false),20000))]).then(ok=>{pulling=0;return ok===true},()=>{pulling=0;return false})}
 function show(p,extra){
  pull(p).then(ok=>{
-  if(!ok){nextAt=Date.now()+GAP;return} /* no answer from Google: try again after 5s */
+  if(!ok){nextAt=Date.now()+GAP;return} /* no answer from Google: try again after 3.5s */
   const go=()=>{if(!homeOn()||el||document.querySelector('.mdl'))return;open()}; /* open() reads the tile that Google's data has just redrawn */
   if(extra)setTimeout(go,extra);else go()})}
 function tick(){
