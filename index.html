@@ -783,7 +783,7 @@ const mrBilled=mo=>!mrPend(mo).length&&db.bills.some(b=>b.month==mo&&b.type!='re
 function rcptBody(b){const id=b.id,t=T(b.tenantId),q=upiQr(),old=String(b.month)<today().slice(0,7);return `<div class=card><pre style="white-space:pre-wrap;font:inherit;margin:0;overflow-wrap:anywhere;word-break:break-all">${E(msg(b))}</pre></div>
 ${old?'':`${q?`<div class=card style="text-align:center">${qrSvg(q)}<div class=m style="margin-top:10px">QR स्कैन करके UPI से भुगतान करें</div><div class=m>${E(db.profile.upi)}</div></div>`:'<div class=card><span class=m>QR के लिए Profile में UPI ID डालें</span></div>'}
 <button class=btn style="background:#25d366" onclick="shareBill('${id}')">Send on WhatsApp</button>
-<a class="btn" style="background:#34c759" href="sms:+${wa(t.phone)}${/iPhone|iPad|Mac/.test(navigator.userAgent)?'&':'?'}body=${encodeURIComponent(msg(b,1).replace(/\*/g,''))}">Send as Text Message</a>
+<a class="btn" style="background:linear-gradient(135deg,#7aa7ff,#5b6cff)" href="sms:+${wa(t.phone)}${/iPhone|iPad|Mac/.test(navigator.userAgent)?'&':'?'}body=${encodeURIComponent(msg(b,1).replace(/\*/g,''))}">Send as Text Message</a>
 <button class="btn o" onclick="navigator.share?navigator.share({text:msg(db.bills.find(x=>x.id=='${id}'))}):alert('Share not supported')">Share…</button>`}`}
 /* payment page, bottom button: opens the receipt page (month toggle; share only for the current month) */
 function billReceipt(id){if(!T(id))return;RC.m=today().slice(0,7);RC.id=id;go('billRcpt',id)}
