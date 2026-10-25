@@ -227,7 +227,7 @@ nav{z-index:20}body:not(.nonav){padding-bottom:calc(78px + env(safe-area-inset-b
 .cam.gy{background:#d1d1d6}html[data-theme=dark] .cam.gy{background:#3a3a3c}
 /* banner: slides in from the left into the gap between the big tile and the बिल बनाएँ tile when payments are pending / bills not made */
 #tbn{position:absolute;z-index:70;box-sizing:border-box;padding:0 14px;display:flex;align-items:center;justify-content:center;text-align:center;border-radius:14px;background:rgba(255,59,48,.8);-webkit-backdrop-filter:blur(14px) saturate(160%);backdrop-filter:blur(14px) saturate(160%);box-shadow:0 8px 24px rgba(255,59,48,.38),inset 0 0 0 1px rgba(255,255,255,.4);color:#fff;touch-action:pan-y;cursor:pointer;-webkit-user-select:none;user-select:none;will-change:transform}
-#tbn .tbt{font-size:17px;font-weight:800;line-height:1.3;letter-spacing:-.01em;text-shadow:0 1px 2px rgba(0,0,0,.28)}
+#tbn .tbt{white-space:nowrap;font-size:17px;font-weight:800;line-height:1.3;letter-spacing:-.01em;text-shadow:0 1px 2px rgba(0,0,0,.28)}
 html[data-theme=dark] #tbn{background:rgba(255,69,58,.8);color:#fff;box-shadow:0 8px 24px rgba(255,69,58,.35),inset 0 0 0 1px rgba(255,255,255,.3)}
 </style></head><body><div id=offb>ऑफ़लाइन · सिर्फ़ देख सकते हैं (View only)</div>
 <div id="lk"><div class="lkb"><div class="lkt" id="lkt"></div><div class="lkd" id="lkd"></div><div class="lke" id="lke"></div><div class="lkp" id="lkp"></div><button id="lkc" style="display:none" onclick="lkCancel()">Cancel</button></div></div>
@@ -500,7 +500,7 @@ if(mrDone(mo))return billSummary(mo);
 {const np=pnList(mo);if(np.length){const multi=db.props.filter(p=>p.rentOnly!='1').length>1;
  return `<h2>पुराना पेमेंट नोट करें</h2><div class=card style="margin:2px 0 14px;font-size:16px;line-height:1.5;text-align:center"><div style="font-weight:400">निम्न किरायेदारों का पेमेंट नोट नहीं हुआ है।</div><div style="margin-top:12px;text-align:center;font-size:18px;font-weight:800;color:#b00020">सही बिल बनाने के लिए</div><div style="margin-top:14px;font-weight:400">बकाया अगले महीने में जोड़ें या पेमेंट नोट करें</div></div>`+db.props.map(p=>({p,l:np.filter(x=>x.p.id==p.id)})).filter(x=>x.l.length).map(x=>`${multi?`<h3 class=ph>${E(x.p.name)}</h3>`:''}${x.l.map(y=>`<div class=card style="margin:10px 0"><div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:10px;row-gap:6px;align-items:baseline"><span class=nm style="min-width:0;text-align:left">${E(y.t.name)}</span><span class=fl style="font-size:15.75px;font-weight:800;text-align:center">Flat ${E(y.t.flat)}</span><b class=fl style="font-size:16px;font-weight:800;white-space:nowrap;text-align:left">कुल बकाया</b><span style="font-size:15.75px;font-weight:800;color:#e8590c;text-align:center;white-space:nowrap">${R(y.due)}</span></div><div style="display:flex;gap:10px;margin-top:12px"><button type=button class="badge sbig org bb" style="flex:1 1 0;width:auto;min-width:0;max-width:none;border:0;border-radius:8px!important" onclick="ackPN('${y.t.id}')">अगले महीने में जोड़ें</button><button type=button class="badge sbig shr" style="flex:1 1 0;width:auto;min-width:0;max-width:none;border:0;border-radius:8px!important" onclick="PT.t=0;go('payTenant','${y.t.id}')">पेमेंट नोट करें</button></div></div>`).join('')}`).join('')}}
 const head=`<h2>मीटर रीडिंग डालें</h2>`;
-return head+(rows.map(x=>`${db.props.filter(p=>p.rentOnly!='1').length>1?`<h3 class=ph>${E(x.p.name)}</h3>`:''}<div class=card>${x.ts.map(t=>{const ty=t.btype||'both';return `<div class=item style="display:grid;grid-template-columns:1fr 150px;align-items:center;gap:6px 10px"><b class=fl>${E(t.name)}</b>${ty=='rent'?`<div class=m>सिर्फ़ किराया · ${R(t.rent)}</div>`:`<div class=m style="color:var(--t);opacity:.85;font-weight:700">पिछली रीडिंग ${E(fmtR(lastRead(t.id)))}</div>`}<b class=fl style="color:var(--t)">Flat ${E(t.flat)}</b>${ty=='rent'?'<span></span>':`<div style="display:flex;align-items:center;gap:6px;width:150px"><input id=bk_${t.id} type=text inputmode=decimal autocomplete=off oninput="fmtIn(this)" class="bki sm rdg" style="font-weight:700;flex:1;min-width:0;width:auto;margin:0;padding:9px 8px;font-size:15px"><button type=button class="cam gy" id=cb_${t.id} aria-label="कैमरा" onclick="document.getElementById('cf_${t.id}').click()">📷</button><input type=file id=cf_${t.id} accept="image/*" capture=environment hidden onchange="meterOcr('${t.id}',this)"></div>`}</div>`}).join('')}</div>`).join('')||'<div class=card>सभी का बिल बन चुका 🎉</div>')+(n?`<button class=btn onclick="askBills()" style="background:linear-gradient(135deg,#7aa7ff,#5b6cff);margin:18px 0 12px">बिल बनाएँ</button>`:'')},
+return head+(rows.map(x=>`${db.props.filter(p=>p.rentOnly!='1').length>1?`<h3 class=ph>${E(x.p.name)}</h3>`:''}<div class=card>${x.ts.map(t=>{const ty=t.btype||'both';return `<div class=item style="display:grid;grid-template-columns:1fr 150px;align-items:center;gap:6px 10px"><b class=fl>${E(t.name)}</b>${ty=='rent'?`<div class=m style="grid-column:2;grid-row:1/3;align-self:center;font-weight:800">मासिक किराया · ${R(t.rent)}</div>`:`<div class=m style="color:var(--t);opacity:.85;font-weight:700">पिछली रीडिंग ${E(fmtR(lastRead(t.id)))}</div>`}<b class=fl style="color:var(--t)">Flat ${E(t.flat)}</b>${ty=='rent'?'':`<div style="display:flex;align-items:center;gap:6px;width:150px"><input id=bk_${t.id} type=text inputmode=decimal autocomplete=off oninput="fmtIn(this)" class="bki sm rdg" style="font-weight:700;flex:1;min-width:0;width:auto;margin:0;padding:9px 8px;font-size:15px"><button type=button class="cam gy" id=cb_${t.id} aria-label="कैमरा" onclick="document.getElementById('cf_${t.id}').click()">📷</button><input type=file id=cf_${t.id} accept="image/*" capture=environment hidden onchange="meterOcr('${t.id}',this)"></div>`}</div>`}).join('')}</div>`).join('')||'<div class=card>सभी का बिल बन चुका 🎉</div>')+(n?`<button class=btn onclick="askBills()" style="background:linear-gradient(135deg,#7aa7ff,#5b6cff);margin:18px 0 12px">बिल बनाएँ</button>`:'')},
 
 bulkDone:ids=>{const bs=ids.map(i=>db.bills.find(b=>b.id==i)).filter(Boolean).sort((a,c)=>String(T(a.tenantId)?.propId).localeCompare(String(T(c.tenantId)?.propId))||byFlat(T(a.tenantId),T(c.tenantId)));
 return `<h2>बिल बन गए ✅</h2><div class=m style="margin:-6px 2px 8px">${bs.length} बिल · ${mname(bs[0]?.month||curMonth())}</div><div class=card>${bs.map(b=>{const t=T(b.tenantId);return `<div class=item>${av(t.name)}<div class=gr><b class=fl>Flat ${E(t.flat)}</b><div class=nm>${E(t.name)}</div></div><button class="badge chip" style="border:0;background:var(--p,#0a84ff);color:#fff" onclick="go('sent','${b.id}')">बिल देखें</button></div>`}).join('')}</div>`},
@@ -1378,12 +1378,12 @@ draw();window.__bnSync=loadUrl().then(()=>{if(url&&cur().length&&cur()[cur().len
    ================================================================ */
 /* BANNER RULES (the pop-up above the thin tile):
    0. The pop-up only appears after Google has answered with the latest data. From closed state it appears 0.2s after Google's answer.
-   1. App opened from closed state: the pop-up shows (as soon as Google answers + 0.2s) for 3s. After it disappears, if the person is still on the home screen, it shows again every 7s (3s visible, 7s hidden) until he leaves the home screen.
+   1. App opened from closed state: the pop-up shows (as soon as Google answers + 0.2s) for 3s. After it disappears, if the person is still on the home screen, it shows again every 6s (3s visible, 6s hidden) until he leaves the home screen.
    2. Every time before the pop-up appears the latest data is pulled from Google.
-   3. After leaving the home screen (minimising the app, or going to another page) and coming back, the pop-up shows after 2s on the home screen, then rule 1 repeats (every 7s after it disappears).
+   3. After leaving the home screen (minimising the app, or going to another page) and coming back, the pop-up shows after 2s on the home screen, then rule 1 repeats (every 6s after it disappears).
    It only shows when the thin tile says payments are pending / bills are not made. Swipe left to dismiss (it comes back by rule 1), tap opens the same page as the thin tile. */
 (function(){
-const SHOW=3000,GAP=7000,BACK=2000;
+const SHOW=3000,GAP=6000,BACK=2000;
 let el=null,hideT=0,homeSince=0,nextAt=0,first=1,pulling=0,fromClosed=0;
 const locked=()=>{const l=document.getElementById('lk');return !!l&&l.style.display!='none'};
 const homeOn=()=>!!document.getElementById('Tile3s')&&!document.hidden&&!locked();
@@ -1392,7 +1392,7 @@ function tileTf(e){const tl=document.getElementById('Tile3s');if(!tl)return'tran
  const a=tl.getBoundingClientRect(),w=e.offsetWidth,h=e.offsetHeight,bx=e.offsetLeft-scrollX+w/2,by=e.offsetTop-scrollY+h/2;
  return'translate('+Math.round(a.left+a.width/2-bx)+'px,'+Math.round(a.top+a.height/2-by)+'px) scale('+(a.width/w).toFixed(4)+','+(a.height/h).toFixed(4)+')'}
 function kill(){clearTimeout(hideT);if(el){el.remove();el=null}}
-function close(){if(!el)return;clearTimeout(hideT);const e=el;el=null;nextAt=Date.now()+GAP+460; /* 7s counted from when it has fully disappeared */
+function close(){if(!el)return;clearTimeout(hideT);const e=el;el=null;nextAt=Date.now()+GAP+460; /* 6s counted from when it has fully disappeared */
  const m=e.querySelector('.tbt');if(m){m.style.transition='opacity .18s ease';m.style.opacity='0'}
  e.style.transition='transform .42s cubic-bezier(.4,0,.2,1),opacity .42s ease-in,border-radius .42s ease';e.style.transform=tileTf(e);e.style.opacity='0';e.style.borderRadius='8px';setTimeout(()=>e.remove(),460)}
 const tileMsg=()=>{const t=document.getElementById('Tile3s');if(!t||t.dataset.al!='1')return'';const sp=t.querySelector('span');return((sp||t).textContent||'').trim()};
@@ -1400,12 +1400,14 @@ function open(){
  const big=document.querySelector('.quad.one'),nxt=document.getElementById('Tile3');
  if(!big||!nxt||locked()||el)return false;
  const msg=tileMsg();if(!msg)return false;
- const r=big.getBoundingClientRect(),n=nxt.getBoundingClientRect(),top=r.bottom+5,h=Math.round(n.top-5-top);
- if(h<36)return false;
+ const tl=document.getElementById('Tile3s'),r=big.getBoundingClientRect(),n=nxt.getBoundingClientRect(),gt=r.bottom+5,gh=Math.round(n.top-5-gt);
+ if(gh<30)return false;
+ const h=Math.min(gh,Math.round((tl?tl.getBoundingClientRect().height:30)*2)),top=gt+Math.round((gh-h)/2); /* twice the height of the thin tile, centred in the gap between the big tile and the next tile */
  const b=document.createElement('div');b.id='tbn';
  b.style.cssText='left:'+Math.round(r.left+scrollX)+'px;top:'+Math.round(top+scrollY)+'px;width:'+Math.round(r.width)+'px;height:'+h+'px';
  const m=document.createElement('div');m.className='tbt';m.textContent=msg;b.appendChild(m);
  document.body.appendChild(b);el=b;
+ {let fs=17;m.style.fontSize=fs+'px';while(m.scrollWidth>b.clientWidth-28&&fs>9){fs--;m.style.fontSize=fs+'px'}} /* keep the text on a single line: shrink the font until it fits */
  b.style.transform=tileTf(b);b.style.opacity='0';b.style.borderRadius='8px';m.style.opacity='0';void b.offsetHeight;
  b.style.transition='transform .42s cubic-bezier(.2,.8,.3,1),opacity .3s ease-out,border-radius .42s ease';b.style.transform='translate(0,0) scale(1)';b.style.opacity='1';b.style.borderRadius='';
  m.style.transition='opacity .25s ease .17s';m.style.opacity='1';
@@ -1425,7 +1427,7 @@ function pull(p){if(pulling)return Promise.resolve(false);pulling=1;
  return Promise.race([Promise.resolve(q).catch(()=>false),new Promise(r=>setTimeout(()=>r(false),20000))]).then(ok=>{pulling=0;return ok===true},()=>{pulling=0;return false})}
 function show(p,extra){
  pull(p).then(ok=>{
-  if(!ok){nextAt=Date.now()+GAP;return} /* no answer from Google: try again after 7s */
+  if(!ok){nextAt=Date.now()+GAP;return} /* no answer from Google: try again after 6s */
   const go=()=>{if(!homeOn()||el||document.querySelector('.mdl'))return;open()}; /* open() reads the tile that Google's data has just redrawn */
   if(extra)setTimeout(go,extra);else go()})}
 function tick(){
