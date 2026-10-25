@@ -1386,30 +1386,32 @@ draw();window.__bnSync=loadUrl().then(()=>{if(url&&cur().length&&cur()[cur().len
    13. HOME BANNER (the pop-up above the thin tile)
    ================================================================ */
 /* BANNER: once per app open (and again when the app is opened after being minimised for 30s or more), 0.1s after the app is open (after the lock is passed), if the thin tile says payments are
-   pending / bills are not made. Slides in from the left into the gap between the big tile and the बिल बनाएँ tile, hides
-   itself after 5s by shrinking back into the thin tile behind it, swipe left to dismiss, tap opens the same page as the thin tile. */
+   pending / bills are not made. Grows out of the thin tile into the gap between the big tile and the बिल बनाएँ tile, hides
+   itself after 5s by shrinking back into that same thin tile, swipe left to dismiss, tap opens the same page as the thin tile. */
 (function(){
-let done=0,el=null,hideT=0,off=0,pend=0,shown=0,away=0,ready=window.__bnSync||Promise.resolve();
+let done=0,el=null,hideT=0,pend=0,shown=0,away=0,ready=window.__bnSync||Promise.resolve();
 const cap=p=>Promise.race([Promise.resolve(p).catch(()=>0),new Promise(r=>setTimeout(r,3000))]); /* wait for Google sync, but never more than 3s */
 const locked=()=>{const l=document.getElementById('lk');return !!l&&l.style.display!='none'};
-/* closes by shrinking back onto the thin tile it sits in front of (same spot, same size), fading as it goes; falls back to a plain fade if that tile is gone */
-function close(){if(!el)return;clearTimeout(hideT);const e=el,tl=document.getElementById('Tile3s');el=null;
- let tf='translate(0,0) scale(1)';
- if(tl){const a=tl.getBoundingClientRect(),w=e.offsetWidth,h=e.offsetHeight,bx=e.offsetLeft-scrollX+w/2,by=e.offsetTop-scrollY+h/2;
-  tf='translate('+Math.round(a.left+a.width/2-bx)+'px,'+Math.round(a.top+a.height/2-by)+'px) scale('+(a.width/w).toFixed(4)+','+(a.height/h).toFixed(4)+')'}
+/* the banner appears from, and closes back into, the thin tile it sits in front of: same spot, same size, fading. tileTf() gives that squashed-onto-the-tile transform (plain fade if the tile is gone) */
+function tileTf(e){const tl=document.getElementById('Tile3s');if(!tl)return'translate(0,0) scale(1)';
+ const a=tl.getBoundingClientRect(),w=e.offsetWidth,h=e.offsetHeight,bx=e.offsetLeft-scrollX+w/2,by=e.offsetTop-scrollY+h/2;
+ return'translate('+Math.round(a.left+a.width/2-bx)+'px,'+Math.round(a.top+a.height/2-by)+'px) scale('+(a.width/w).toFixed(4)+','+(a.height/h).toFixed(4)+')'}
+function close(){if(!el)return;clearTimeout(hideT);const e=el;el=null;
  const m=e.querySelector('.tbt');if(m){m.style.transition='opacity .18s ease';m.style.opacity='0'}
- e.style.transition='transform .42s cubic-bezier(.4,0,.2,1),opacity .42s ease-in,border-radius .42s ease';e.style.transform=tf;e.style.opacity='0';e.style.borderRadius='8px';setTimeout(()=>e.remove(),460)}
+ e.style.transition='transform .42s cubic-bezier(.4,0,.2,1),opacity .42s ease-in,border-radius .42s ease';e.style.transform=tileTf(e);e.style.opacity='0';e.style.borderRadius='8px';setTimeout(()=>e.remove(),460)}
 function open(){
  const t=document.getElementById('Tile3s'),big=document.querySelector('.quad.one'),nxt=document.getElementById('Tile3');
  if(!t||!big||!nxt||t.dataset.al!='1'||locked()||el)return;
  const sp=t.querySelector('span'),msg=((sp||t).textContent||'').trim();if(!msg)return;
  const r=big.getBoundingClientRect(),n=nxt.getBoundingClientRect(),top=r.bottom+5,h=Math.round(n.top-5-top);
  if(h<36)return;
- const b=document.createElement('div');b.id='tbn';off=Math.round(r.right+30);
- b.style.cssText='left:'+Math.round(r.left+scrollX)+'px;top:'+Math.round(top+scrollY)+'px;width:'+Math.round(r.width)+'px;height:'+h+'px;transform:translateX(-'+off+'px)';
+ const b=document.createElement('div');b.id='tbn';
+ b.style.cssText='left:'+Math.round(r.left+scrollX)+'px;top:'+Math.round(top+scrollY)+'px;width:'+Math.round(r.width)+'px;height:'+h+'px';
  const m=document.createElement('div');m.className='tbt';m.textContent=msg;b.appendChild(m);
- document.body.appendChild(b);el=b;shown=1;void b.offsetHeight;
- b.style.transition='transform .55s cubic-bezier(.22,.8,.3,1)';b.style.transform='translateX(0)';
+ document.body.appendChild(b);el=b;shown=1;
+ b.style.transform=tileTf(b);b.style.opacity='0';b.style.borderRadius='8px';m.style.opacity='0';void b.offsetHeight; /* start squashed onto the thin tile, then grow out of it (mirror of close) */
+ b.style.transition='transform .42s cubic-bezier(.2,.8,.3,1),opacity .3s ease-out,border-radius .42s ease';b.style.transform='translate(0,0) scale(1)';b.style.opacity='1';b.style.borderRadius='';
+ m.style.transition='opacity .25s ease .17s';m.style.opacity='1';
  hideT=setTimeout(close,5000);
  let x0=0,y0=0,dx=0,t0=0,drag=0;
  b.addEventListener('pointerdown',e=>{if(b!==el)return;drag=1;x0=e.clientX;y0=e.clientY;dx=0;t0=Date.now();clearTimeout(hideT);b.style.transition='none';try{b.setPointerCapture(e.pointerId)}catch(_){}});
