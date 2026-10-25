@@ -299,7 +299,7 @@ if(g(K.e)=='1')g(K.h)?show('verify'):show('new1');else hide();
 const av=n=>`<span class=av>${String(n||'?')[0].toUpperCase()}</span>`;
 const $=s=>document.querySelector(s),E=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])),
 uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,5),N=x=>Number(x)||0,R=x=>'₹'+N(x).toLocaleString('en-IN'),
-V=id=>{const e=document.getElementById(id),v=e?.value||'';return e&&e.classList.contains('rdg')?v.replace(/-/g,''):v},pd2=n=>String(n).padStart(2,'0'),today=()=>{const d=new Date();return d.getFullYear()+'-'+pd2(d.getMonth()+1)+'-'+pd2(d.getDate())};
+V=id=>{const e=document.getElementById(id),v=e?.value||'';return e&&e.classList.contains('rdg')?v.replace(/-/g,''):v},pd2=n=>String(n).padStart(2,'0'),today=()=>{const d=new Date();return d.getFullYear()+'-'+pd2(d.getMonth()+1)+'-'+pd2(d.getDate())},curMonth=()=>today().slice(0,7);
 /* ================================================================
    1. STATE & LOCAL DATA - the in-memory database (db), saved in this phone's localStorage
    ================================================================ */
@@ -344,7 +344,9 @@ const post=b=>{
  if(offline())return Promise.reject(new Error('offline'));
  return rawPost(b,b.a=='upload'?120000:60000).then(r=>{if(b.a=='upload'){if(!r||!r.url)throw new Error((r&&r.error)||'File upload failed');if(TX)TX.up.push(r.url)}return r})};
 const prep=ops=>{const m=new Map(),o=[];ops.forEach(x=>{if(x.a=='upsert'){const k=x.s+'|'+(x.r.id??x.r.key);if(m.has(k)){o[m.get(k)]=x;return}m.set(k,o.length)}o.push(x)});return o}; /* same row changed twice -> sent once, final values */
-const savingOv=()=>{const o=document.createElement('div');o.className='mdl';o.style.background='rgba(0,0,0,.35)';o.innerHTML='<div class=mbx style="text-align:center"><div class=mtx>सेव हो रहा है… कृपया रुकें\nSaving… please wait</div></div>';document.body.appendChild(o);return o};
+/* popups: mkDlg() makes the dark full-screen layer every popup sits on; dimBg(o) is the darker, blurred version */
+const mkDlg=bg=>{const o=document.createElement('div');o.className='mdl';if(bg)o.style.background=bg;return o},dimBg=o=>{o.style.background='rgba(0,0,0,.82)';o.style.backdropFilter='blur(8px)';o.style.webkitBackdropFilter='blur(8px)'};
+const savingOv=()=>{const o=mkDlg('rgba(0,0,0,.35)');o.innerHTML='<div class=mbx style="text-align:center"><div class=mtx>सेव हो रहा है… कृपया रुकें\nSaving… please wait</div></div>';document.body.appendChild(o);return o};
 async function txCore(f,quiet){
  if(url&&offline()){if(!quiet)await modal(MSG_OFF,0);return false}
  const snap=JSON.stringify(db),nav=JSON.stringify({st,tab}),d0=docs,p0=photo,t=TX={ops:[],up:[],msgs:[],w:0};
@@ -406,15 +408,15 @@ const views={
    Tile5 = "पेमेंट का हिसाब"       (row 2, left)       -> view payView
    Tile6 = "बिल देखें व भेजें"   (row 2, right)      -> view billHist
    menu1..menu4 = Tenants Information, Rent Analytics, Add tenant, Add property */
-menu:()=>{const mo=today().slice(0,7),mn=mname(mo),ok=db.bills.filter(b=>T(b.tenantId)),mb=ok.filter(b=>b.month==mo),act=db.tenants.filter(t=>t.active!='0'),bi=new Set(mb.map(b=>b.tenantId)),
+menu:()=>{const mo=curMonth(),mn=mname(mo),ok=db.bills.filter(b=>T(b.tenantId)),mb=ok.filter(b=>b.month==mo),act=db.tenants.filter(t=>t.active!='0'),bi=new Set(mb.map(b=>b.tenantId)),
 b1=r2(ok.reduce((a,b)=>a+dueOf(b),0)),b3=r2(db.payments.filter(x=>T(x.tenantId)&&String(x.pdate).slice(0,7)==mo).reduce((a,x)=>a+N(x.amount),0)),b4=act.filter(t=>!bi.has(t.id)).length,oc=db.tenants.filter(t=>t.active!='0'&&P(t.propId)).length,em=db.props.reduce((a,p)=>{const fl=flatList(p),o=new Set(active(p.id).map(t=>String(t.flat).trim().toLowerCase()));return a+fl.filter(n=>!o.has(String(n).trim().toLowerCase())).length+(fl.length?0:Math.max(0,N(p.flats)-active(p.id).length))},0),p=db.profile,h=new Date().getHours();
 /* कुल बिजली बिल: calculated by elecDetails(), exactly the same figure as the बिजली बिल डिटेल्स page (includes tenants who joined or left during the month) */
-const eb=elecDetails(mo,1),pn=pnList(mo).length,nd=db.tenants.filter(t=>P(t.propId)&&r2(db.bills.filter(b=>b.tenantId==t.id).reduce((q,b)=>q+dueOf(b),0))>0).length,sp=pn>0||(b4==0&&nd>0);
+const eb=elecDetails(mo,1),pn=pnList(mo).length,nd=db.tenants.filter(t=>P(t.propId)&&tenantDue(t.id)>0).length,sp=pn>0||(b4==0&&nd>0);
 const tl=(i,k,ic,c,t,d,x='')=>`<button class=tile id=${i} onclick="${x}go('${k}')"><span class=ic style="background:${c}">${ic}</span><span class=tx><b>${t}</b><small>${d}</small></span><span class=ch>›</span></button>`;
 return `<div style="display:flex;align-items:center;gap:12px"><h2 style="margin:8px 2px 2px;flex:1;min-width:0">Rent Manager</h2><button type=button class=pfb aria-label="Profile" onclick="tabTo(1)"><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true" style="display:block"><circle cx="12" cy="7.5" r="4.4"/><path d="M3.8 20.6c0-4.2 3.6-6.9 8.2-6.9s8.2 2.7 8.2 6.9c0 .6-.4 1-1 1H4.8c-.6 0-1-.4-1-1z"/></svg></button></div><div style="margin:0 2px 12px;font-weight:600;font-size:15px;opacity:.5">${h<12?'Good morning':h<17?'Good afternoon':'Good evening'}${p.name?', '+E(p.name.trim().split(/\s+/).pop())+' जी':''}</div>
 <div class="quad one">
 <div class=tap id=Tile1 onclick="PR.t=0;go('payRenter')"><span>कुल किराया बकाया</span><b>${R(b1)}</b></div>
-<div class=tap id=Tile2 onclick="RM.m=today().slice(0,7);go('rcvMonth')"><span>${mn} में पेमेंट</span><b>${R(b3)}</b></div>
+<div class=tap id=Tile2 onclick="RM.m=curMonth();go('rcvMonth')"><span>${mn} में पेमेंट</span><b>${R(b3)}</b></div>
 <div class=tap id=Tile8 onclick="go('elecMonth')"><span>${mname(prevM(mo))} का बिजली बिल = <b>${R(eb)}</b></span></div></div>
 <div class="slim${b4>0||nd>0?' run':' ok'}" id=Tile3s data-al="${sp||b4>0?1:0}" onclick="${sp?"PR.t=0;go('payRenter')":"NB.t=0;go('notBilled')"}"><span>${sp?'💰 अभी '+nd+' किरायेदारों का पेमेंट होना बाकी है':b4>0?'🧾 '+mn+' में '+b4+' किरायेदार का बिल बनाना बाकी':'🎉 '+mn+' महीने का सारा पेमेंट क्लियर है'}</span></div>
 <div class=duo><button class=tile id=Tile3 onclick="NB.t=0;go('notBilled')"><span class=ic style="background:#0a84ff">🧾</span>बिल बनाएँ</button><button class=tile id=Tile4 onclick="PR.t=0;go('payRenter')"><span class=ic style="background:#30b858">💰</span>पेमेंट नोट करें</button></div>
@@ -428,13 +430,13 @@ dv='<div style="border-top:1px solid rgba(128,128,128,.3);margin:12px 0 0"></div
 const rows=db.props.filter(p=>p.rentOnly!='1').map(p=>{const names=[...flatList(p)];db.tenants.filter(t=>t.propId==p.id).forEach(t=>{if(!names.some(n=>k(n)==k(t.flat)))names.push(t.flat)});names.sort((a,b)=>String(a).localeCompare(String(b),undefined,{numeric:true}));
 return {p,fl:names.map(n=>{const ts=db.tenants.filter(t=>t.propId==p.id&&k(t.flat)==k(n)),ac=ts.find(t=>t.active!='0'),lt=ac||ts.slice().sort((a,c)=>String(c.entry||'').localeCompare(String(a.entry||'')))[0],ok=!lt||(lt.btype||'both')=='both',rs=[];
  db.bills.forEach(b=>{if(ts.some(t=>t.id==b.tenantId)&&b.type!='rent'&&String(b.cur??'')!=='')rs.push({m:String(b.month),d:ymd(b.date)||String(b.month)+'-01',v:b.cur,b:b.id,o:b.tenantId})});
- ts.forEach(t=>{if(String(t.meter??'')!=='')rs.push({m:String(t.entry||'').slice(0,7),d:String(t.entry||'').slice(0,10)||d0,v:t.meter,o:t.id,j:(t.active!='0'&&(t.btype||'both')!='rent'&&String(t.entry||'').slice(0,7)==today().slice(0,7)&&!db.bills.some(b=>b.tenantId==t.id&&b.type!='rent'))?t.id:''})});
- {const mo0=today().slice(0,7),mr0=db.mr&&db.mr[mo0];if(ac&&mr0&&mr0[ac.id]!==undefined&&!db.bills.some(b=>b.tenantId==ac.id&&b.month==mo0))rs.push({m:mo0,d:String(mr0['d_'+ac.id]||mo0+'-01').slice(0,10),v:mr0[ac.id],n:ac.id,o:ac.id})}
+ ts.forEach(t=>{if(String(t.meter??'')!=='')rs.push({m:String(t.entry||'').slice(0,7),d:String(t.entry||'').slice(0,10)||d0,v:t.meter,o:t.id,j:(t.active!='0'&&(t.btype||'both')!='rent'&&String(t.entry||'').slice(0,7)==curMonth()&&!db.bills.some(b=>b.tenantId==t.id&&b.type!='rent'))?t.id:''})});
+ {const mo0=curMonth(),mr0=db.mr&&db.mr[mo0];if(ac&&mr0&&mr0[ac.id]!==undefined&&!db.bills.some(b=>b.tenantId==ac.id&&b.month==mo0))rs.push({m:mo0,d:String(mr0['d_'+ac.id]||mo0+'-01').slice(0,10),v:mr0[ac.id],n:ac.id,o:ac.id})}
  /* a leaving tenant's reading was taken on his exit date, whenever the bill was made - so it never sorts after the next tenant's joining reading */
  rs.forEach(r=>{const o=ts.find(t=>t.id==r.o);if(o&&o.active=='0'&&o.exit&&r.d>String(o.exit).slice(0,10))r.d=String(o.exit).slice(0,10)});
  rs.sort((a,c)=>c.m.localeCompare(a.m)||c.d.localeCompare(a.d)||N(c.v)-N(a.v));
  return{n,t:ac,ok,rs}}).filter(f=>f.ok)}}).filter(x=>x.fl.length);
-const card=f=>{const l=f.rs[0],hist=f.rs.slice(0,6),tg=f.t?f.rs.find(r=>r.o==f.t.id):l,ea=tg&&tg.m==today().slice(0,7)?(tg.b?`updMeter('${E(tg.b)}')`:tg.n?(canJoin(f.t)?`pickRead('${E(tg.n)}')`:`updNoted('${E(tg.n)}')`):tg.j?`updJoin('${E(tg.j)}')`:''):'';
+const card=f=>{const l=f.rs[0],hist=f.rs.slice(0,6),tg=f.t?f.rs.find(r=>r.o==f.t.id):l,ea=tg&&tg.m==curMonth()?(tg.b?`updMeter('${E(tg.b)}')`:tg.n?(canJoin(f.t)?`pickRead('${E(tg.n)}')`:`updNoted('${E(tg.n)}')`):tg.j?`updJoin('${E(tg.j)}')`:''):'';
  return `<div class="card cp clk" style="margin:10px 0;padding:14px" onclick="togCard(this)"><div style="display:flex;align-items:center;gap:14px"><span class=av${ea?` role=button aria-label="मीटर रीडिंग बदलें" onclick="event.stopPropagation();${ea}"`:''}>${f.t?String(f.t.name||'?')[0].toUpperCase():'?'}</span><span style="flex:1;min-width:0;min-height:60px;display:flex;flex-direction:column;justify-content:center;gap:10px"><span class=nm>${f.t?E(f.t.name):'खाली फ्लैट'}</span><span style="font-size:15.75px">${fmtDL(l?l.d:d0)}</span></span><span style="flex:none;min-height:60px;display:flex;flex-direction:column;justify-content:center;align-items:flex-end;gap:10px"><span style="display:inline-flex;align-items:center;gap:6px"><b class=fl style="font-size:17px;white-space:nowrap">Flat ${E(f.n)}</b><svg class=cv width=16 height=16 viewBox="0 0 16 16" fill=none stroke=currentColor stroke-width=2 stroke-linecap=round stroke-linejoin=round><path d="M3 6l5 5 5-5"/></svg></span><b class=glw style="font-size:15.75px;font-weight:800;padding-right:32px">${E(fmtR(l?l.v:'0'))}</b></span></div>
 <div class=xp><div>${dv}<div style="font-weight:900;font-size:15px;margin-top:14px;padding-left:42px">पिछली 6 मीटर रीडिंग</div>${hist.length?'<div style="display:grid;grid-template-columns:1fr auto;column-gap:12px;row-gap:10px;align-items:baseline;margin-top:12px;padding-left:42px;font-size:15.75px;font-variant-numeric:tabular-nums">'+hist.map(x=>`<span style="display:inline-flex;align-items:baseline;gap:8px;text-align:left"><span style="flex:none;width:6px;text-align:left;overflow:visible">•</span><span>${dm(x.d)}</span></span><span style="text-align:right;padding-right:32px">${E(fmtR(x.v))}</span>`).join('')+'</div>':'<div class=m style="margin-top:10px;padding-left:42px">अभी कोई रीडिंग दर्ज नहीं</div>'}</div></div></div>`};
 return `<h2>मीटर रीडिंग</h2>`+(rows.map(x=>`${db.props.filter(p=>p.rentOnly!='1').length>1?`<h3 class=ph>${E(x.p.name)}</h3>`:''}${x.fl.map(card).join('')}`).join('')||'<div class=card>कोई फ्लैट नहीं</div>')},
@@ -446,12 +448,12 @@ qrSend:()=>{const q=upiQr(),p=db.profile;return `<h2>QR code भेजें</h2
 /* Tile5: payments received per tenant, by month */
 payView:()=>{const m=PV.m,ps=db.payments.filter(x=>T(x.tenantId)&&String(x.pdate).slice(0,7)==m),tot=r2(ps.reduce((q,x)=>q+N(x.amount),0));
 const bOf=t=>db.bills.filter(b=>b.tenantId==t.id&&b.month==m);
-const cm=m==today().slice(0,7);
+const cm=m==curMonth();
 const rows=db.props.map(p=>({p,ts:db.tenants.filter(t=>t.propId==p.id&&((cm&&t.active!='0')||bOf(t).length||ps.some(x=>x.tenantId==t.id))).sort(byFlat)})).filter(x=>x.ts.length);
 const ln=(l,v)=>`<div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-top:12px;font-size:15.75px"><span>${l}</span>${v}</div>`;
 const dv='<div style="border-top:1px solid rgba(128,128,128,.3);margin:12px 0 0"></div>';
 const hist=t=>dv+`<div style="font-weight:900;font-size:15px;margin-top:14px">पिछले 12 महीने का पेमेंट डिटेल्स</div>`+pay12(t.id,m);
-return `<h2>पेमेंट डिटेल्स</h2><div ontouchstart="tx=event.touches[0].clientX" ontouchend="swpP(event)" style="min-height:50vh"><div class="mnav tl"><button onclick="shiftPM(-1)">‹</button><b>${mlabel(m)}</b><button onclick="shiftPM(1)" ${m>=today().slice(0,7)?'disabled':''}>›</button></div><div class=pms style="margin:18px 2px 12px;font-size:17px;font-weight:400;color:var(--t);text-align:left">${mname(m)} में मिला = <b class=pmg>${R(tot)}</b>${m==today().slice(0,7)?` - बकाया = <b class=pmr>${R(r2(db.bills.filter(b=>T(b.tenantId)).reduce((a,b)=>a+dueOf(b),0)))}</b>`:''}</div>`+(rows.map(x=>`<h3 class=ph>${E(x.p.name)}</h3>${x.ts.map(t=>{const bs=bOf(t),cur=r2(bs.reduce((q,b)=>q+own(b),0)),
+return `<h2>पेमेंट डिटेल्स</h2><div ontouchstart="tx=event.touches[0].clientX" ontouchend="swpP(event)" style="min-height:50vh"><div class="mnav tl"><button onclick="shiftPM(-1)">‹</button><b>${mlabel(m)}</b><button onclick="shiftPM(1)" ${m>=curMonth()?'disabled':''}>›</button></div><div class=pms style="margin:18px 2px 12px;font-size:17px;font-weight:400;color:var(--t);text-align:left">${mname(m)} में मिला = <b class=pmg>${R(tot)}</b>${m==curMonth()?` - बकाया = <b class=pmr>${R(r2(db.bills.filter(b=>T(b.tenantId)).reduce((a,b)=>a+dueOf(b),0)))}</b>`:''}</div>`+(rows.map(x=>`<h3 class=ph>${E(x.p.name)}</h3>${x.ts.map(t=>{const bs=bOf(t),cur=r2(bs.reduce((q,b)=>q+own(b),0)),
  /* carried over from earlier months = everything billed before this month − every payment dated before this month (so an older payment made later also reduces this month's कुल किराया) */
  prev=r2(db.bills.filter(b=>b.tenantId==t.id&&String(b.month)<m).reduce((q,b)=>q+own(b),0)-db.payments.filter(x=>x.tenantId==t.id&&String(x.pdate).slice(0,7)<m).reduce((q,x)=>q+N(x.amount),0)),
  kk=Math.max(0,r2(cur+prev)),
@@ -468,7 +470,7 @@ if(cm){const hd=`<div style="display:flex;justify-content:space-between;align-it
 return `<div class="card cp clk" onclick="togCard(this)"><div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><b class=fl style="font-size:18px">${E(t.name)}</b><span style="position:relative;flex:none;width:110px;text-align:center;padding-right:30px;box-sizing:border-box"><b class=fl style="font-size:18px;white-space:nowrap">Flat ${E(t.flat)}</b><svg class=cv style="position:absolute;right:0;top:50%;margin-top:-13px" width=16 height=16 viewBox="0 0 16 16" fill=none stroke=currentColor stroke-width=2 stroke-linecap=round stroke-linejoin=round><path d="M3 6l5 5 5-5"/></svg></span></div><div class=xp><div>${dv}${ln(mname(m)+' का किराया',`<b>${R(cur)}</b>`)}${prev<0?ln('पुराना एडवांस',`<b class=dkg>(−) ${R(-prev)}</b>`):ln('पुराना बकाया',`<b class="${prev>0?'dkr':'dkg'}">(+) ${R(prev)}</b>`)}${dv}${ln('कुल किराया',`<b>${R(kk)}</b>`)}${ln('कुल चुकाया',`<b class=dkg>(−) ${R(ch)}</b>`)}${dv}</div></div><div style="margin-top:12px;min-height:34px;display:flex;flex-direction:column;justify-content:center">${last.replace('margin-top:12px','margin-top:0')}</div></div>`}).join('')}`).join('')||`<div class=card><span class=m>${cm?'कोई किरायेदार नहीं':'इस महीने कोई बिल या भुगतान दर्ज नहीं'}</span></div>`)+`</div>`},
 
 /* Tile4 list */ payRenter:()=>{const pr=PR,
- tdue=t=>r2(db.bills.filter(b=>b.tenantId==t.id).reduce((q,b)=>q+dueOf(b),0)),
+ tdue=t=>tenantDue(t.id),
  act=db.props.flatMap(p=>db.tenants.filter(t=>t.active!='0'&&t.propId==p.id).sort(byFlat)),
  /* tenants who already left (flat khali kiya) but still owe money: shown in the पेमेंट नोट करें list too */
  old=db.props.flatMap(p=>db.tenants.filter(t=>t.active=='0'&&t.propId==p.id&&tdue(t)>0).sort(byFlat)),
@@ -478,7 +480,7 @@ return `<div class="card cp clk" onclick="togCard(this)"><div style="display:fle
  bk=t=>bt(t,'#e8590c'),
  /* बकाया tab, tenant with no dues: same line "<माह> तक का बकाया = ₹0", opens the payment page like a tenant with dues */
  nd=t=>bt(t,'#1b8a3d'),
- tb=(on,c,tx,i)=>`<button class="${on?'on':''}" style="font-weight:700;${on?`background:${c.b};color:#fff`:`color:${c.t}`}" onclick="PR.t=${i};${i?`EM.m=today().slice(0,7);`:''}draw()">${tx}</button>`,
+ tb=(on,c,tx,i)=>`<button class="${on?'on':''}" style="font-weight:700;${on?`background:${c.b};color:#fff`:`color:${c.t}`}" onclick="PR.t=${i};${i?`EM.m=curMonth();`:''}draw()">${tx}</button>`,
  tabs=`<div class="seg big" style="margin-top:22px">${tb(!pr.t,{b:'linear-gradient(135deg,#7aa7ff,#5b6cff)',t:'#6a8aff'},'पेमेंट नोट करें',0)}${tb(pr.t,{b:'#0a84ff',t:'#0a84ff'},'बिजली बिल देखें',1)}</div>`,
  /* बकाया tab: every tenant; those with dues first (tap -> note payment), cleared tenants at the bottom ("<माह> तक चुकाया", tap -> expand). हिसाब किताब tab: every tenant. */
  list=pr.t?'':(act.filter(t=>tdue(t)>0).map(bk).join('')+old.map(bk).join('')+act.filter(t=>tdue(t)<=0).map(nd).join(''))||'<div class=card><span class=m>कोई किरायेदार नहीं</span></div>';
@@ -486,23 +488,23 @@ const lab=pr.t?'':`कुल किराया बकाया = <span style="c
 payTenant:id=>{const t=T(id)||{},ps=db.payments.filter(x=>x.tenantId==id).sort((p,q)=>String(q.pdate).localeCompare(String(p.pdate))||String(q.id).localeCompare(String(p.id)));
 const hd=`<h2>${E(t.name)}</h2><div class=m style="margin:-10px 2px 8px;padding-left:54px;font-size:16px">${E(P(t.propId)?.name)} · Flat ${E(t.flat)}</div>`+`<div class="seg big"><button class="${PT.t?'':'on'}" onclick="PT.t=0;draw()">पेमेंट नोट करें</button><button class="${PT.t?'on':''}" onclick="PT.t=1;draw()">पूरी पेमेंट हिस्ट्री</button></div>`;
 if(PT.t)return hd+(ps.map(x=>{const n=N(x.amount);return `<div class="card payc" data-pid="${E(x.id)}"><div class=item style="border-bottom:0;padding:0"><div class=gr><b>${fmtDL(x.pdate)}</b>${x.note?`<div class=m>${E(x.note)}</div>`:''}</div><b style="color:${n<0?'var(--r)':'#1b8a3d'}">${n<0?'− ':''}${R(Math.abs(n))}</b></div></div>`}).join('')||'<div class=card><span class=m>अभी कोई भुगतान दर्ज नहीं</span></div>');
-const due=r2(db.bills.filter(b=>b.tenantId==id).reduce((q,b)=>q+dueOf(b),0));const dl=db.bills.filter(b=>b.tenantId==id&&dueOf(b)>0).sort((p,q)=>String(p.month).localeCompare(String(q.month))||String(p.date).localeCompare(String(q.date)));
+const due=tenantDue(id);const dl=db.bills.filter(b=>b.tenantId==id&&dueOf(b)>0).sort((p,q)=>String(p.month).localeCompare(String(q.month))||String(p.date).localeCompare(String(q.date)));
 /* kul bakaya list: months with dues (amount) + months whose bill is not generated yet ("बिल नहीं बना" in red) */
-const mc=today().slice(0,7),nb=db.bills.some(x=>x.tenantId==id)?missingMonths(t,nextM(mc)):(t.active!='0'?[mc]:[]),
+const mc=curMonth(),nb=db.bills.some(x=>x.tenantId==id)?missingMonths(t,nextM(mc)):(t.active!='0'?[mc]:[]),
 rows=[...dl.map(x=>({m:String(x.month),a:dueOf(x)})),...nb.map(m=>({m,n:1}))].sort((p,q)=>p.m.localeCompare(q.m));
 return hd+`<div class="card ot${rows.length?' tap':''}" style="text-align:center;margin:28px 0 20px"${rows.length?' onclick="togDue()"':''}><div style="font-size:18.7px;font-weight:800;position:relative;display:flex;justify-content:center;align-items:center">कुल बकाया = ${R(due)}${rows.length?'<span class="xc open" id=xc_d style="font-size:22px;position:absolute;right:4px;top:50%;translate:0 -50%;line-height:1">›</span>':''}</div>${rows.length?`<div class="xp open" id=xp_d><div><div style="border-top:1px solid rgba(194,90,0,.3);margin-top:14px;padding-top:6px;text-align:left">${rows.map(x=>`<div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-top:10px;font-size:16px;font-weight:700"><span>${ML(x.m)}</span>${x.n?'<span style="color:var(--p)">बिल नहीं बना</span>':`<span>${R(x.a)}</span>`}</div>`).join('')}</div></div></div>`:''}</div>${N(t.advance)>0?`<div class=card style="text-align:center;margin:-4px 0 20px;padding:12px"><b class=dkg style="font-size:17px">एडवांस = ${R(t.advance)}</b></div>`:''}<div class=card><div style="display:flex;align-items:center;gap:10px"><input id=rdt class=dp readonly placeholder="पेमेंट डेट डालें *" value="" data-v="" onclick="pickDate('rdt')" style="flex:0 0 42%;width:42%;min-width:0;margin:0;padding:15px 6px 15px 34px;font-size:13px;background-position:9px center;background-size:17px"><button class=btn style="flex:1;margin:0;padding:15px 6px;font-size:16px;background:#0a84ff" onclick="recvPay('${id}',1)">पेमेंट नोट करें</button></div></div>
-<div class="card clk" onclick="togX('r')" style="margin-top:32px;padding:22px 20px"><div style="font-size:16px;font-weight:800;display:flex;justify-content:space-between;align-items:center">पिछले 6 महीने का पेमेंट डिटेल्स देखें<span class=xc id=xc_r style="font-size:22px">›</span></div><div class=xp id=xp_r><div><div style="border-top:1px solid rgba(128,128,128,.3);margin-top:14px">${pay12(id,today().slice(0,7),6)}</div></div></div></div><button class=btn style="margin:28px 0 12px;background:linear-gradient(135deg,#7aa7ff,#5b6cff)" onclick="billReceipt('${id}')">बिल की रसीद देखें व भेजें</button>`},
+<div class="card clk" onclick="togX('r')" style="margin-top:32px;padding:22px 20px"><div style="font-size:16px;font-weight:800;display:flex;justify-content:space-between;align-items:center">पिछले 6 महीने का पेमेंट डिटेल्स देखें<span class=xc id=xc_r style="font-size:22px">›</span></div><div class=xp id=xp_r><div><div style="border-top:1px solid rgba(128,128,128,.3);margin-top:14px">${pay12(id,curMonth(),6)}</div></div></div></div><button class=btn style="margin:28px 0 12px;background:linear-gradient(135deg,#7aa7ff,#5b6cff)" onclick="billReceipt('${id}')">बिल की रसीद देखें व भेजें</button>`},
 
-/* Tile6 */ billHist:()=>{const mo=today().slice(0,7);return `<h2>बिल देखें व भेजें</h2>${db.bills.some(b=>b.month==mo&&T(b.tenantId))?`<div style="font-size:17px;font-weight:800;text-align:center;margin:22px 19px 20px;color:var(--t)"><span style="display:inline-block;padding:5px 9px;border-radius:10px;background:var(--c);box-shadow:var(--sh)">कुल बिल बना = ${R(billMade(mo))}</span></div>`:''}${histFlat()}`},
- elecMonth:()=>{const mo=today().slice(0,7);return `<h2>${mname(prevM(mo))} - बिजली बिल</h2>${elecDetails(mo,0,1)}`},
+/* Tile6 */ billHist:()=>{const mo=curMonth();return `<h2>बिल देखें व भेजें</h2>${db.bills.some(b=>b.month==mo&&T(b.tenantId))?`<div style="font-size:17px;font-weight:800;text-align:center;margin:22px 19px 20px;color:var(--t)"><span style="display:inline-block;padding:5px 9px;border-radius:10px;background:var(--c);box-shadow:var(--sh)">कुल बिल बना = ${R(billMade(mo))}</span></div>`:''}${histFlat()}`},
+ elecMonth:()=>{const mo=curMonth();return `<h2>${mname(prevM(mo))} - बिजली बिल</h2>${elecDetails(mo,0,1)}`},
 
-/* Tile2 list: payments received this month, per tenant */ rcvMonth:()=>{const cm=today().slice(0,7),m=RM.m,ps=db.payments.filter(x=>T(x.tenantId)&&String(x.pdate).slice(0,7)==m),tot=r2(ps.reduce((q,x)=>q+N(x.amount),0));
+/* Tile2 list: payments received this month, per tenant */ rcvMonth:()=>{const cm=curMonth(),m=RM.m,ps=db.payments.filter(x=>T(x.tenantId)&&String(x.pdate).slice(0,7)==m),tot=r2(ps.reduce((q,x)=>q+N(x.amount),0));
 const rows=db.props.map(p=>({p,ts:db.tenants.filter(t=>t.propId==p.id&&ps.some(x=>x.tenantId==t.id)).sort(byFlat)})).filter(x=>x.ts.length);
 return `<h2>${mname(m)} में मिला</h2><div ontouchstart="tx=event.touches[0].clientX" ontouchend="swpR(event)" style="min-height:50vh"><div class="mnav tl"><button onclick="shiftRM(-1)">‹</button><b>${mlabel(m)}</b><button onclick="shiftRM(1)" ${m>=cm?'disabled':''}>›</button></div><div style="font-size:17px;font-weight:800;margin:22px 4px 14px;color:var(--t);text-align:center"><span style="display:inline-block;padding:5px 9px;border-radius:10px;background:var(--c);box-shadow:var(--sh)">कुल किराया पाया = <span style="color:#1b8a3d">${R(tot)}</span></span></div>`+(rows.map(x=>`<h3>${E(x.p.name)}</h3>`+x.ts.map(t=>{const es=ps.filter(e=>e.tenantId==t.id).sort((u,v)=>String(u.pdate).localeCompare(String(v.pdate)));
 return `<div class="tile tap" style="align-items:flex-start" onclick="PT.t=1;go('payTenant','${t.id}')">${av(t.name)}<span class=tx style="min-width:0"><span style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><span class=nm>${E(t.name)}</span><b class=fl style="font-size:17px;white-space:nowrap">Flat ${E(t.flat)}</b></span>${es.map((e,k)=>`<span style="display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-top:${k?8:2}px;font-size:15.75px"><span>${fmtDL(e.pdate)}</span><span style="color:#1b8a3d">${N(e.amount)<0?'− ':''}${R(Math.abs(N(e.amount)))}${N(e.amount)<0?' (रद्द)':''}</span></span>`).join('')}</span></div>`}).join('')).join('')||'<div class=card><span class=m>इस महीने कोई भुगतान दर्ज नहीं</span></div>')+`</div>`},
 
-/* Tile3 list */ notBilled:()=>{const mo0=today().slice(0,7),h=NB.t?views.meterRead():(mrBilled(mo0)?billDone(mo0):views.nbMain()),tb=(on,c,tx,i)=>`<button class="${on?'on':''}" style="font-weight:700;${on?`background:${c.b};color:#fff`:`color:${c.t}`}" onclick="NB.t=${i};draw()">${tx}</button>`,tabs=`<div class="seg big" style="margin:22px 0 ${db.props.filter(p=>p.rentOnly!='1').length>1?14:18}px">${tb(!NB.t,{b:'linear-gradient(135deg,#7aa7ff,#5b6cff)',t:'#6a8aff'},mrBilled(mo0)?'बिल डिटेल्स':(!mrDone(mo0)&&pnList(mo0).length?'पेमेंट नोट करें':'मीटर रीडिंग डालें'),0)}${tb(NB.t,{b:'#0a84ff',t:'#0a84ff'},'मीटर रीडिंग देखें',1)}</div>`;return h.replace('</h2>','</h2>'+tabs)},
-nbMain:()=>{const mo=today().slice(0,7),rows=db.props.map(p=>({p,ts:active(p.id).filter(t=>!db.bills.some(b=>b.tenantId==t.id&&b.month==mo)).sort(byFlat)})).filter(x=>x.ts.length),n=rows.reduce((a,x)=>a+x.ts.length,0);
+/* Tile3 list */ notBilled:()=>{const mo0=curMonth(),h=NB.t?views.meterRead():(mrBilled(mo0)?billDone(mo0):views.nbMain()),tb=(on,c,tx,i)=>`<button class="${on?'on':''}" style="font-weight:700;${on?`background:${c.b};color:#fff`:`color:${c.t}`}" onclick="NB.t=${i};draw()">${tx}</button>`,tabs=`<div class="seg big" style="margin:22px 0 ${db.props.filter(p=>p.rentOnly!='1').length>1?14:18}px">${tb(!NB.t,{b:'linear-gradient(135deg,#7aa7ff,#5b6cff)',t:'#6a8aff'},mrBilled(mo0)?'बिल डिटेल्स':(!mrDone(mo0)&&pnList(mo0).length?'पेमेंट नोट करें':'मीटर रीडिंग डालें'),0)}${tb(NB.t,{b:'#0a84ff',t:'#0a84ff'},'मीटर रीडिंग देखें',1)}</div>`;return h.replace('</h2>','</h2>'+tabs)},
+nbMain:()=>{const mo=curMonth(),rows=db.props.map(p=>({p,ts:active(p.id).filter(t=>!db.bills.some(b=>b.tenantId==t.id&&b.month==mo)).sort(byFlat)})).filter(x=>x.ts.length),n=rows.reduce((a,x)=>a+x.ts.length,0);
 if(mrDone(mo))return billSummary(mo);
 {const np=pnList(mo);if(np.length){const multi=db.props.filter(p=>p.rentOnly!='1').length>1;
  return `<h2>पुराना पेमेंट नोट करें</h2><div class=card style="margin:2px 0 14px;font-size:16px;line-height:1.5;text-align:center"><div style="font-weight:400">निम्न किरायेदारों का पेमेंट नोट नहीं हुआ है।</div><div style="margin-top:12px;text-align:center;font-size:18px;font-weight:800;color:#b00020">सही बिल बनाने के लिए</div><div style="margin-top:14px;font-weight:400">बकाया अगले महीने में जोड़ें या पेमेंट नोट करें</div></div>`+db.props.map(p=>({p,l:np.filter(x=>x.p.id==p.id)})).filter(x=>x.l.length).map(x=>`${multi?`<h3 class=ph>${E(x.p.name)}</h3>`:''}${x.l.map(y=>`<div class=card style="margin:10px 0"><div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:10px;row-gap:6px;align-items:baseline"><span class=nm style="min-width:0;text-align:left">${E(y.t.name)}</span><span class=fl style="font-size:15.75px;font-weight:800;text-align:center">Flat ${E(y.t.flat)}</span><b class=fl style="font-size:16px;font-weight:800;white-space:nowrap;text-align:left">कुल बकाया</b><span style="font-size:15.75px;font-weight:800;color:#e8590c;text-align:center;white-space:nowrap">${R(y.due)}</span></div><div style="display:flex;gap:10px;margin-top:12px"><button type=button class="badge sbig org bb" style="flex:1 1 0;width:auto;min-width:0;max-width:none;border:0;border-radius:8px!important" onclick="ackPN('${y.t.id}')">अगले महीने में जोड़ें</button><button type=button class="badge sbig shr" style="flex:1 1 0;width:auto;min-width:0;max-width:none;border:0;border-radius:8px!important" onclick="PT.t=0;go('payTenant','${y.t.id}')">पेमेंट नोट करें</button></div></div>`).join('')}`).join('')}}
@@ -510,9 +512,9 @@ const head=`<h2>मीटर रीडिंग डालें</h2>`;
 return head+(rows.map(x=>`${db.props.filter(p=>p.rentOnly!='1').length>1?`<h3 class=ph>${E(x.p.name)}</h3>`:''}<div class=card>${x.ts.map(t=>{const ty=t.btype||'both';return `<div class=item style="display:grid;grid-template-columns:1fr 150px;align-items:center;gap:6px 10px"><b class=fl>${E(t.name)}</b>${ty=='rent'?`<div class=m>सिर्फ़ किराया · ${R(t.rent)}</div>`:`<div class=m style="color:var(--t);opacity:.85;font-weight:700">पिछली रीडिंग ${E(fmtR(lastRead(t.id)))}</div>`}<b class=fl style="color:var(--t)">Flat ${E(t.flat)}</b>${ty=='rent'?'<span></span>':`<div style="display:flex;align-items:center;gap:6px;width:150px"><input id=bk_${t.id} type=text inputmode=decimal autocomplete=off oninput="fmtIn(this)" class="bki sm rdg" style="font-weight:700;flex:1;min-width:0;width:auto;margin:0;padding:9px 8px;font-size:15px"><button type=button class="cam gy" id=cb_${t.id} aria-label="कैमरा" onclick="document.getElementById('cf_${t.id}').click()">📷</button><input type=file id=cf_${t.id} accept="image/*" capture=environment hidden onchange="meterOcr('${t.id}',this)"></div>`}</div>`}).join('')}</div>`).join('')||'<div class=card>सभी का बिल बन चुका 🎉</div>')+(n?`<button class=btn onclick="askBills()" style="background:linear-gradient(135deg,#7aa7ff,#5b6cff);margin:18px 0 12px">बिल बनाएँ</button>`:'')},
 
 bulkDone:ids=>{const bs=ids.map(i=>db.bills.find(b=>b.id==i)).filter(Boolean).sort((a,c)=>String(T(a.tenantId)?.propId).localeCompare(String(T(c.tenantId)?.propId))||byFlat(T(a.tenantId),T(c.tenantId)));
-return `<h2>बिल बन गए ✅</h2><div class=m style="margin:-6px 2px 8px">${bs.length} बिल · ${mname(bs[0]?.month||today().slice(0,7))}</div><div class=card>${bs.map(b=>{const t=T(b.tenantId);return `<div class=item>${av(t.name)}<div class=gr><b class=fl>Flat ${E(t.flat)}</b><div class=nm>${E(t.name)}</div></div><button class="badge chip" style="border:0;background:var(--p,#0a84ff);color:#fff" onclick="go('sent','${b.id}')">बिल देखें</button></div>`}).join('')}</div>`},
+return `<h2>बिल बन गए ✅</h2><div class=m style="margin:-6px 2px 8px">${bs.length} बिल · ${mname(bs[0]?.month||curMonth())}</div><div class=card>${bs.map(b=>{const t=T(b.tenantId);return `<div class=item>${av(t.name)}<div class=gr><b class=fl>Flat ${E(t.flat)}</b><div class=nm>${E(t.name)}</div></div><button class="badge chip" style="border:0;background:var(--p,#0a84ff);color:#fff" onclick="go('sent','${b.id}')">बिल देखें</button></div>`}).join('')}</div>`},
 
-oldBill:()=>{const mo=today().slice(0,7),rows=db.props.map(p=>({p,ts:active(p.id).sort(byFlat)})).filter(x=>x.ts.length),n=rows.reduce((a,x)=>a+x.ts.length,0);
+oldBill:()=>{const mo=curMonth(),rows=db.props.map(p=>({p,ts:active(p.id).sort(byFlat)})).filter(x=>x.ts.length),n=rows.reduce((a,x)=>a+x.ts.length,0);
 const head=`<h2>बैकडेटेड बिल बनाएँ</h2><div class=m style="margin:-6px 2px 8px">${mname(mo)} · ${n} किरायेदार</div>`;
 return head+(rows.map(x=>`<h3>${E(x.p.name)}</h3><div class=card>${x.ts.map(t=>`<div class=item>${av(t.name)}<div class=gr><b class=fl>Flat ${E(t.flat)}</b><div class=nm>${E(t.name)}</div></div><button class="badge org chip" style="border:0" onclick="go('billForm',['${t.id}','${t.btype||'both'}'])">बिल बनाएँ</button></div>`).join('')}</div>`).join('')||'<div class=card>कोई किरायेदार नहीं</div>');},
 
@@ -529,14 +531,14 @@ addTen:()=>!db.props.length?`<h2>किरायेदार ऐड करें
 <button class=btn onclick="addTen()">Save tenant</button></div><script>renderFlat();prefillTen()<\/script>`,
 
 billForm:([id,type])=>{const t=T(id),prev=lastRead(id);return `<h2>Rent - ${E(t.name)}</h2><div class=card>
-<label>Month</label><input id=bm type=month value="${today().slice(0,7)}" oninput="calc()">
+<label>Month</label><input id=bm type=month value="${curMonth()}" oninput="calc()">
 ${type!='rent'?`<label>Previous reading</label><input id=bp type=text inputmode=decimal autocomplete=off class=rdg value="${fmtR(prev)}" oninput="fmtIn(this);calc()"><label>Current reading</label><div style="display:flex;align-items:center;gap:8px;margin:5px 0 14px"><input id=bc type=text inputmode=decimal autocomplete=off class=rdg oninput="fmtIn(this);calc()" style="flex:1;min-width:0;margin:0"><button type=button class="cam gy" id=cb_${id} aria-label="कैमरा" style="width:50px;height:50px;font-size:24px" onclick="document.getElementById('cf_${id}').click()">📷</button><input type=file id=cf_${id} accept="image/*" capture=environment hidden onchange="meterOcr('${id}',this)"></div>`:''}
 <div id=arr></div></div><div class=card id=sum></div><button class=btn onclick="genBill('${id}','${type}')" style="background:var(--g)">Generate bill</button><script>calc()<\/script>`},
 
 welcome:id=>{const t=T(id);return `<h2>Welcome message</h2><div class=card><pre style="white-space:pre-wrap;font:inherit;margin:0;overflow-wrap:anywhere;word-break:break-word">${E(welcomeMsg(t))}</pre></div>
 <a class=btn style="background:#25d366" target=_blank href="https://wa.me/${wa(t.phone)}?text=${encodeURIComponent(welcomeMsg(t))}">Send on WhatsApp</a>`},
 
-billRcpt:id=>{const m=RC.m||today().slice(0,7),cm=today().slice(0,7),b=db.bills.find(x=>x.tenantId==id&&x.month==m),lo=db.bills.filter(x=>x.tenantId==id).map(x=>String(x.month)).sort()[0]||cm;
+billRcpt:id=>{const m=RC.m||curMonth(),cm=curMonth(),b=db.bills.find(x=>x.tenantId==id&&x.month==m),lo=db.bills.filter(x=>x.tenantId==id).map(x=>String(x.month)).sort()[0]||cm;
 return `<h2>बिल की रसीद</h2><div class="mnav tl" style="margin-bottom:0"><button onclick="shiftRC(-1)" ${m<=lo?'disabled':''}>‹</button><b>${mlabel(m)}</b><button onclick="shiftRC(1)" ${m>=cm?'disabled':''}>›</button></div><div style="margin-top:-4px"></div>`+(b?rcptBody(b):`<div class=card style="text-align:center;font-size:17px;line-height:1.6"><b>${mname(m)} महीने का बिल अभी नहीं बना है।</b><div style="margin-top:6px">रसीद देखने के लिए बिल बनाएँ।</div></div>`)},
 sent:id=>{const b=db.bills.find(x=>x.id==id);return `<h2>Bill generated ✅</h2>${rcptBody(b)}`},
 
@@ -560,7 +562,7 @@ updTen:id=>{const t=T(id);return `<h2 style="white-space:nowrap;font-size:max(19
 analytics:()=>{const bs=db.bills.filter(b=>T(b.tenantId)),ps=db.payments.filter(x=>T(x.tenantId)),pm=x=>String(x.pdate).slice(0,7),ok=k=>/^\d{4}-\d{2}$/.test(k),
 ks=[...bs.map(b=>b.month),...ps.map(pm)].filter(ok).sort();
 if(!ks.length)return'<h2>Rent Analytics</h2><div class=card>No bills yet</div>';
-const mo=today().slice(0,7),end=ks[ks.length-1]>mo?ks[ks.length-1]:mo,nx=m=>{const[y,q]=m.split('-').map(Number),d=new Date(y,q,1);return d.getFullYear()+'-'+pd2(d.getMonth()+1)},rows=[];
+const mo=curMonth(),end=ks[ks.length-1]>mo?ks[ks.length-1]:mo,nx=m=>{const[y,q]=m.split('-').map(Number),d=new Date(y,q,1);return d.getFullYear()+'-'+pd2(d.getMonth()+1)},rows=[];
 for(let m=ks[0],n=0;m<=end&&n<240;m=nx(m),n++){
  const rec=r2(ps.filter(x=>pm(x)==m).reduce((q,x)=>q+N(x.amount),0)),
  pend=r2(bs.filter(b=>b.month==m).reduce((q,b)=>q+dueOf(b),0));
@@ -570,7 +572,7 @@ const sel=rows.find(r=>r.m==A.m),i=A.l.indexOf(A.m),Hh=230,top=34,bot=38,ph=Hh-t
 hh=v=>Math.max(v>0?4:0,Math.max(0,v)/mx*ph),bar=(x,v,c,tc,lb)=>`<rect x=${x} y=${top+ph-hh(v)} width=96 height=${hh(v)} rx=9 fill="${c}" /><text x=${x+48} y=${top+ph-hh(v)-9} text-anchor=middle font-size=16 font-weight=800 style="fill:${tc}">${R(v)}</text><text x=${x+48} y=${top+ph+24} text-anchor=middle font-size=13 font-weight=600 style="fill:var(--t)">${lb}</text>`;
 return `<h2>Rent Analytics</h2><div class=card><div class="mnav an"><button onclick="shiftA(-1)" ${i<=0?'disabled':''}>‹</button><b>${mlabel(A.m)}</b><button onclick="shiftA(1)" ${i>=A.l.length-1?'disabled':''}>›</button></div>
 <svg viewBox="0 0 320 ${Hh}" style="display:block;width:100%;height:auto;font-family:var(--f)"><line x1=0 x2=320 y1=${top+ph} y2=${top+ph} style="stroke:var(--b)" stroke-width=2 />${bar(30,sel.rec,'#30b858','#1b8a3d',mname(A.m)+' में मिला')}${bar(194,sel.pend,'#ff9500','#c76a00',mname(A.m)+' का बकाया')}</svg>
-<div style="border-top:1px solid var(--b);margin-top:12px"></div><div onclick="togAn()" style="cursor:pointer"><div style="display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:16px;font-weight:800;padding:14px 0 4px">${A.m==today().slice(0,7)?`<span class=dkr style="font-size:16px">कुल बकाया = ${R(r2(bs.filter(b=>b.month<=A.m).reduce((q,b)=>q+dueOf(b),0)))}</span>`:'<span></span>'}<span style="flex:none;display:inline-flex;align-items:center;gap:9px;color:#0a84ff;font-size:16px">डिटेल्स देखें<span class="xc${A.o?' open':''}" id=xc_a style="font-size:22px">›</span></span></div><div class="xp${A.o?' open':''}" id=xp_a><div>${anDetails(A.m)}</div></div></div></div>
+<div style="border-top:1px solid var(--b);margin-top:12px"></div><div onclick="togAn()" style="cursor:pointer"><div style="display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:16px;font-weight:800;padding:14px 0 4px">${A.m==curMonth()?`<span class=dkr style="font-size:16px">कुल बकाया = ${R(r2(bs.filter(b=>b.month<=A.m).reduce((q,b)=>q+dueOf(b),0)))}</span>`:'<span></span>'}<span style="flex:none;display:inline-flex;align-items:center;gap:9px;color:#0a84ff;font-size:16px">डिटेल्स देखें<span class="xc${A.o?' open':''}" id=xc_a style="font-size:22px">›</span></span></div><div class="xp${A.o?' open':''}" id=xp_a><div>${anDetails(A.m)}</div></div></div></div>
 <h3>दूसरा महीना चुनें</h3><div class=card>${rows.slice().reverse().map(r=>`<div class=item onclick="pickA('${r.m}')" style="${r.m==A.m?'background:rgba(10,132,255,.12)':''}"><div class=gr><b>${mlabel(r.m)}</b></div><div style="text-align:right"><div class="ap g">मिला ${R(r.rec)}</div><div class="ap o">बकाया ${R(r.pend)}</div></div></div>`).join('')}</div>`},
 
 ownerMenu:()=>`<h2>Saved Profile</h2><button class=tile onclick="go('savedProfile')"><span class=ic style="background:#0a84ff">🪪</span><span class=tx><b>प्रोफ़ाइल बनाएँ</b><small>Name, phone, UPI</small></span><span class=ch>›</span></button><button class=tile onclick="go('oldBill')"><span class=ic style="background:#ff9f0a">🧾</span><span class=tx><b>बैकडेटेड बिल बनाएँ</b><small>किरायेदार चुनकर अलग से बिल बनाएँ</small></span><span class=ch>›</span></button><button class=tile onclick="go('archived')"><span class=ic style="background:#8e8e93">🗄️</span><span class=tx><b>पुराने किरायेदार देखें</b><small>Past tenants and their details</small></span><span class=ch>›</span></button>`,
@@ -612,6 +614,8 @@ ${t.photo?`<a target=_blank href="${E(t.photo)}">Aadhar photo</a>`:''}${docLinks
    ================================================================ */
 const wa=p=>{p=String(p).replace(/\D/g,'');return p.length==10?'91'+p:p};
 const r2=x=>Math.round(N(x)*100)/100,own=b=>r2(Math.max(0,N(b.rent)+N(b.elec)-N(b.waived))),paidAmt=b=>b.status=='paid'?own(b):Math.min(own(b),r2(N(b.paid))),dueOf=b=>r2(Math.max(0,own(b)-paidAmt(b))),
+tenantDue=id=>r2(db.bills.filter(b=>b.tenantId==id).reduce((q,b)=>q+dueOf(b),0)), /* everything this tenant still owes, across all months */
+
 ML=m=>{const d=new Date(m+'-01T00:00');return d.toLocaleString('hi',{month:'long'})+'-'+d.getFullYear()},
 olderDue=b=>db.bills.filter(x=>x.tenantId==b.tenantId&&x.id!=b.id&&x.month<b.month&&dueOf(x)>0).sort((a,c)=>a.month.localeCompare(c.month)),
 arrears=(id,m)=>m?db.bills.filter(x=>x.tenantId==id&&x.month<m&&dueOf(x)>0).sort((a,c)=>a.month.localeCompare(c.month)).map(x=>[x.month,dueOf(x),x.type]):[];
@@ -624,7 +628,10 @@ const lastRead=id=>{const b=tbills(id).find(b=>b.type!='rent');return b?b.cur:T(
 /* ================================================================
    5. SCREEN STATE - which tab / month each screen is showing
    ================================================================ */
-let NB={t:0},PR={t:0},A={m:null,l:[],o:0},tx=0,PT={t:0},RC={m:null,id:null},PV={m:today().slice(0,7)},PRE=null,EM={m:today().slice(0,7)},RM={m:today().slice(0,7)};
+/* what each screen is currently showing (tab t, month m) - these names are also used by the onclick handlers inside the screens, so they are kept short:
+   NB = बिल बनाएँ tab (0 readings / 1 rate) | PR = पेमेंट नोट करें tab | PT = one tenant's payment page tab | A = analytics month list | RC = bill receipt month/tenant
+   PV = payments month | EM = electricity month | RM = payments-received month | PRE = tenant form prefill | tx = touch start x for swipes */
+let NB={t:0},PR={t:0},A={m:null,l:[],o:0},tx=0,PT={t:0},RC={m:null,id:null},PV={m:curMonth()},PRE=null,EM={m:curMonth()},RM={m:curMonth()};
 const prevM=m=>{const[y,q]=String(m).split('-').map(Number),d=new Date(y,q-2,1);return d.getFullYear()+'-'+pd2(d.getMonth()+1)};
 const fmtDL=d=>{const x=new Date(String(d)+'T00:00');return isNaN(x)?String(d):x.toLocaleDateString('hi',{day:'numeric',month:'long',year:'numeric'})},
 mname=m=>new Date(m+'-01T00:00').toLocaleString('hi',{month:'long'}),
@@ -640,9 +647,9 @@ function fmtR(v){v=String(v??'');const p=v.split('.');return p[0].replace(/\B(?=
 function fmtIn(el){const raw=el.value,pos=el.selectionStart??raw.length,nd=raw.slice(0,pos).replace(/[^\d.]/g,'').length;
  let c=raw.replace(/[^\d.]/g,'');const k=c.indexOf('.');if(k>=0)c=c.slice(0,k+1)+c.slice(k+1).replace(/\./g,'');
  const f=fmtR(c);el.value=f;let n=0,i=0;for(;i<f.length&&n<nd;i++)if(f[i]!='-')n++;try{el.setSelectionRange(i,i)}catch(e){}}
-const askBulk=(todo,extra,skip,op={})=>new Promise(res=>{const o=document.createElement('div');o.className='mdl';
+const askBulk=(todo,extra,skip,op={})=>new Promise(res=>{const o=mkDlg();
  o.innerHTML='<div class=mbx role=alertdialog aria-modal=true><div class=mtx style="margin-bottom:12px"></div><div class=bl style="max-height:45vh;overflow-y:auto;margin:0 0 18px;border-top:1px solid rgba(128,128,128,.3)"></div><div class=mbt><button class="mb mc">Cancel</button><button class="mb mo">OK</button></div></div>';
- o.style.background='rgba(0,0,0,.82)';o.style.backdropFilter='blur(8px)';o.style.webkitBackdropFilter='blur(8px)';
+ dimBg(o);
  o.querySelector('.mtx').textContent=op.t||'मीटर रीडिंग चेक कर लें!';o.querySelector('.mo').textContent=op.y||'OK';o.querySelector('.mc').textContent=op.n||'Cancel';
  const L=o.querySelector('.bl');todo.filter(x=>x[1]!='rent').sort((a,c)=>byFlat(a[0],c[0])).forEach(x=>{const r=document.createElement('div');r.style.cssText='display:flex;justify-content:space-between;gap:10px;padding:10px 4px;border-bottom:1px solid rgba(128,128,128,.3);font-size:17px';
   const a=document.createElement('b');a.textContent='Flat '+(x[0].flat||'-');const b=document.createElement('b');b.textContent=fmtR(x[3]);r.append(a,b);L.appendChild(r)});
@@ -667,7 +674,7 @@ function pnList(mo){const o=[];
   if((db.payments||[]).some(x=>x.tenantId==t.id&&String(x.pdate)>=ld))return;
   o.push({t,lb,due,p})}));
  return o}
-async function ackPN(id){const t=T(id)||{},mo=today().slice(0,7),first=String(t.name||'').trim().split(/\s+/)[0]||'';
+async function ackPN(id){const t=T(id)||{},mo=curMonth(),first=String(t.name||'').trim().split(/\s+/)[0]||'';
  const pn=pnList(mo).find(x=>x.t.id==id),amt=pn?R(pn.due):'';
  if(!await modal(first+' का बकाया '+amt+' अगले महीने में जुड़ जाएगा।',1,{y:'OK',n:'Cancel',dim:1}))return;
  setProf('pnAck_'+mo+'_'+id,'1');draw()}
@@ -682,24 +689,24 @@ ${mrPend(mo).some(t=>(t.btype||'both')!='rent')?'<div class=dkg style="margin:25
 <button class=btn style="background:var(--p);margin:25px 0" onclick="confirmBills()">बिल बनाएँ</button>
 ${us.length?`<div class=card style="margin:25px 0">${us.map(x=>`<div class=item><div class=gr><b class=fl>Flat ${E(x.t.flat)}</b><div class=nm>${E(x.t.name)}</div></div><div style="text-align:right"><b class=ta data-u="${x.u}">${R(r2(x.u*rate))}</b><div class=m style="font-weight:800">${x.u} यूनिट</div></div></div>`).join('')}</div>`:''}</div>`}
 
-const listDlg=(title,rows)=>new Promise(res=>{const o=document.createElement('div');o.className='mdl';
+const listDlg=(title,rows)=>new Promise(res=>{const o=mkDlg();
  o.innerHTML='<div class=mbx role=alertdialog aria-modal=true><div class=mtx style="margin-bottom:12px;font-size:19px"></div><div class=bl style="max-height:45vh;overflow-y:auto;margin:0 0 18px;border-top:1px solid rgba(128,128,128,.3)"></div><div class=mbt><button class="mb mo">OK</button></div></div>';
- o.style.background='rgba(0,0,0,.82)';o.style.backdropFilter='blur(8px)';o.style.webkitBackdropFilter='blur(8px)';
+ dimBg(o);
  o.querySelector('.mtx').textContent=title;const L=o.querySelector('.bl');
  rows.forEach(x=>{const r=document.createElement('div');r.style.cssText='display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:10px 4px;border-bottom:1px solid rgba(128,128,128,.3);font-size:16px';const a=document.createElement('b');a.textContent='Flat '+(x.flat||'-');const b=document.createElement('span');b.style.cssText='text-align:right;min-width:0;word-break:break-word';b.textContent=x.txt;r.append(a,b);L.appendChild(r)});
  o.querySelector('.mo').onclick=()=>{o.remove();res(true)};document.body.appendChild(o);o.querySelector('.mo').focus()});
 const mrBilled=mo=>!mrPend(mo).length&&db.bills.some(b=>b.month==mo&&b.type!='rent'&&T(b.tenantId));
 /* receipt markup of one bill; QR + WhatsApp/SMS/Share buttons only for the current month's bill (older bills are view-only) */
-function rcptBody(b){const id=b.id,t=T(b.tenantId),q=upiQr(),old=String(b.month)<today().slice(0,7);return `<div class=card><pre style="white-space:pre-wrap;font:inherit;margin:0;overflow-wrap:anywhere;word-break:break-all">${E(msg(b))}</pre></div>
+function rcptBody(b){const id=b.id,t=T(b.tenantId),q=upiQr(),old=String(b.month)<curMonth();return `<div class=card><pre style="white-space:pre-wrap;font:inherit;margin:0;overflow-wrap:anywhere;word-break:break-all">${E(msg(b))}</pre></div>
 ${old?'':`${q?`<div class=card style="text-align:center">${qrSvg(q)}<div class=m style="margin-top:10px">QR स्कैन करके UPI से भुगतान करें</div><div class=m>${E(db.profile.upi)}</div></div>`:'<div class=card><span class=m>QR के लिए Profile में UPI ID डालें</span></div>'}
 <button class=btn style="background:#25d366" onclick="shareBill('${id}')">Send on WhatsApp</button>
 <a class="btn" style="background:linear-gradient(135deg,#7aa7ff,#5b6cff)" href="sms:+${wa(t.phone)}${/iPhone|iPad|Mac/.test(navigator.userAgent)?'&':'?'}body=${encodeURIComponent(msg(b,1).replace(/\*/g,''))}">Send as Text Message</a>
 <button class="btn o" onclick="navigator.share?navigator.share({text:msg(db.bills.find(x=>x.id=='${id}'))}):alert('Share not supported')">Share…</button>`}`}
 /* payment page, bottom button: opens the receipt page (month toggle; share only for the current month) */
-function billReceipt(id){if(!T(id))return;RC.m=today().slice(0,7);RC.id=id;go('billRcpt',id)}
-function shiftRC(d){const[y,m]=RC.m.split('-').map(Number),x=new Date(y,m-1+d,1),k=x.getFullYear()+'-'+pd2(x.getMonth()+1),lo=db.bills.filter(b=>b.tenantId==RC.id).map(b=>String(b.month)).sort()[0]||today().slice(0,7);if(k>today().slice(0,7)||k<lo)return;RC.m=k;draw()}
+function billReceipt(id){if(!T(id))return;RC.m=curMonth();RC.id=id;go('billRcpt',id)}
+function shiftRC(d){const[y,m]=RC.m.split('-').map(Number),x=new Date(y,m-1+d,1),k=x.getFullYear()+'-'+pd2(x.getMonth()+1),lo=db.bills.filter(b=>b.tenantId==RC.id).map(b=>String(b.month)).sort()[0]||curMonth();if(k>curMonth()||k<lo)return;RC.m=k;draw()}
 async function noBill(id){const t=T(id);await modal(String(t.name).trim().split(/\s+/)[0]+' का बिल नहीं बना है\nकृपया पहले बिल बनाएँ!',0);NB.t=0;go('notBilled')}
-async function askBills(){const mo=today().slice(0,7),s={_ok:1},bad=[],miss=[],todo=[];
+async function askBills(){const mo=curMonth(),s={_ok:1},bad=[],miss=[],todo=[];
  mrPend(mo).forEach(t=>{const ty=t.btype||'both';if(ty=='rent'){todo.push([t,ty,'','',mo+'-01']);return}
   const el=document.getElementById('bk_'+t.id),v=el?el.value.replace(/-/g,'').trim():'';
   if(v===''||isNaN(Number(v))){miss.push({flat:t.flat,txt:t.name});return}
@@ -711,13 +718,16 @@ async function askBills(){const mo=today().slice(0,7),s={_ok:1},bad=[],miss=[],t
  if(!todo.length)return;
  if(todo.every(x=>x[1]=='rent')){if(!await modal('सभी का किराये का बिल बनेगा।\n\nआगे बढ़ें?',1,{y:'हाँ, बिल बनाएँ',n:'Cancel',dim:1}))return}
   else if(!await askBulk(todo,0,0,{t:'मीटर रीडिंग सही है? दुबारा देख लें!',y:'हाँ',n:'नहीं',one:1}))return;
- const bills=[],all=[];
- todo.forEach(x=>{missingMonths(x[0],mo).forEach(m=>{const rd=x[1]=='rent'?'':readAt(x[0].id,m),o=mkBill(x[0],x[1],m,rd,rd,rate,x[1]=='rent'?m+'-01':undefined);db.bills.push(o);all.push(o)});
-  const b=mkBill(x[0],x[1],mo,x[2],x[3],rate,x[4]);db.bills.push(b);bills.push(b);all.push(b)});
- todo.forEach((x,i)=>applyAdv(x[0].id,bills[i]));persist();
+ const{bills,all}=makeBills(todo,mo,rate);persist();
  (()=>{for(const k in s){if(k.startsWith('d_'))continue;const r=k=='_ok'?{id:mo+'_ok',tenantId:'_ok',month:mo,reading:'',date:today()}:{id:mo+'_'+k,tenantId:k,month:mo,reading:s[k],date:s['d_'+k]};post({a:'upsert',s:'readings',r})}
   for(const b of all)post({a:'upsert',s:'bills',r:b})})();
  draw();scrollTo(0,0)}
+/* creates this month's bill for every tenant in todo ([tenant,type,prevReading,newReading,date]), plus bills for any months skipped before it, and uses up any advance. Returns this month's bills and every bill created. */
+function makeBills(todo,mo,rate){const bills=[],all=[];
+ todo.forEach(x=>{missingMonths(x[0],mo).forEach(m=>{const rd=x[1]=='rent'?'':readAt(x[0].id,m),o=mkBill(x[0],x[1],m,rd,rd,rate,x[1]=='rent'?m+'-01':undefined);db.bills.push(o);all.push(o)});
+  const b=mkBill(x[0],x[1],mo,x[2],x[3],rate,x[4]);db.bills.push(b);bills.push(b);all.push(b)});
+ todo.forEach((x,i)=>applyAdv(x[0].id,bills[i]));
+ return{bills,all}}
 function billMade(mo){return r2(db.bills.filter(b=>b.month==mo&&T(b.tenantId)).reduce((q,b)=>q+payable(b),0))} /* rent + electricity + previous arrear - advance, per tenant */
 function billDone(mo){const bs=db.bills.filter(b=>b.month==mo&&b.type!='rent'&&T(b.tenantId)),rate=N(bs[0]&&bs[0].rate)||N(db.profile.rate),us=bs.map(b=>N(b.units)).join(','),amt=r2(bs.reduce((q,b)=>q+N(b.elec),0)),made=billMade(mo);
  return `<h2>बिल बन गया है</h2>
@@ -735,7 +745,7 @@ function bdStep(d){const l=document.getElementById('rl'),base=N(l.dataset.r),i=d
 function bdCol(){const b=document.getElementById('rbox');if(b&&b.dataset.o=='1')bdTog()}
 function bdCard(e){if(e.target.closest('button,[onclick]')!==e.currentTarget)return;bdCol()}
 function bdTog(){const b=document.getElementById('rbox'),c=document.getElementById('rch'),cw=document.getElementById('rcw');if(!b)return;const o=b.dataset.o!='1';{const M=document.getElementById('main');if(M){M.classList.toggle('bdo',o);if(o){const k=document.getElementById('ka').closest('.card'),sa=(parseFloat(getComputedStyle(M).paddingTop)||12)-12;scrollTo({top:Math.max(0,k.getBoundingClientRect().top+scrollY-64-sa),behavior:'smooth'})}}}{const tl=document.getElementById('rtl');{const hr=document.getElementById('rhr');if(hr)hr.style.padding=o?'28px 18px 0':'15px 18px'}if(tl){tl.textContent=o?'नया बिजली दर चुनें':'बिजली का रेट चेंज कर बिल बढ़ाएँ या घटाएँ';tl.style.textAlign=o?'center':'left';tl.style.color=o?'#0a84ff':'';if(tl.parentElement)tl.parentElement.style.opacity=o?'1':''}}b.dataset.o=o?'1':'';b.style.gridTemplateRows=o?'1fr':'0fr';b.style.opacity=o?'1':'0';if(cw){cw.style.gridTemplateRows=o?'1fr':'0fr';cw.style.opacity=o?'1':'0'}{const hd=document.getElementById('rhd');if(hd){hd.style.gridTemplateRows=o?'1fr':'0fr';hd.style.opacity=o?'1':'0'}}if(c)c.style.transform=o?'translateY(-22px) rotate(180deg)':'rotate(0deg)';if(!o)document.getElementById('nrate').value='';bdLive()}
-async function bdRegen(){const mo=today().slice(0,7),l=document.getElementById('rl'),dr=N(l.dataset.r),nr=N(V('nrate'));if(!(nr>0)||Math.abs(nr-dr)<0.0001)return alert('पहले स्लाइडर से नया रेट चुनें');
+async function bdRegen(){const mo=curMonth(),l=document.getElementById('rl'),dr=N(l.dataset.r),nr=N(V('nrate'));if(!(nr>0)||Math.abs(nr-dr)<0.0001)return alert('पहले स्लाइडर से नया रेट चुनें');
  const U=String(l.dataset.u||'').split(',').filter(x=>x!=='').map(N);
  if(!await modal(R(nr)+'/यूनिट से सारे बिल दोबारा बनेंगे।\n\nनया बिजली बिल = '+R(r2(U.reduce((q,u)=>q+r2(u*nr),0)))+'\n\nआगे बढ़ें?',1,{y:'हाँ, बिल बनाएँ',n:'Cancel',dim:1}))return;
  db.bills.filter(b=>b.month==mo&&b.type!='rent'&&T(b.tenantId)).forEach(b=>{const pv=r2(paidAmt(b));b.rate=nr;b.elec=r2(N(b.units)*nr);b.total=r2(b.elec+N(b.rent)+N(b.arrear));setPaid(b,Math.min(pv,own(b)))});
@@ -744,30 +754,27 @@ function stepRate(d){const base=N(db.profile.rate),i=document.getElementById('nr
 function togSave(){const h=document.getElementById('rsave'),x=document.getElementById('rbx');if(!h)return;const o=h.value!='1';h.value=o?'1':'';x.style.background=o?'var(--p)':'';x.style.borderColor=o?'var(--p)':'var(--m)';x.firstChild.style.opacity=o?'1':'0'}
 function togRate(lk){const b=document.getElementById('rbox'),c=document.getElementById('rch'),w=document.getElementById('rbelow'),cw=document.getElementById('rcw'),l=document.getElementById('rl');if(!b)return;const o=b.dataset.o!='1';if(lk&&o)return;b.dataset.o=o?'1':'';b.style.gridTemplateRows=o?'1fr':'0fr';b.style.opacity=o?'1':'0';if(cw){cw.style.gridTemplateRows=o?'1fr':'0fr';cw.style.opacity=o?'1':'0'}if(c)c.style.transform=o?'rotate(-90deg)':'rotate(90deg)';if(w){w.style.opacity=o?'.15':'';w.style.filter=o?'grayscale(1)':'';w.style.pointerEvents=o?'none':''}
  if(!o&&l){const nr=N(V('nrate')),base=N(db.profile.rate),h=document.getElementById('nrate');if(lk)l.dataset.r=String(nr>0?nr:base);else{const d=N(l.dataset.r);h.value=Math.abs(d-base)<0.0001?'':String(d)}}liveRate()}
-function liveRate(){const l=document.getElementById('rl');if(!l)return;const mo=today().slice(0,7),dr=N(l.dataset.r),nr=N(V('nrate')),eff=nr>0?nr:N(db.profile.rate),f=x=>String(parseFloat(N(x).toFixed(2))),ka=document.getElementById('ka'),cp=document.getElementById('rcmp'),b=document.getElementById('rbox');
+function liveRate(){const l=document.getElementById('rl');if(!l)return;const mo=curMonth(),dr=N(l.dataset.r),nr=N(V('nrate')),eff=nr>0?nr:N(db.profile.rate),f=x=>String(parseFloat(N(x).toFixed(2))),ka=document.getElementById('ka'),cp=document.getElementById('rcmp'),b=document.getElementById('rbox');
  document.querySelectorAll('.ta').forEach(e=>{e.textContent=R(r2(N(e.dataset.u)*dr))});
  if(ka)ka.textContent='कुल बिजली बकाया = '+R(mrAmt(mo,dr));
  l.textContent='(बिजली दर '+R(dr)+' / यूनिट)';
  if(cp&&b&&b.dataset.o=='1'){const A=mrAmt(mo,dr),B=mrAmt(mo,eff),k=(x,y)=>x>y?' pmg':x<y?' pmr':'',bx=(lb,v,c)=>'<span style="display:block;text-align:center"><span style="display:block;opacity:.55">'+lb+'</span><span class="'+c+'" style="display:block;margin-top:2px">'+v+'</span></span>';cp.innerHTML=bx('नया यूनिट रेट','₹'+f(eff),k(eff,dr))+bx('नया बकाया',R(B),k(B,A))}}
 /* pencil on the Meter Reading page, for a reading that is noted but whose bill is not made yet */
-async function updNoted(tid){const mo=today().slice(0,7),s=db.mr&&db.mr[mo],t=T(tid);if(!s||!t||s[tid]===undefined)return;
+async function updNoted(tid){const mo=curMonth(),s=db.mr&&db.mr[mo],t=T(tid);if(!s||!t||s[tid]===undefined)return;
  if(db.bills.some(b=>b.tenantId==tid&&b.month==mo))return;
  const v=await askReading(t,{cur:s[tid]});if(v===null)return;
  const x=String(v).trim();if(x===''||isNaN(Number(x))||Number(x)<0)return alert('सही मीटर रीडिंग डालें');
  if(N(x)<N(lastRead(tid)))return alert('नई रीडिंग पिछली रीडिंग ('+fmtR(lastRead(tid))+') से कम नहीं हो सकती');
  s[tid]=x;s['d_'+tid]=today();persist();
  await post({a:'upsert',s:'readings',r:{id:mo+'_'+tid,tenantId:tid,month:mo,reading:x,date:today()}});draw()}
-async function confirmBills(){const mo=today().slice(0,7),st=(db.mr&&db.mr[mo])||{};if(!mrDone(mo))return;
+async function confirmBills(){const mo=curMonth(),st=(db.mr&&db.mr[mo])||{};if(!mrDone(mo))return;
  const nd=Object.keys(st).filter(k=>k.startsWith('d_')).map(k=>st[k]).sort().pop()||today(); /* bills carry the date on which the readings were noted */
  const todo=[];mrPend(mo).forEach(t=>{const ty=t.btype||'both';if(ty=='rent')todo.push([t,ty,'','',mo+'-01']);else todo.push([t,ty,lastRead(t.id),st[t.id],st['d_'+t.id]||nd])});
  const nr=N(V('nrate')),rate=nr>0?nr:N(db.profile.rate);
  if(todo.some(x=>x[1]!='rent')&&!(rate>0))return alert('पहले Profile में बिजली की दर डालें, या नई दर यहाँ डालें');
  if(!await modal(R(rate)+'/यूनिट से सारे बिल बनेंगे।\n\nकुल बिजली = '+R(mrAmt(mo,rate))+'\n\nआगे बढ़ें?',1,{y:'हाँ, बिल बनाएँ',n:'Cancel',dim:1}))return;
  if(nr>0&&V('rsave')=='1')setProf('rate',nr);
- const bills=[],all=[];
- todo.forEach(x=>{missingMonths(x[0],mo).forEach(m=>{const rd=x[1]=='rent'?'':readAt(x[0].id,m),o=mkBill(x[0],x[1],m,rd,rd,rate,x[1]=='rent'?m+'-01':undefined);db.bills.push(o);all.push(o)});
-  const b=mkBill(x[0],x[1],mo,x[2],x[3],rate,x[4]);db.bills.push(b);bills.push(b);all.push(b)});
- todo.forEach((x,i)=>applyAdv(x[0].id,bills[i]));
+ const{bills,all}=makeBills(todo,mo,rate);
  delete db.mr[mo];persist();
  (()=>{for(const b of all)post({a:'upsert',s:'bills',r:b})})();
  rp('bulkDone',bills.map(b=>b.id))}
@@ -780,23 +787,26 @@ function welcomeMsg(t){const o=(db.profile.name||'').trim(),ad=String(t.aadhar||
  'सादर,',...(o?[o]:[])].join('\n')}
 function shiftA(d){const i=A.l.indexOf(A.m)+d;if(i>=0&&i<A.l.length){A.m=A.l[i];draw()}}
 function pickA(m){A.m=m;draw();scrollTo({top:0,behavior:'smooth'})}
-function shiftPM(d){const[y,m]=PV.m.split('-').map(Number),x=new Date(y,m-1+d,1),k=x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0');if(k>today().slice(0,7))return;PV.m=k;draw()}
-function swpP(e){if(colRoots().length)return;const d=e.changedTouches[0].clientX-tx;if(Math.abs(d)>70)shiftPM(d>0?-1:1)}
+/* one month-stepper + one swipe handler shared by the payments (PV), electricity (EM) and received (RM) month screens: months can't go past the current month */
+const stepMon=(o,d)=>{const[y,m]=o.m.split('-').map(Number),x=new Date(y,m-1+d,1),k=x.getFullYear()+'-'+pd2(x.getMonth()+1);if(k>curMonth())return;o.m=k;draw()},
+swipeMon=(e,step)=>{if(colRoots().length)return;const d=e.changedTouches[0].clientX-tx;if(Math.abs(d)>70)step(d>0?-1:1)};
+function shiftPM(d){stepMon(PV,d)}
+function swpP(e){swipeMon(e,shiftPM)}
 const byFlat=(a,b)=>String(a.flat).localeCompare(String(b.flat),undefined,{numeric:true});
-function histFlat(){const m=today().slice(0,7),ts=db.tenants.filter(t=>(!t.entry||String(t.entry).slice(0,7)<=m||db.bills.some(b=>b.tenantId==t.id&&b.month==m))&&(t.active!='0'||db.bills.some(b=>b.tenantId==t.id&&b.month==m)||(String(t.exit||'').slice(0,7)>=m&&(!t.entry||String(t.entry).slice(0,7)<=m)))).sort((a,b)=>String(P(a.propId)?.name).localeCompare(String(P(b.propId)?.name))||String(a.propId).localeCompare(String(b.propId))||String(a.flat).localeCompare(String(b.flat),undefined,{numeric:true}));
+function histFlat(){const m=curMonth(),ts=db.tenants.filter(t=>(!t.entry||String(t.entry).slice(0,7)<=m||db.bills.some(b=>b.tenantId==t.id&&b.month==m))&&(t.active!='0'||db.bills.some(b=>b.tenantId==t.id&&b.month==m)||(String(t.exit||'').slice(0,7)>=m&&(!t.entry||String(t.entry).slice(0,7)<=m)))).sort((a,b)=>String(P(a.propId)?.name).localeCompare(String(P(b.propId)?.name))||String(a.propId).localeCompare(String(b.propId))||String(a.flat).localeCompare(String(b.flat),undefined,{numeric:true}));
  ts.sort((a,b)=>((a.btype||'both')=='rent')-((b.btype||'both')=='rent'));
  return `<div style="min-height:50vh">
 ${(ts.length&&ts.every(t=>!db.bills.some(b=>b.tenantId==t.id&&b.month==m)))?`<div class=card style="text-align:center;padding:26px 18px;margin:18px 0 12px"><div style="font-size:17px;font-weight:700;line-height:1.6">इस महीने का बिल अभी नहीं बना है,<br>कृपया बिल बनाएँ!</div></div><button class=btn onclick="NB.t=0;go('notBilled')">बिल बनाएँ</button>`:ts.map(t=>roTile(t,db.bills.filter(b=>b.tenantId==t.id&&b.month==m),m)).join('')||'<div class=card>No flats yet</div>'}</div>`}
 /* बिल देखें व भेजें tile: same look as the पेमेंट नोट करें tab tile, "कुल बिल" in normal text colour */
-function roTile(t,bs,m){const pn=E(P(t.propId)?.name||''),cm=m==today().slice(0,7),click=bs.length?`go('sent','${bs[0].id}')`:cm?`noBill('${t.id}')`:'';
+function roTile(t,bs,m){const pn=E(P(t.propId)?.name||''),cm=m==curMonth(),click=bs.length?`go('sent','${bs[0].id}')`:cm?`noBill('${t.id}')`:'';
 const mid=bs.length?`कुल बिल = <span style="font-weight:400">${R(r2(bs.reduce((q,b)=>q+N(payable(b)),0)))}</span>`:`कोई बिल नहीं बना${cm&&N(t.advance)>0?`<div style="margin-top:4px"><b class=dkg>एडवांस = ${R(t.advance)}</b></div>`:''}`;
 return `<div class="tile${click?' tap':''}"${click?` onclick="${click}"`:''}>${av(t.name)}<span class=tx style="min-width:0;min-height:60px;justify-content:center"><span class=nm>${E(t.name)}</span><span style="font-size:15.75px;margin-top:10px">${mid}</span></span><span style="flex:none;max-width:42%;min-height:60px;display:flex;flex-direction:column;justify-content:center;align-items:flex-end;text-align:right;gap:10px"><b class=fl style="font-size:17px;white-space:nowrap">Flat ${E(t.flat)}</b><span style="font-size:14px;font-weight:700;color:var(--m);line-height:1.3">${pn}</span></span></div>`}
 /* बिजली बिल का डिटेल्स: per tenant of rent+electricity properties, units used and units x rate of that month's bill */
-function shiftEM(d){const[y,m]=EM.m.split('-').map(Number),x=new Date(y,m-1+d,1),k=x.getFullYear()+'-'+pd2(x.getMonth()+1);if(k>today().slice(0,7))return;EM.m=k;draw()}
-function shiftRM(d){const[y,m]=RM.m.split('-').map(Number),x=new Date(y,m-1+d,1),k=x.getFullYear()+'-'+pd2(x.getMonth()+1);if(k>today().slice(0,7))return;RM.m=k;draw()}
-function swpR(e){if(colRoots().length)return;const d=e.changedTouches[0].clientX-tx;if(Math.abs(d)>70)shiftRM(d>0?-1:1)}
-function swpE(e){if(colRoots().length)return;const d=e.changedTouches[0].clientX-tx;if(Math.abs(d)>70)shiftEM(d>0?-1:1)}
-function elecDetails(mm,onlyTot,fixed){const m=mm||EM.m,cm=today().slice(0,7),s=(db.mr&&db.mr[m])||{},nf=x=>String(parseFloat(N(x).toFixed(2))),
+function shiftEM(d){stepMon(EM,d)}
+function shiftRM(d){stepMon(RM,d)}
+function swpR(e){swipeMon(e,shiftRM)}
+function swpE(e){swipeMon(e,shiftEM)}
+function elecDetails(mm,onlyTot,fixed){const m=mm||EM.m,cm=curMonth(),s=(db.mr&&db.mr[m])||{},nf=x=>String(parseFloat(N(x).toFixed(2))),
 uOf=b=>b.units!==''&&b.units!=null?N(b.units):Math.max(0,N(b.cur)-N(b.prev)),
 inM=t=>(!t.entry||String(t.entry).slice(0,7)<=m||db.bills.some(b=>b.tenantId==t.id&&b.month==m))&&(t.active!='0'||db.bills.some(b=>b.tenantId==t.id&&b.month==m)||(String(t.exit||'').slice(0,7)>=m&&(!t.entry||String(t.entry).slice(0,7)<=m))),
 card=(nm,fl,l1,l2,e)=>`<div class="card cp" style="margin:10px 0;padding:14px 19px"><div style="display:flex;align-items:center;gap:14px">${av(nm)}<div style="flex:1;min-width:0;display:grid;grid-template-columns:minmax(0,1fr) 90px;column-gap:8px;row-gap:10px;align-items:baseline"><span class=nm style="min-width:0">${E(nm)}</span><b class=fl style="font-size:16px;white-space:nowrap">${fl===''?'':'Flat '+E(fl)}</b>${l2}${l1}</div></div></div>`,
@@ -819,7 +829,7 @@ if(onlyTot)return r2(tot);
 const rt=rate!==null?rate:N(db.profile.rate);
 return `<div ${fixed?'':'ontouchstart="tx=event.touches[0].clientX" ontouchend="swpE(event)" '}style="min-height:50vh">${fixed?'':`<div class="mnav tl"><button onclick="shiftEM(-1)">‹</button><b>${mlabel(prevM(m))}</b><button onclick="shiftEM(1)" ${m>=cm?'disabled':''}>›</button></div>`}<div style="margin:${fixed?6:22}px 2px 14px;text-align:center;font-size:17px;font-weight:800;color:var(--t)"><span style="display:inline-block;padding:5px 9px;border-radius:10px;background:var(--c);box-shadow:var(--sh)">कुल बिजली बिल = <span style="color:#0a84ff">${R(r2(tot))}</span> @${nf(rt)}/यूनिट</span></div>${body||'<div class=card>कोई फ्लैट नहीं</div>'}</div>`}
 /* "कुल बकाया" tile, identical to the one on the tenant payment page */
-function dueCard(id,mg){const t=T(id)||{},due=r2(db.bills.filter(b=>b.tenantId==id).reduce((q,b)=>q+dueOf(b),0)),dl=db.bills.filter(b=>b.tenantId==id&&dueOf(b)>0),mc=today().slice(0,7),nb=db.bills.some(x=>x.tenantId==id)?missingMonths(t,nextM(mc)):(t.active!='0'?[mc]:[]),
+function dueCard(id,mg){const t=T(id)||{},due=tenantDue(id),dl=db.bills.filter(b=>b.tenantId==id&&dueOf(b)>0),mc=curMonth(),nb=db.bills.some(x=>x.tenantId==id)?missingMonths(t,nextM(mc)):(t.active!='0'?[mc]:[]),
 rows=[...dl.map(x=>({m:String(x.month),a:dueOf(x)})),...nb.map(m=>({m,n:1}))].sort((p,q)=>p.m.localeCompare(q.m));
 return `<div class="card ot${rows.length?' tap':''}" style="text-align:center;margin:${mg}"${rows.length?' onclick="togDue()"':''}><div style="font-size:18.7px;font-weight:800;position:relative;display:flex;justify-content:center;align-items:center">कुल बकाया = ${R(due)}${rows.length?'<span class="xc open" id=xc_d style="font-size:22px;position:absolute;right:4px;top:50%;translate:0 -50%;line-height:1">›</span>':''}</div>${rows.length?`<div class="xp open" id=xp_d><div><div style="border-top:1px solid rgba(194,90,0,.3);margin-top:14px;padding-top:6px;text-align:left">${rows.map(x=>`<div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-top:10px;font-size:16px;font-weight:700"><span>${ML(x.m)}</span>${x.n?'<span style="color:var(--p)">बिल नहीं बना</span>':`<span>${R(x.a)}</span>`}</div>`).join('')}</div></div></div>`:''}</div>`}
 let docs=[];
@@ -953,21 +963,21 @@ async function delPay(id){const p=db.payments.find(x=>x.id==id);if(!p)return;con
  ['touchend','touchcancel','touchmove','mouseup','mouseleave','scroll'].forEach(k=>document.addEventListener(k,stop,{passive:true,capture:true}));
  document.addEventListener('contextmenu',e=>{if(e.target.closest&&e.target.closest('.payc'))e.preventDefault()})})();
 /* update this month's meter reading (long-press 4s on a meter card whose latest reading is this month's bill) -> bill + payment calculation recalculated */
-const askReading=(t,b)=>new Promise(res=>{const o=document.createElement('div');o.className='mdl';
+const askReading=(t,b)=>new Promise(res=>{const o=mkDlg();
  o.innerHTML='<div class=mbx role=dialog aria-modal=true><div class=mtx style="margin-bottom:14px"></div><input id=mrAmt type=text inputmode=decimal autocomplete=off class=rdg oninput="fmtIn(this)" placeholder="नई रीडिंग" onfocus="this.placeholder=\'\'" onblur="this.placeholder=\'नई रीडिंग\'" style="font-size:22px;text-align:center;margin:0 0 18px"><div class=mbt><button class="mb mc">Cancel</button><button class="mb mo">Save</button></div></div>';
- o.style.background='rgba(0,0,0,.82)';o.style.backdropFilter='blur(8px)';o.style.webkitBackdropFilter='blur(8px)';
+ dimBg(o);
  o.querySelector('.mtx').textContent='मीटर रीडिंग अपडेट करें\n\n'+(t.name?t.name+' · ':'')+'Flat '+(t.flat||'')+'\nअभी दर्ज रीडिंग: '+fmtR(b.cur);const c=v=>{o.remove();res(v)};
  o.querySelector('.mo').onclick=()=>c(o.querySelector('#mrAmt').value.replace(/-/g,''));o.querySelector('.mc').onclick=()=>c(null);
  document.body.appendChild(o)});
 /* joining reading can be corrected only for a tenant who joined this month and has no electricity bill yet */
-function canJoin(t){return !!t&&t.active!='0'&&(t.btype||'both')!='rent'&&String(t.meter??'')!==''&&String(t.entry||'').slice(0,7)==today().slice(0,7)&&!db.bills.some(b=>b.tenantId==t.id&&b.type!='rent')}
+function canJoin(t){return !!t&&t.active!='0'&&(t.btype||'both')!='rent'&&String(t.meter??'')!==''&&String(t.entry||'').slice(0,7)==curMonth()&&!db.bills.some(b=>b.tenantId==t.id&&b.type!='rent')}
 /* tenant has both a joining reading and a noted reading this month -> ask which one to change */
-function pickRead(tid){const t=T(tid),s=(db.mr&&db.mr[today().slice(0,7)])||{};if(!t)return;
- const o=document.createElement('div');o.className='mdl';o.style.background='rgba(0,0,0,.6)';
+function pickRead(tid){const t=T(tid),s=(db.mr&&db.mr[curMonth()])||{};if(!t)return;
+ const o=mkDlg('rgba(0,0,0,.6)');
  o.innerHTML='<div class=mbx><div class=mtx style="margin-bottom:16px">कौन सी रीडिंग बदलनी है?</div><div style="display:flex;flex-direction:column;gap:10px"><button type=button class="mb mc" style="flex:none" data-k=n>नोट की हुई रीडिंग ('+E(fmtR(s[tid]))+')</button><button type=button class="mb mc" style="flex:none" data-k=j>शुरुआती रीडिंग ('+E(fmtR(t.meter))+')</button><button type=button class="mb mo" style="flex:none;margin-top:6px" data-x=1>Cancel</button></div></div>';
  o.onclick=e=>{const b=e.target.closest('button');if(b&&b.dataset.k){o.remove();b.dataset.k=='n'?updNoted(tid):updJoin(tid)}else if(e.target==o||(b&&b.dataset.x))o.remove()};document.body.appendChild(o)}
 /* correct the joining (initial) meter reading */
-async function updJoin(tid){const t=T(tid),mo=today().slice(0,7);
+async function updJoin(tid){const t=T(tid),mo=curMonth();
  if(!canJoin(t))return;
  const v=await askReading(t,{cur:t.meter});if(v===null)return;
  const x=String(v).trim();if(x===''||isNaN(Number(x))||Number(x)<0)return alert('सही मीटर रीडिंग डालें');
@@ -975,7 +985,7 @@ async function updJoin(tid){const t=T(tid),mo=today().slice(0,7);
  const pr=flatLastRead(t.propId,t.flat,tid);
  if(pr!==null&&N(x)<N(pr)&&!await modal('आपने फ्लैट '+t.flat+' का रीडिंग '+fmtR(x)+' डाला है जो कि पिछली रीडिंग से कम है, अगर नई रीडिंग सही है तो आगे बढ़ें',1,{y:'OK',n:'Cancel',dim:1}))return;
  t.meter=x;save('tenants',t);draw()}
-async function updMeter(bid){const b=db.bills.find(x=>x.id==bid);if(!b||b.type=='rent'||String(b.cur??'')===''||b.month!=today().slice(0,7))return;
+async function updMeter(bid){const b=db.bills.find(x=>x.id==bid);if(!b||b.type=='rent'||String(b.cur??'')===''||b.month!=curMonth())return;
  const t=T(b.tenantId)||{};if(t.active=='0'&&db.tenants.some(x=>x.active!='0'&&x.propId==t.propId&&String(x.flat).trim().toLowerCase()==String(t.flat).trim().toLowerCase()))return alert('यह पिछले किरायेदार ('+(t.name||'')+') का आखिरी बिल है। इस फ्लैट में अब नया किरायेदार है, इसलिए यह रीडिंग यहाँ से नहीं बदली जा सकती।');
  const v=await askReading(t,b);if(v===null)return;
  const s=String(v).trim();if(s===''||isNaN(Number(s))||Number(s)<0)return alert('सही मीटर रीडिंग डालें');
@@ -1000,7 +1010,7 @@ function pickPhoto(i){const f=i.files[0];if(!f)return;const im=new Image;im.onlo
 const DV=id=>{const e=document.getElementById(id);return e?(e.dataset.v||''):''};
 function pickDate(id){const el=document.getElementById(id);if(!el)return;
  const sel0=el.dataset.v||'',b=(sel0||today()).split('-').map(Number);let y=b[0],m=b[1]-1;
- const o=document.createElement('div');o.className='mdl';o.style.background='rgba(0,0,0,.6)';
+ const o=mkDlg('rgba(0,0,0,.6)');
  const draw=()=>{const first=new Date(y,m,1).getDay(),dim=new Date(y,m+1,0).getDate();let c='';for(let i=0;i<first;i++)c+='<span></span>';
   for(let d=1;d<=dim;d++){const iso=y+'-'+pd2(m+1)+'-'+pd2(d);c+=`<button type=button class="dpd${iso==sel0?' sel':iso==today()?' td':''}" data-d="${iso}">${d}</button>`}
   o.innerHTML=`<div class=mbx style="padding:16px 12px 14px"><div class=dph><button type=button data-n=-1>‹</button><b>${new Date(y,m,1).toLocaleString('hi',{month:'long',year:'numeric'})}</b><button type=button data-n=1>›</button></div><div class=dpw>${['रवि','सोम','मंगल','बुध','गुरु','शुक्र','शनि'].map(x=>'<span>'+x+'</span>').join('')}</div><div class=dpg>${c}</div><div class=mbt style="margin-top:12px"><button type=button class="mb mo" data-x=1>Cancel</button></div></div>`};
@@ -1022,7 +1032,7 @@ function fillMeter(){const m=document.getElementById('tm');if(!m||V('tb')!='both
  if(m.value!==''&&m.dataset.auto!='1')return; /* never overwrite what the user typed */
  const v=flatLastRead();if(v===null){if(m.dataset.auto=='1'){m.value='';m.dataset.auto=''}return}
  m.value=fmtR(v);m.dataset.auto='1'}
-function pickBill(){const cv=(document.getElementById('tb')||{}).value||'',o=document.createElement('div');o.className='mdl';o.style.background='rgba(0,0,0,.6)';
+function pickBill(){const cv=(document.getElementById('tb')||{}).value||'',o=mkDlg('rgba(0,0,0,.6)');
  o.innerHTML='<div class=mbx><div class=mtx style="margin-bottom:16px">बिल का प्रकार चुनें</div><div style="display:flex;flex-direction:column;gap:10px">'+Object.keys(BT).map(k=>`<button type=button class="mb ${k==cv?'mo':'mc'}" style="flex:none" data-v="${k}">${BT[k]}</button>`).join('')+'<button type=button class="mb mo" style="flex:none;margin-top:6px" data-x=1>Cancel</button></div></div>';
  o.onclick=e=>{const t=e.target.closest('button');if(t&&t.dataset.v){setTb(t.dataset.v);o.remove()}else if(e.target==o||(t&&t.dataset.x))o.remove()};document.body.appendChild(o)}
 /* add-tenant form: mandatory fields must be filled in order */
@@ -1250,7 +1260,7 @@ function pay12(tid,m,n){let [y,q]=m.split('-').map(Number);q-=(n||12)-1;if(q<1){
  return `<span>${isNaN(d)?E(String(x.pdate)):pd2(d.getDate())+'-'+pd2(d.getMonth()+1)+'-'+d.getFullYear()}</span><span style="text-align:right">${n<0?'− ':''}${R(Math.abs(n))}</span>`}).join('')+'</div>'}
 /* accordion: opening one payment card closes any other */
 /* while any collapsible card is open, nothing outside it can be tapped; the Back button (and phone back) only closes it */
-const lockPage=()=>{const q=cur(),v=q.length?q[q.length-1][0]:'';return v=='payView'||(v=='notBilled'&&(NB.t==1||mrBilled(today().slice(0,7))))};
+const lockPage=()=>{const q=cur(),v=q.length?q[q.length-1][0]:'';return v=='payView'||(v=='notBilled'&&(NB.t==1||mrBilled(curMonth())))};
 function colRoots(){const r=[];if(!lockPage())return r;document.querySelectorAll('#main .xp.open').forEach(x=>{if(x.id=='apx'){r.push(x);const b=document.getElementById('apb');if(b)r.push(b)}else r.push(x.closest('.card')||x)});
  document.querySelectorAll('#rbox').forEach(x=>{if(x.dataset.o=='1'){r.push(x.closest('.card'));const k=document.getElementById('ka');if(k)r.push(k.closest('.card'))}});return r}
 function collapseAll(){let any=false;const M=document.getElementById('main');
@@ -1262,7 +1272,7 @@ function backBtn(){if(lockPage()&&collapseAll())return;if(cur().length)back();el
 /* ================================================================
    10. GLOBAL EVENTS & SETTINGS ACTIONS (expand/collapse, back, keys, rate, sync)
    ================================================================ */
-document.addEventListener('click',e=>{const R=colRoots();if(!R.length)return;const t=e.target;if(!t.closest||t.closest('.mdl')||t.closest('.bkc'))return;if(t.closest('#main h2')){e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();collapseAll();return}if(R.some(r=>r&&r.contains(t)))return;e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();collapseAll()},true);
+document.addEventListener('click',e=>{const roots=colRoots();if(!roots.length)return;const t=e.target;if(!t.closest||t.closest('.mdl')||t.closest('.bkc'))return;if(t.closest('#main h2')){e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();collapseAll();return}if(roots.some(r=>r&&r.contains(t)))return;e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();collapseAll()},true);
 function togCard(c){const x=c.querySelector('.xp'),o=x.classList.contains('open');const M=document.getElementById('main');if(M)M.classList.toggle('fxo',!o);document.querySelectorAll('.cp.clk').forEach(e=>{e.classList.remove('ex');const q=e.querySelector('.xp');if(q)q.classList.remove('open')});if(!o){x.classList.add('open');c.classList.add('ex');c.style.scrollMarginBottom='24px';c.style.scrollMarginTop='72px';setTimeout(()=>{if(c.classList.contains('ex'))c.scrollIntoView({block:'nearest',behavior:'smooth'})},380)}}
 async function saveTenDocs(id){const t=T(id);let ch=0;
  if(docs.some(d=>!String(d.name||'').trim()))return alert('हर डॉक्यूमेंट का नाम लिखना ज़रूरी है');docs.forEach(d=>d.name=d.name.trim());
@@ -1277,7 +1287,7 @@ async function archive(id){const t=T(id),xd=DV('xd');if(!xd)return alert('नि
  if(el){const s=V('xr').replace(/-/g,'').trim();if(s===''||isNaN(Number(s)))return alert('आखिरी मीटर रीडिंग डालें');nc=Number(s);
   prev=ex&&ex.type!='rent'&&String(ex.prev??'')!==''?N(ex.prev):N(readAt(id,em));
   /* never allow a reading below the tenant's last recorded reading (latest bill, joining meter, or a reading already noted for this month) */
-  {const nt=db.mr&&db.mr[today().slice(0,7)],noted=nt&&nt[id]!==undefined?N(nt[id]):0,lim=Math.max(prev,N(lastRead(id)),noted);
+  {const nt=db.mr&&db.mr[curMonth()],noted=nt&&nt[id]!==undefined?N(nt[id]):0,lim=Math.max(prev,N(lastRead(id)),noted);
    if(nc<lim)return alert('आखिरी रीडिंग पिछली रीडिंग ('+fmtR(lim)+') से कम नहीं हो सकती')}
   if(!ex&&!(N(db.profile.rate)>0))return alert('पहले Profile में बिजली का रेट डालें')}
  if(!await modal(t.name+' का आखिरी बिल बनाकर फ्लैट खाली करें?',1,{y:'हाँ, फ्लैट खाली करें',n:'Cancel'}))return;
@@ -1297,7 +1307,7 @@ async function archive(id){const t=T(id),xd=DV('xd');if(!xd)return alert('नि
  t.active='0';t.exit=xd;save('tenants',t);cur().splice(-2);dir='bck';draw();alert('आखिरी बिल बन गया और फ्लैट खाली हो गया ✅')}
 async function permDelete(id){const t=T(id);if(!t)return;
  if(!url)return alert('पहले Profile → Advance → कीज़ डालें में Backend जोड़ें, ताकि जानकारी का बैकअप हो सके।');
- const pend=r2(db.bills.filter(b=>b.tenantId==id).reduce((q,b)=>q+dueOf(b),0));
+ const pend=tenantDue(id);
  if(!await modal('क्या आप "'+t.name+'" को Permanent Delete करना चाहते हैं?'+(pend>0?'\n\n⚠️ इनका '+R(pend)+' बकाया बाकी है।':''),1,{y:'हाँ, Delete करें',n:'Cancel'}))return;
  post({a:'deleteTenant',r:t});
  db.tenants=db.tenants.filter(x=>x.id!=id);persist();await alert('किरायेदार Permanent Delete हो गया, जानकारी बैकअप में सेव है ✅');draw()}
@@ -1341,18 +1351,18 @@ function trNode(n){if(n.nodeType==3){const v=n.nodeValue;if(v.trim()){const r=hi
 new MutationObserver(ms=>ms.forEach(m=>m.addedNodes.forEach(trNode))).observe(document.getElementById('main'),{childList:true,subtree:true});}
 const offB=()=>{const b=document.getElementById('offb');if(b)b.style.display=offline()?'block':'none'};
 addEventListener('offline',offB);addEventListener('online',()=>{offB();sync()});offB(); /* when internet returns the phone only READS the latest data from Google; nothing is ever pushed later */
-const modal=(msg,ask,op)=>new Promise(res=>{const o=document.createElement('div');o.className='mdl';op=op||{};
+const modal=(msg,ask,op)=>new Promise(res=>{const o=mkDlg();op=op||{};
  {const bn=ask?'<button class="mb mc">'+(op.n||'Cancel')+'</button>':'',by='<button class="mb mo">'+(op.y||'OK')+'</button>';
  o.innerHTML='<div class=mbx role=alertdialog aria-modal=true><div class=mtx></div><div class=mbt>'+(op.sw?by+bn:bn+by)+'</div></div>'} /* op.sw: confirm button on the left, the other on the right */
- if(op.dim){o.style.background='rgba(0,0,0,.82)';o.style.backdropFilter='blur(8px)';o.style.webkitBackdropFilter='blur(8px)'}
+ if(op.dim)dimBg(o)
  o.querySelector('.mtx').textContent=String(msg);if(op.left)o.querySelector('.mtx').style.textAlign='left';const c=v=>{o.remove();res(v)};
  o.querySelector('.mo').onclick=()=>c(true);const k=o.querySelector('.mc');if(k)k.onclick=()=>c(false);
  document.body.appendChild(o);o.querySelector('.mo').focus()});
 window.alert=m=>modal(typeof trMsg=='function'?trMsg(String(m)):m,0);
 {const _a=window.alert;window.alert=m=>(TX&&TX.w)?(TX.msgs.push(m),Promise.resolve(true)):_a(m)} /* a success message waits until Google has confirmed the save */
-const askAmt=(op)=>new Promise(res=>{const o=document.createElement('div');o.className='mdl';op=op||{};
+const askAmt=(op)=>new Promise(res=>{const o=mkDlg();op=op||{};
  o.innerHTML='<div class=mbx role=dialog aria-modal=true><div class=mtx style="margin-bottom:14px"></div><input id=pmAmt type=number inputmode=decimal placeholder="" style="font-size:22px;text-align:center;margin:0 0 18px"><div class=mbt><button class="mb mc">Cancel</button><button class="mb mo">Save</button></div></div>';
- o.style.background='rgba(0,0,0,.82)';o.style.backdropFilter='blur(8px)';o.style.webkitBackdropFilter='blur(8px)';
+ dimBg(o);
  o.querySelector('.mtx').textContent=op.t||'मिले हुए पेमेंट की रकम डालें';if(op.y)o.querySelector('.mo').textContent=op.y;const c=v=>{o.remove();res(v)};
  o.querySelector('.mo').onclick=()=>c(o.querySelector('#pmAmt').value);o.querySelector('.mc').onclick=()=>c(null);
  document.body.appendChild(o);o.querySelector('#pmAmt').focus()});
