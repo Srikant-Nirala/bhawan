@@ -410,7 +410,7 @@ return `<div style="display:flex;align-items:center;gap:12px"><h2 style="margin:
 <div class="slim${b4>0||nd>0?' run':' ok'}" id=Tile3s data-al="${sp||b4>0?1:0}" onclick="${sp?"PR.t=0;go('payRenter')":"NB.t=0;go('notBilled')"}"><span>${sp?'💰 अभी '+nd+' किरायेदारों का पेमेंट होना बाकी है':b4>0?'🧾 '+mn+' में '+b4+' किरायेदार का बिल बनाना बाकी':'🎉 '+mn+' महीने का सारा पेमेंट क्लियर है'}</span></div>
 <div class=duo><button class=tile id=Tile3 onclick="NB.t=0;go('notBilled')"><span class=ic style="background:#0a84ff">🧾</span>बिल बनाएँ</button><button class=tile id=Tile4 onclick="PR.t=0;go('payRenter')"><span class=ic style="background:#30b858">💰</span>पेमेंट नोट करें</button></div>
 <div class="slim two" id=Tile7s style="margin-top:28px"><div onclick="go('occ')">🏠 ${oc} फ्लैट भरे हुए</div><i></i><div onclick="go('empty')">🔑 ${em} फ्लैट खाली</div></div>
-${tl('menu1','analytics','📊','#8a6bb0','Rent Analytics','Paid vs pending by month')}${tl('menu2','listTen','👥','#4f7fb3','किरायेदार की जानकारी','कॉल करें और सूचना देखें')}${tl('menu3','addRemove','👤','#0ea5b7','किरायेदार जोड़ें या हटाएँ','नया किरायेदार जोड़ें या पुराना हटाएँ')}${tl('menu5','qrSend','📲','#5b9a70','QR code भेजें','UPI QR WhatsApp पर भेजें')}`},
+${tl('menu1','analytics','📊','#8a6bb0','Rent Analytics','Paid vs pending by month')}${tl('menu2','listTen','🔍','#a3a97a','किरायेदार की जानकारी','कॉल करें और सूचना देखें')}${tl('menu3','addRemove','👤','#0ea5b7','किरायेदार जोड़ें या हटाएँ','नया किरायेदार जोड़ें या पुराना हटाएँ')}${tl('menu5','qrSend','📲','#5b9a70','QR code भेजें','UPI QR WhatsApp पर भेजें')}`},
 
 meterRead:()=>{const k=x=>String(x).trim().toLowerCase(),d0='2016-04-01',
 ymd=v=>{const x=new Date(v);return isNaN(x)?'':x.getFullYear()+'-'+pd2(x.getMonth()+1)+'-'+pd2(x.getDate())},
@@ -505,7 +505,7 @@ rows=[...dl.map(x=>({m:String(x.month),a:dueOf(x)})),...nb.map(m=>({m,n:1}))].so
 return hd+`<div class="card ot${rows.length?' tap':''}" style="text-align:center;margin:28px 0 20px"${rows.length?' onclick="togDue()"':''}><div style="font-size:18.7px;font-weight:800;position:relative;display:flex;justify-content:center;align-items:center">कुल बकाया = ${R(due)}${rows.length?'<span class="xc open" id=xc_d style="font-size:22px;position:absolute;right:4px;top:50%;translate:0 -50%;line-height:1">›</span>':''}</div>${rows.length?`<div class="xp open" id=xp_d><div><div style="border-top:1px solid rgba(194,90,0,.3);margin-top:14px;padding-top:6px;text-align:left">${rows.map(x=>`<div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-top:10px;font-size:16px;font-weight:700"><span>${ML(x.m)}</span>${x.n?'<span style="color:var(--p)">बिल नहीं बना</span>':`<span>${R(x.a)}</span>`}</div>`).join('')}</div></div></div>`:''}</div>${N(t.advance)>0?`<div class=card style="text-align:center;margin:-4px 0 20px;padding:12px"><b class=dkg style="font-size:17px">एडवांस = ${R(t.advance)}</b></div>`:''}<div class=card><div style="display:flex;align-items:center;gap:10px"><input id=rdt class=dp readonly placeholder="पेमेंट डेट डालें *" value="" data-v="" onclick="pickDate('rdt')" style="flex:0 0 42%;width:42%;min-width:0;margin:0;padding:15px 6px 15px 34px;font-size:13px;background-position:9px center;background-size:17px"><button class=btn style="flex:1;margin:0;padding:15px 6px;font-size:16px;background:#0a84ff" onclick="recvPay('${id}',1)">पेमेंट नोट करें</button></div></div>
 <div class="card clk" onclick="togX('r')" style="margin-top:32px;padding:22px 20px"><div style="font-size:16px;font-weight:800;display:flex;justify-content:space-between;align-items:center">पिछले 6 महीने का पेमेंट डिटेल्स देखें<span class=xc id=xc_r style="font-size:22px">›</span></div><div class=xp id=xp_r><div><div style="border-top:1px solid rgba(128,128,128,.3);margin-top:14px">${pay12(id,today().slice(0,7),6)}</div></div></div></div><button class=btn style="margin:28px 0 12px;background:linear-gradient(135deg,#7aa7ff,#5b6cff)" onclick="billReceipt('${id}')">बिल की रसीद देखें व भेजें</button>`},
 
-/* Tile6 */ billHist:()=>{const mo=today().slice(0,7);return `<h2>बिल देखें व भेजें</h2>${db.bills.some(b=>b.month==mo&&T(b.tenantId))?`<div style="font-size:17px;font-weight:800;margin:-6px 2px 14px;padding-left:54px;color:var(--t)">कुल बिल बना = ${R(billMade(mo))}</div>`:''}${histFlat(1)}`},
+/* Tile6 */ billHist:()=>{const mo=today().slice(0,7);return `<h2>बिल देखें व भेजें</h2>${db.bills.some(b=>b.month==mo&&T(b.tenantId))?`<div style="font-size:17px;font-weight:800;text-align:center;margin:22px 19px 20px;color:var(--t)"><span style="display:inline-block;padding:5px 9px;border-radius:10px;background:var(--c);box-shadow:var(--sh)">कुल बिल बना = ${R(billMade(mo))}</span></div>`:''}${histFlat(1)}`},
  elecDetails:()=>`<h2>बिजली बिल डिटेल्स</h2>${elecDetails()}`,
 
  elecMonth:()=>{const mo=today().slice(0,7);return `<h2>${mname(prevM(mo))} - बिजली बिल</h2>${elecDetails(mo,0,1)}`},
@@ -1151,14 +1151,14 @@ function genBill(id,type){if(db.bills.some(b=>b.tenantId==id&&b.month==V('bm')))
  calc();const b={id:uid(),tenantId:id,month:V('bm'),type,prev:type=='rent'?'':V('bp'),cur:type=='rent'?'':V('bc'),units:B.units,rate:B.rate,elec:B.el,rent:B.rent,arrear:B.arrear,arrNote:JSON.stringify(B.arr.map(x=>[x[0],x[1]])),total:B.total,paid:'0',status:'pending',date:new Date().toISOString()};
  save('bills',b);applyAdv(id,b);rp('sent',b.id)}
 function msg(b,sms){const t=T(b.tenantId),p=db.profile,mm=(d=>d.toLocaleString('hi',{month:'long'})+'-'+d.getFullYear())(new Date(b.month+'-01T00:00')),
- L=[`Hello ${String(t.name).trim().split(/\s+/)[0]} जी, नमस्कार!`,'',`आपका ${mm} का बिल।`,'',`फ्लैट संख्या: ${t.flat||'-'}`,''];
+ bdt=billDate(b),L=[...(bdt?[bdt,'']:[]),`Hello ${String(t.name).trim().split(/\s+/)[0]} जी, नमस्कार!`,'',`आपका ${mm} का बिल।`,'',`फ्लैट संख्या: ${t.flat||'-'}`,''];
  if(b.type!='elec')L.push(`किराया = ${R(b.rent)}`);
  if(b.type!='rent')L.push(`बिजली बिल = ${R(b.elec)}`,'',`(रीडिंग: ${b.prev} → ${b.cur} = ${b.units} Unit × ${R(b.rate)} = ${R(b.elec)})`);
  if(N(b.arrear)>0){let ar=[];try{ar=JSON.parse(b.arrNote||'[]')}catch(e){}L.push('','*पिछला बकाया (Arrear):*');ar.forEach(x=>L.push(`${ML(x[0])}: ${R(x[1])}`));if(ar.length!=1)L.push(`कुल पिछला बकाया: ${R(b.arrear)}`)}
  L.push('',`*कुल: ${R(b.total)}*`);
  if(N(b.adv)>0)L.push(`एडवांस कटौती: − ${R(b.adv)}`,`*देय राशि: ${R(payable(b))}*`);
  if(p.upi&&payable(b)>0)L.push('',...(sms?[`UPI आईडी से भुगतान करें: ${p.upi}`]:['नोट: कृपया पेमेंट के बाद पेमेंट का स्क्रीनशॉट ज़रूर भेजें।','','लिंक क्लिक कर UPI से पेमेंट करें:',upiUri(b)]));
- if(p.name)L.push('',`– ${p.name}`);const bdt=billDate(b);if(bdt)L.push((p.name?'\u2002 ':'')+bdt);return L.join('\n')}
+ if(p.name)L.push('',`– ${p.name}`);return L.join('\n')}
 function setPaid(x,v){const o=own(x);v=r2(Math.max(0,Math.min(v,o)));x.paid=String(v);x.status=v>=o?'paid':'pending';save('bills',x)}
 function payFull(id){const b=db.bills.find(x=>x.id==id),amt=r2(olderDue(b).reduce((q,x)=>q+dueOf(x),0)+dueOf(b));olderDue(b).forEach(x=>setPaid(x,own(x)));setPaid(b,own(b));if(amt>0)logPay(b.tenantId,amt);cur().pop();dir='bck';draw()}
 /* shrink the home status line (only if needed) so it always stays on one line */
@@ -1465,7 +1465,7 @@ if('serviceWorker' in navigator){const had=!!navigator.serviceWorker.controller;
  navigator.serviceWorker.addEventListener('controllerchange',()=>{if(had&&!rl){rl=true;location.reload()}});
  addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(r=>r.update()).catch(()=>{}))}
 draw();window.__bnSync=loadUrl().then(()=>{if(url&&cur().length&&cur()[cur().length-1][0]=='keys')draw();return sync()}).catch(()=>{});
-/* BANNER: once per app open (and again when the app is opened after being minimised for 30s or more), 1s after the app is open (after the lock is passed), if the thin tile says payments are
+/* BANNER: once per app open (and again when the app is opened after being minimised for 30s or more), 0.4s after the app is open (after the lock is passed), if the thin tile says payments are
    pending / bills are not made. Slides in from the left into the gap between the big tile and the बिल बनाएँ tile, hides
    itself after 5s, swipe left to dismiss, tap opens the same page as the thin tile. */
 (function(){
@@ -1494,7 +1494,7 @@ function open(){
   b.style.transition='transform .3s ease';b.style.transform='translateX(0)';hideT=setTimeout(close,3000)};
  b.addEventListener('pointerup',up);b.addEventListener('pointercancel',up);
 }
-function arm(){if(done)return;if(locked()){pend=setTimeout(arm,300);return}done=1;Promise.all([new Promise(r=>{pend=setTimeout(r,1000)}),cap(ready)]).then(()=>{if(!document.hidden)open()})}
+function arm(){if(done)return;if(locked()){pend=setTimeout(arm,300);return}done=1;Promise.all([new Promise(r=>{pend=setTimeout(r,400)}),cap(ready)]).then(()=>{if(!document.hidden)open()})}
 /* also when the app is minimised for 30s or more and then opened again */
 document.addEventListener('visibilitychange',()=>{
  if(document.hidden){away=Date.now();clearTimeout(pend);clearTimeout(hideT);if(el){el.remove();el=null}if(!shown)done=0;return}
