@@ -1376,59 +1376,72 @@ draw();window.__bnSync=loadUrl().then(()=>{if(url&&cur().length&&cur()[cur().len
 /* ================================================================
    13. HOME BANNER (the pop-up above the thin tile)
    ================================================================ */
-/* BANNER: once per app open (and again when the app is opened after being minimised for 30s or more), 0.1s after the app is open (after the lock is passed), if the thin tile says payments are
-   pending / bills are not made. Grows out of the thin tile into the gap between the big tile and the बिल बनाएँ tile, hides
-   itself after 5s by shrinking back into that same thin tile (and shows again for 2.5s after 8s of staying on the home screen), swipe left to dismiss, tap opens the same page as the thin tile. */
+/* BANNER RULES (the pop-up above the thin tile):
+   1. App opened from closed state: the pop-up shows at once (no wait) for 3s. After it disappears, if the person is still on the home screen, it shows again every 5s (3s visible, 5s hidden) until he leaves the home screen.
+   2. Every time the pop-up appears the latest data is pulled (shown at once from the phone, then refreshed in place as soon as Google answers).
+   3. After leaving the home screen (minimising the app, or going to another page) and coming back, the pop-up shows after 2s on the home screen, then rule 1 repeats (every 5s after it disappears).
+   It only shows when the thin tile says payments are pending / bills are not made. Swipe left to dismiss (it comes back by rule 1), tap opens the same page as the thin tile. */
 (function(){
-let done=0,el=null,hideT=0,pend=0,shown=0,away=0,ready=window.__bnSync||Promise.resolve();
-const cap=p=>Promise.race([Promise.resolve(p).catch(()=>0),new Promise(r=>setTimeout(r,3000))]); /* wait for Google sync, but never more than 3s */
+const SHOW=3000,GAP=5000,BACK=2000;
+let el=null,hideT=0,homeSince=0,nextAt=0,first=1,pulling=0;
 const locked=()=>{const l=document.getElementById('lk');return !!l&&l.style.display!='none'};
-/* the banner appears from, and closes back into, the thin tile it sits in front of: same spot, same size, fading. tileTf() gives that squashed-onto-the-tile transform (plain fade if the tile is gone) */
+const homeOn=()=>!!document.getElementById('Tile3s')&&!document.hidden&&!locked();
+const cap=p=>Promise.race([Promise.resolve(p).catch(()=>0),new Promise(r=>setTimeout(r,3000))]); /* wait for Google, never more than 3s */
 function tileTf(e){const tl=document.getElementById('Tile3s');if(!tl)return'translate(0,0) scale(1)';
  const a=tl.getBoundingClientRect(),w=e.offsetWidth,h=e.offsetHeight,bx=e.offsetLeft-scrollX+w/2,by=e.offsetTop-scrollY+h/2;
  return'translate('+Math.round(a.left+a.width/2-bx)+'px,'+Math.round(a.top+a.height/2-by)+'px) scale('+(a.width/w).toFixed(4)+','+(a.height/h).toFixed(4)+')'}
-function close(){if(!el)return;clearTimeout(hideT);const e=el;el=null;
+function kill(){clearTimeout(hideT);if(el){el.remove();el=null}}
+function close(){if(!el)return;clearTimeout(hideT);const e=el;el=null;nextAt=Date.now()+GAP+460; /* 5s counted from when it has fully disappeared */
  const m=e.querySelector('.tbt');if(m){m.style.transition='opacity .18s ease';m.style.opacity='0'}
  e.style.transition='transform .42s cubic-bezier(.4,0,.2,1),opacity .42s ease-in,border-radius .42s ease';e.style.transform=tileTf(e);e.style.opacity='0';e.style.borderRadius='8px';setTimeout(()=>e.remove(),460)}
-function open(hold){
- const t=document.getElementById('Tile3s'),big=document.querySelector('.quad.one'),nxt=document.getElementById('Tile3');
- if(!t||!big||!nxt||t.dataset.al!='1'||locked()||el)return;
- const sp=t.querySelector('span'),msg=((sp||t).textContent||'').trim();if(!msg)return;
+const tileMsg=()=>{const t=document.getElementById('Tile3s');if(!t||t.dataset.al!='1')return'';const sp=t.querySelector('span');return((sp||t).textContent||'').trim()};
+function open(){
+ const big=document.querySelector('.quad.one'),nxt=document.getElementById('Tile3');
+ if(!big||!nxt||locked()||el)return false;
+ const msg=tileMsg();if(!msg)return false;
  const r=big.getBoundingClientRect(),n=nxt.getBoundingClientRect(),top=r.bottom+5,h=Math.round(n.top-5-top);
- if(h<36)return;
+ if(h<36)return false;
  const b=document.createElement('div');b.id='tbn';
  b.style.cssText='left:'+Math.round(r.left+scrollX)+'px;top:'+Math.round(top+scrollY)+'px;width:'+Math.round(r.width)+'px;height:'+h+'px';
  const m=document.createElement('div');m.className='tbt';m.textContent=msg;b.appendChild(m);
- document.body.appendChild(b);el=b;shown=1;
- b.style.transform=tileTf(b);b.style.opacity='0';b.style.borderRadius='8px';m.style.opacity='0';void b.offsetHeight; /* start squashed onto the thin tile, then grow out of it (mirror of close) */
+ document.body.appendChild(b);el=b;
+ b.style.transform=tileTf(b);b.style.opacity='0';b.style.borderRadius='8px';m.style.opacity='0';void b.offsetHeight;
  b.style.transition='transform .42s cubic-bezier(.2,.8,.3,1),opacity .3s ease-out,border-radius .42s ease';b.style.transform='translate(0,0) scale(1)';b.style.opacity='1';b.style.borderRadius='';
  m.style.transition='opacity .25s ease .17s';m.style.opacity='1';
- hideT=setTimeout(close,hold||5000);
+ hideT=setTimeout(close,SHOW);
  let x0=0,y0=0,dx=0,t0=0,drag=0;
  b.addEventListener('pointerdown',e=>{if(b!==el)return;drag=1;x0=e.clientX;y0=e.clientY;dx=0;t0=Date.now();clearTimeout(hideT);b.style.transition='none';try{b.setPointerCapture(e.pointerId)}catch(_){}});
  b.addEventListener('pointermove',e=>{if(!drag||b!==el)return;dx=Math.min(0,e.clientX-x0);b.style.transform='translateX('+dx+'px)'});
  const up=e=>{if(!drag||b!==el)return;drag=0;
   if(e.type=='pointerup'&&Math.abs(e.clientX-x0)<8&&Math.abs(e.clientY-y0)<8&&Date.now()-t0<600){close();const tl=document.getElementById('Tile3s');if(tl)tl.click();return}
   if(dx<-40){close();return}
-  b.style.transition='transform .3s ease';b.style.transform='translateX(0)';hideT=setTimeout(close,3000)};
+  b.style.transition='transform .3s ease';b.style.transform='translateX(0)';hideT=setTimeout(close,SHOW)};
  b.addEventListener('pointerup',up);b.addEventListener('pointercancel',up);
-}
-function arm(){if(done)return;if(locked()){pend=setTimeout(arm,300);return}done=1;Promise.all([new Promise(r=>{pend=setTimeout(r,100)}),cap(ready)]).then(()=>{if(!document.hidden)open()})}
-/* also when the app is minimised for 30s or more and then opened again */
+ return true}
+/* pull the latest record from Google; the pop-up is already on screen (or is opened as soon as data arrives), and its text is refreshed in place */
+function pull(p){if(pulling)return Promise.resolve();pulling=1;
+ const q=p||((typeof url!='undefined'&&url&&typeof offline=='function'&&!offline())?sync():0);
+ return cap(q).then(()=>{pulling=0},()=>{pulling=0})}
+function show(p){
+ const ok=open();
+ pull(p).then(()=>{
+  if(!homeOn())return;
+  const msg=tileMsg();
+  if(el){const m=el.querySelector('.tbt');if(!msg){close()}else if(m&&m.textContent!==msg)m.textContent=msg}
+  else if(!ok&&msg&&!document.querySelector('.mdl'))open()})}
+function tick(){
+ if(!homeOn()){ /* left the home screen (minimised, other page, lock): remove at once, next return waits 2s */
+  kill();homeSince=0;return}
+ if(document.querySelector('.mdl'))return; /* a dialog is open on the home screen: wait, don't start new pop-ups */
+ const now=Date.now();
+ if(!homeSince){homeSince=now;nextAt=first?now:now+BACK;first=0}
+ if(!el&&now>=nextAt){nextAt=now+SHOW+GAP+460; /* provisional; close() sets the exact time */
+  show(homeSince&&window.__bnSync&&!window.__bnUsed?(window.__bnUsed=1,window.__bnSync):0)}}
 document.addEventListener('visibilitychange',()=>{
- if(document.hidden){away=Date.now();clearTimeout(pend);clearTimeout(hideT);if(el){el.remove();el=null}if(!shown)done=0;return}
- const long=away&&Date.now()-away>=30000;away=0;
- ready=Promise.resolve();
- if(document.getElementById('Tile3s')){try{draw()}catch(e){} /* home screen is open: redraw it now, then read the latest data from Google (which redraws again) */
-  if(url&&!offline())ready=sync()}
- if(long){shown=0;done=0}
- if(!done)arm()});
-pend=setTimeout(arm,0);
-/* staying on the home screen for more than 8s without leaving: the banner shows once more, for 2.5s (once per stay; leaving the home screen and coming back starts the count again) */
-let homeSince=0,again=0;
-setInterval(()=>{const on=!!document.getElementById('Tile3s')&&!document.hidden&&!locked();
- if(!on){homeSince=0;again=0;return}
- if(!homeSince){homeSince=Date.now();return}
- if(!again&&!el&&Date.now()-homeSince>8000&&!document.querySelector('.mdl')){again=1;open(2500)}},500);
+ if(document.hidden){kill();homeSince=0;return}
+ if(document.getElementById('Tile3s')){try{draw()}catch(e){}} /* back on the home screen: redraw from the phone's data */
+ tick()});
+setInterval(tick,150);
+tick();
 })();
 </script></body></html>
