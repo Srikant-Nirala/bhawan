@@ -184,14 +184,6 @@ input.ok{border-color:var(--g)!important;box-shadow:0 0 0 3px rgba(48,184,88,.25
 .cv{flex:none;color:var(--m);transition:transform .3s;background:rgba(120,120,128,.18);border-radius:50%;padding:5px;box-sizing:content-box}.card.ex .cv{transform:rotate(180deg)}
 .badge.sbig.org.bb{color:#a85a00;font-weight:800}html[data-theme=dark] .badge.sbig.org.bb{color:#ffb454}
 
-/* attention light: a thin line travels around the edge of the "bills pending" tile */
-.slim.run{position:relative;overflow:hidden;isolation:isolate}
-.slim.run::before{content:"";position:absolute;left:50%;top:50%;width:260%;aspect-ratio:1;translate:-50% -50%;z-index:-2;background:conic-gradient(from 0deg,transparent 0 80%,rgba(255,69,58,.15) 84%,#ff3b30 97%,#fff 100%);animation:slimSpin 4.5s linear infinite}
-.slim.run::after{content:"";position:absolute;inset:1.5px;border-radius:10.5px;background:#d1d1d6;z-index:-1}
-html[data-theme=dark] .slim.run::after{background:#aeaeb2}
-.slim.run>span{position:relative;z-index:1}
-@keyframes slimSpin{to{rotate:360deg}}
-@media(prefers-reduced-motion:reduce){.slim.run::before{display:none}}
 /* home: big tile = top row (बकाया | पाया) + bottom third strip (बिजली बिल) */
 .quad.one>div:nth-child(-n+2){min-height:140px;padding:14px 12px;gap:6px}
 .quad.one>#Tile8{grid-column:1/-1;min-height:56px;padding:8px 12px;flex-direction:row;justify-content:center;border-top:1px solid rgba(255,255,255,.28)!important;border-right:0!important}
@@ -206,7 +198,6 @@ html[data-theme=dark] .slim.run::after{background:#aeaeb2}
 /* home: thin status tile - squarish, taller, iOS yellow (bills pending) / green (all bills made) */
 #Tile3s{border-radius:9px;min-height:30px;padding:5px 14px;margin-left:3px;margin-right:3px}
 #Tile3s,#Tile3s span{font-size:15px!important;line-height:1.2!important}#Tile3s span{white-space:nowrap}
-#Tile3s.run::after{border-radius:7.5px}
 #Tile7s{border-radius:9px}
 
 .mnav.an button{background:#d1d1d6;color:#3a3a3c;box-shadow:none}html[data-theme=dark] .mnav.an button{background:#3a3a3c;color:#f5f5f7}.mnav.an button:disabled{opacity:.35}
@@ -827,7 +818,7 @@ let tot=0,rate=null;const eps=db.props.filter(p=>p.rentOnly!='1'),body=eps.sort(
  return rows.length?`${eps.length>1?`<h3>${E(p.name)}</h3>`:''}${rows.map(x=>x.h).join('')}`:''}).join('');
 if(onlyTot)return r2(tot);
 const rt=rate!==null?rate:N(db.profile.rate);
-return `<div ${fixed?'':'ontouchstart="tx=event.touches[0].clientX" ontouchend="swpE(event)" '}style="min-height:50vh">${fixed?'':`<div class="mnav tl"><button onclick="shiftEM(-1)">‹</button><b>${mlabel(prevM(m))}</b><button onclick="shiftEM(1)" ${m>=cm?'disabled':''}>›</button></div>`}<div style="margin:${fixed?6:22}px 2px 14px;text-align:center;font-size:17px;font-weight:800;color:var(--t)"><span style="display:inline-block;padding:5px 9px;border-radius:10px;background:var(--c);box-shadow:var(--sh)">कुल बिजली बिल = <span style="color:#0a84ff">${R(r2(tot))}</span> @${nf(rt)}/यूनिट</span></div>${body||'<div class=card>कोई फ्लैट नहीं</div>'}</div>`}
+return `<div ${fixed?'':'ontouchstart="tx=event.touches[0].clientX" ontouchend="swpE(event)" '}style="min-height:50vh">${fixed?'':`<div class="mnav tl"><button onclick="shiftEM(-1)">‹</button><b>${mlabel(prevM(m))}</b><button onclick="shiftEM(1)" ${m>=cm?'disabled':''}>›</button></div>`}<div style="margin:${fixed?6:22}px 2px ${fixed?28:22}px;text-align:center;font-size:17px;font-weight:800;color:var(--t)"><span style="display:inline-block;padding:5px 9px;border-radius:10px;background:var(--c);box-shadow:var(--sh)">कुल बिजली बिल = <span style="color:#0a84ff">${R(r2(tot))}</span> @${nf(rt)}/यूनिट</span></div>${body||'<div class=card>कोई फ्लैट नहीं</div>'}</div>`}
 /* "कुल बकाया" tile, identical to the one on the tenant payment page */
 function dueCard(id,mg){const t=T(id)||{},due=tenantDue(id),dl=db.bills.filter(b=>b.tenantId==id&&dueOf(b)>0),mc=curMonth(),nb=db.bills.some(x=>x.tenantId==id)?missingMonths(t,nextM(mc)):(t.active!='0'?[mc]:[]),
 rows=[...dl.map(x=>({m:String(x.month),a:dueOf(x)})),...nb.map(m=>({m,n:1}))].sort((p,q)=>p.m.localeCompare(q.m));
@@ -1387,7 +1378,7 @@ draw();window.__bnSync=loadUrl().then(()=>{if(url&&cur().length&&cur()[cur().len
    ================================================================ */
 /* BANNER: once per app open (and again when the app is opened after being minimised for 30s or more), 0.1s after the app is open (after the lock is passed), if the thin tile says payments are
    pending / bills are not made. Grows out of the thin tile into the gap between the big tile and the बिल बनाएँ tile, hides
-   itself after 5s by shrinking back into that same thin tile, swipe left to dismiss, tap opens the same page as the thin tile. */
+   itself after 5s by shrinking back into that same thin tile (and shows again for 2.5s after 8s of staying on the home screen), swipe left to dismiss, tap opens the same page as the thin tile. */
 (function(){
 let done=0,el=null,hideT=0,pend=0,shown=0,away=0,ready=window.__bnSync||Promise.resolve();
 const cap=p=>Promise.race([Promise.resolve(p).catch(()=>0),new Promise(r=>setTimeout(r,3000))]); /* wait for Google sync, but never more than 3s */
@@ -1399,7 +1390,7 @@ function tileTf(e){const tl=document.getElementById('Tile3s');if(!tl)return'tran
 function close(){if(!el)return;clearTimeout(hideT);const e=el;el=null;
  const m=e.querySelector('.tbt');if(m){m.style.transition='opacity .18s ease';m.style.opacity='0'}
  e.style.transition='transform .42s cubic-bezier(.4,0,.2,1),opacity .42s ease-in,border-radius .42s ease';e.style.transform=tileTf(e);e.style.opacity='0';e.style.borderRadius='8px';setTimeout(()=>e.remove(),460)}
-function open(){
+function open(hold){
  const t=document.getElementById('Tile3s'),big=document.querySelector('.quad.one'),nxt=document.getElementById('Tile3');
  if(!t||!big||!nxt||t.dataset.al!='1'||locked()||el)return;
  const sp=t.querySelector('span'),msg=((sp||t).textContent||'').trim();if(!msg)return;
@@ -1412,7 +1403,7 @@ function open(){
  b.style.transform=tileTf(b);b.style.opacity='0';b.style.borderRadius='8px';m.style.opacity='0';void b.offsetHeight; /* start squashed onto the thin tile, then grow out of it (mirror of close) */
  b.style.transition='transform .42s cubic-bezier(.2,.8,.3,1),opacity .3s ease-out,border-radius .42s ease';b.style.transform='translate(0,0) scale(1)';b.style.opacity='1';b.style.borderRadius='';
  m.style.transition='opacity .25s ease .17s';m.style.opacity='1';
- hideT=setTimeout(close,5000);
+ hideT=setTimeout(close,hold||5000);
  let x0=0,y0=0,dx=0,t0=0,drag=0;
  b.addEventListener('pointerdown',e=>{if(b!==el)return;drag=1;x0=e.clientX;y0=e.clientY;dx=0;t0=Date.now();clearTimeout(hideT);b.style.transition='none';try{b.setPointerCapture(e.pointerId)}catch(_){}});
  b.addEventListener('pointermove',e=>{if(!drag||b!==el)return;dx=Math.min(0,e.clientX-x0);b.style.transform='translateX('+dx+'px)'});
@@ -1433,5 +1424,11 @@ document.addEventListener('visibilitychange',()=>{
  if(long){shown=0;done=0}
  if(!done)arm()});
 pend=setTimeout(arm,0);
+/* staying on the home screen for more than 8s without leaving: the banner shows once more, for 2.5s (once per stay; leaving the home screen and coming back starts the count again) */
+let homeSince=0,again=0;
+setInterval(()=>{const on=!!document.getElementById('Tile3s')&&!document.hidden&&!locked();
+ if(!on){homeSince=0;again=0;return}
+ if(!homeSince){homeSince=Date.now();return}
+ if(!again&&!el&&Date.now()-homeSince>8000&&!document.querySelector('.mdl')){again=1;open(2500)}},500);
 })();
 </script></body></html>
