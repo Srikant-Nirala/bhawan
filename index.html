@@ -1377,13 +1377,14 @@ draw();window.__bnSync=loadUrl().then(()=>{if(url&&cur().length&&cur()[cur().len
    13. HOME BANNER (the pop-up above the thin tile)
    ================================================================ */
 /* BANNER RULES (the pop-up above the thin tile):
-   1. App opened from closed state: the pop-up shows at once (no wait) for 3s. After it disappears, if the person is still on the home screen, it shows again every 5s (3s visible, 5s hidden) until he leaves the home screen.
-   2. Every time the pop-up appears the latest data is pulled (shown at once from the phone, then refreshed in place as soon as Google answers).
-   3. After leaving the home screen (minimising the app, or going to another page) and coming back, the pop-up shows after 2s on the home screen, then rule 1 repeats (every 5s after it disappears).
+   0. The pop-up only appears after Google has answered with the latest data. From closed state it appears 0.2s after Google's answer.
+   1. App opened from closed state: the pop-up shows (as soon as Google answers + 0.2s) for 3s. After it disappears, if the person is still on the home screen, it shows again every 7s (3s visible, 7s hidden) until he leaves the home screen.
+   2. Every time before the pop-up appears the latest data is pulled from Google.
+   3. After leaving the home screen (minimising the app, or going to another page) and coming back, the pop-up shows after 2s on the home screen, then rule 1 repeats (every 7s after it disappears).
    It only shows when the thin tile says payments are pending / bills are not made. Swipe left to dismiss (it comes back by rule 1), tap opens the same page as the thin tile. */
 (function(){
-const SHOW=3000,GAP=5000,BACK=2000;
-let el=null,hideT=0,homeSince=0,nextAt=0,first=1,pulling=0;
+const SHOW=3000,GAP=7000,BACK=2000;
+let el=null,hideT=0,homeSince=0,nextAt=0,first=1,pulling=0,fromClosed=0;
 const locked=()=>{const l=document.getElementById('lk');return !!l&&l.style.display!='none'};
 const homeOn=()=>!!document.getElementById('Tile3s')&&!document.hidden&&!locked();
 const cap=p=>Promise.race([Promise.resolve(p).catch(()=>0),new Promise(r=>setTimeout(r,3000))]); /* wait for Google, never more than 3s */
@@ -1391,7 +1392,7 @@ function tileTf(e){const tl=document.getElementById('Tile3s');if(!tl)return'tran
  const a=tl.getBoundingClientRect(),w=e.offsetWidth,h=e.offsetHeight,bx=e.offsetLeft-scrollX+w/2,by=e.offsetTop-scrollY+h/2;
  return'translate('+Math.round(a.left+a.width/2-bx)+'px,'+Math.round(a.top+a.height/2-by)+'px) scale('+(a.width/w).toFixed(4)+','+(a.height/h).toFixed(4)+')'}
 function kill(){clearTimeout(hideT);if(el){el.remove();el=null}}
-function close(){if(!el)return;clearTimeout(hideT);const e=el;el=null;nextAt=Date.now()+GAP+460; /* 5s counted from when it has fully disappeared */
+function close(){if(!el)return;clearTimeout(hideT);const e=el;el=null;nextAt=Date.now()+GAP+460; /* 7s counted from when it has fully disappeared */
  const m=e.querySelector('.tbt');if(m){m.style.transition='opacity .18s ease';m.style.opacity='0'}
  e.style.transition='transform .42s cubic-bezier(.4,0,.2,1),opacity .42s ease-in,border-radius .42s ease';e.style.transform=tileTf(e);e.style.opacity='0';e.style.borderRadius='8px';setTimeout(()=>e.remove(),460)}
 const tileMsg=()=>{const t=document.getElementById('Tile3s');if(!t||t.dataset.al!='1')return'';const sp=t.querySelector('span');return((sp||t).textContent||'').trim()};
@@ -1418,25 +1419,24 @@ function open(){
   b.style.transition='transform .3s ease';b.style.transform='translateX(0)';hideT=setTimeout(close,SHOW)};
  b.addEventListener('pointerup',up);b.addEventListener('pointercancel',up);
  return true}
-/* pull the latest record from Google; the pop-up is already on screen (or is opened as soon as data arrives), and its text is refreshed in place */
-function pull(p){if(pulling)return Promise.resolve();pulling=1;
+/* pull the latest record from Google. The pop-up opens ONLY after Google has answered (true); no answer (offline, error, timeout) = no pop-up this round. */
+function pull(p){if(pulling)return Promise.resolve(false);pulling=1;
  const q=p||((typeof url!='undefined'&&url&&typeof offline=='function'&&!offline())?sync():0);
- return cap(q).then(()=>{pulling=0},()=>{pulling=0})}
-function show(p){
- const ok=open();
- pull(p).then(()=>{
-  if(!homeOn())return;
-  const msg=tileMsg();
-  if(el){const m=el.querySelector('.tbt');if(!msg){close()}else if(m&&m.textContent!==msg)m.textContent=msg}
-  else if(!ok&&msg&&!document.querySelector('.mdl'))open()})}
+ return Promise.race([Promise.resolve(q).catch(()=>false),new Promise(r=>setTimeout(()=>r(false),20000))]).then(ok=>{pulling=0;return ok===true},()=>{pulling=0;return false})}
+function show(p,extra){
+ pull(p).then(ok=>{
+  if(!ok){nextAt=Date.now()+GAP;return} /* no answer from Google: try again after 7s */
+  const go=()=>{if(!homeOn()||el||document.querySelector('.mdl'))return;open()}; /* open() reads the tile that Google's data has just redrawn */
+  if(extra)setTimeout(go,extra);else go()})}
 function tick(){
  if(!homeOn()){ /* left the home screen (minimised, other page, lock): remove at once, next return waits 2s */
   kill();homeSince=0;return}
  if(document.querySelector('.mdl'))return; /* a dialog is open on the home screen: wait, don't start new pop-ups */
  const now=Date.now();
- if(!homeSince){homeSince=now;nextAt=first?now:now+BACK;first=0}
- if(!el&&now>=nextAt){nextAt=now+SHOW+GAP+460; /* provisional; close() sets the exact time */
-  show(homeSince&&window.__bnSync&&!window.__bnUsed?(window.__bnUsed=1,window.__bnSync):0)}}
+ if(!homeSince){homeSince=now;fromClosed=first;nextAt=first?now:now+BACK;first=0}
+ if(!el&&!pulling&&now>=nextAt){nextAt=now+SHOW+GAP+460; /* provisional; close() sets the exact time */
+  const useBoot=fromClosed&&window.__bnSync&&!window.__bnUsed;if(useBoot)window.__bnUsed=1;
+  show(useBoot?window.__bnSync:0,fromClosed?200:0);fromClosed=0}}
 document.addEventListener('visibilitychange',()=>{
  if(document.hidden){kill();homeSince=0;return}
  if(document.getElementById('Tile3s')){try{draw()}catch(e){}} /* back on the home screen: redraw from the phone's data */
