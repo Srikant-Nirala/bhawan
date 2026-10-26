@@ -777,10 +777,10 @@ async function confirmBills(){const mo=curMonth(),st=(db.mr&&db.mr[mo])||{};if(!
 function welcomeMsg(t){const o=(db.profile.name||'').trim(),ad=String(t.aadhar||'').replace(/(\d{4})(?=\d)/g,'$1 ');
  return ['Hello '+String(t.name).trim().split(/\s+/)[0]+' जी,','','नमस्कार!','',
  'हमारे घर में आपको किराये पर फ्लैट देकर मुझे बहुत खुशी हो रही है। आशा है आपका प्रवास सुखद और शांतिपूर्ण रहेगा। धन्यवाद!','',
- 'हमारे रिकॉर्ड में आपकी जानकारी इस प्रकार है:','• नाम - '+t.name,...(ad?['• आधार नंबर: '+ad]:[]),'• मोबाइल नंबर: '+t.phone,'• फ्लैट नंबर: '+(t.flat||'-'),'• मासिक एडवांस तय किराया: '+R(t.rent),
+ 'हमारे रिकॉर्ड में आपकी जानकारी इस प्रकार है:','• नाम - '+t.name,...(ad?['• आधार नंबर: '+ad]:[]),'• मोबाइल नंबर: '+t.phone,'• फ्लैट नंबर: '+(t.flat||'-'),'• प्रवेश तिथि: '+fmtDL(t.entry),'• मासिक एडवांस तय किराया: '+R(t.rent),
  ...(String(t.meter||'')!==''?['• सब-मीटर की शुरुआती रीडिंग: '+t.meter]:[]),'',
  'नोट:',...(t.photo?[]:['• कृपया अपने आधार कार्ड की कॉपी उपलब्ध करा दें (यदि पहले से नहीं दी है)।']),'• '+(t.photo?'':'साथ ही, ')+'कृपया सुनिश्चित करें कि किराया हर महीने की 7 तारीख तक जमा हो जाए।','',
- 'सादर,',...(o?[o]:[]),'','प्रवेश तिथि: '+fmtDL(t.entry)].join('\n')}
+ 'सादर,',...(o?[o]:[])].join('\n')}
 function shiftA(d){const i=A.l.indexOf(A.m)+d;if(i>=0&&i<A.l.length){A.m=A.l[i];draw()}}
 function pickA(m){A.m=m;draw();scrollTo({top:0,behavior:'smooth'})}
 /* one month-stepper + one swipe handler shared by the payments (PV), electricity (EM) and received (RM) month screens: months can't go past the current month */
