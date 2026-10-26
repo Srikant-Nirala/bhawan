@@ -1,5 +1,5 @@
 // Bump VERSION whenever you re-host the app files.
-const VERSION = 'rent-manager-v185';
+const VERSION = 'rent-manager-v186';
 const SHELL = ['./', 'index.html', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png', 'icon-180.png'];
 const PAGE_WAIT_MS = 4000; // slow / half-dead connection: show the saved copy of the app instead of waiting
 
