@@ -380,6 +380,8 @@ nav i svg{display:block;margin:auto}
 body:not(.nonav){padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))}
 
 /* ---- circular profile + back buttons ---- */
+@keyframes tgw{0%{box-shadow:0 0 0 0 transparent}18%,65%{border-color:currentColor;box-shadow:0 0 0 1px color-mix(in srgb,currentColor 70%,transparent),0 0 14px 3px color-mix(in srgb,currentColor 50%,transparent)}100%{box-shadow:0 0 0 0 transparent}}
+#Tile3s.gw{animation:tgw 2s ease-in-out 1}
 .pfb{width:44px;height:44px;top:10px;background:var(--c);border:1px solid var(--b);color:#2c588a;box-shadow:var(--sh)}
 html[data-theme=dark] .pfb{background:var(--c);color:#6c9bd1}
 .bkc{width:38px;height:38px;background:var(--c);border:1px solid var(--b);color:var(--p);box-shadow:var(--sh)}
@@ -1577,16 +1579,18 @@ permDelete=XW(permDelete);saveTenDocs=XW(saveTenDocs);archive=XW(archive);updPho
 if('serviceWorker' in navigator){const had=!!navigator.serviceWorker.controller;let rl=false;
  navigator.serviceWorker.addEventListener('controllerchange',()=>{if(had&&!rl){rl=true;location.reload()}});
  addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(r=>r.update()).catch(()=>{}))}
-draw();loadUrl().then(()=>{if(url&&cur().length&&cur()[cur().length-1][0]=='keys')draw();return sync()}).catch(()=>{});
+draw();loadUrl().then(()=>{if(url&&cur().length&&cur()[cur().length-1][0]=='keys')draw();return sync()}).then(ok=>{if(ok===true)glowTile()}).catch(()=>{});
 /* ================================================================
    13. LATEST MESSAGE ON OPEN
    Opening the app from closed (above) or coming back to it from minimised: ask Google for the latest data.
    sync() redraws the home screen only if Google's data differs from what is shown, so the thin tile shows the newest message without a flicker. No pop-up, no repeating timer.
    If offline, or Google does not answer, the tile simply keeps the saved message.
    ================================================================ */
+/* Google answered: the border of the thin tile glows for 2 seconds (in the tile's own colour) */
+function glowTile(){const t=document.getElementById('Tile3s');if(!t)return;t.classList.remove('gw');void t.offsetWidth;t.classList.add('gw');setTimeout(()=>t.classList.remove('gw'),2100)}
 let ld=today();
 document.addEventListener('visibilitychange',()=>{
  if(document.hidden)return;
  if(ld!=today()){ld=today();if(document.getElementById('Tile3s')){try{draw()}catch(e){}}} /* a new day began while away: refresh the dates once */
- if(typeof url!='undefined'&&url&&!offline())sync().catch(()=>{})});
+ if(typeof url!='undefined'&&url&&!offline())sync().then(ok=>{if(ok===true)glowTile()}).catch(()=>{})});
 </script></body></html>
