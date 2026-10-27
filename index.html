@@ -1579,18 +1579,29 @@ permDelete=XW(permDelete);saveTenDocs=XW(saveTenDocs);archive=XW(archive);updPho
 if('serviceWorker' in navigator){const had=!!navigator.serviceWorker.controller;let rl=false;
  navigator.serviceWorker.addEventListener('controllerchange',()=>{if(had&&!rl){rl=true;location.reload()}});
  addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(r=>r.update()).catch(()=>{}))}
-draw();loadUrl().then(()=>{if(url&&cur().length&&cur()[cur().length-1][0]=='keys')draw();return sync()}).then(ok=>{if(ok===true)glowTile()}).catch(()=>{});
+draw();loadUrl().then(()=>{if(url&&cur().length&&cur()[cur().length-1][0]=='keys')draw();return sync()}).catch(()=>{});
 /* ================================================================
    13. LATEST MESSAGE ON OPEN
    Opening the app from closed (above) or coming back to it from minimised: ask Google for the latest data.
-   sync() redraws the home screen only if Google's data differs from what is shown, so the thin tile shows the newest message without a flicker. No pop-up, no repeating timer.
+   (The thin tile's glow is separate: see below.) sync() redraws the home screen only if Google's data differs from what is shown, so the thin tile shows the newest message without a flicker. No pop-up, no repeating timer.
    If offline, or Google does not answer, the tile simply keeps the saved message.
    ================================================================ */
-/* Google answered: the border of the thin tile glows for 2 seconds (in the tile's own colour) */
+/* THIN TILE GLOW: its border glows for 2s as soon as the home screen is showing (opened from closed, back from minimised,
+   back from another page) and again every 3s after each glow ends, for as long as the person stays on the home screen.
+   Leaving the home screen stops it; coming back starts it again. Not linked to Google's answer. */
 function glowTile(){const t=document.getElementById('Tile3s');if(!t)return;t.classList.remove('gw');void t.offsetWidth;t.classList.add('gw');setTimeout(()=>t.classList.remove('gw'),2100)}
+const GLOW=2000,GAPG=3000;let hs=0,nx=0;
+const lockUp=()=>{const l=document.getElementById('lk');return !!l&&l.style.display!='none'};
+setInterval(()=>{
+ const t=document.getElementById('Tile3s');
+ if(!t||document.hidden||lockUp()||t.dataset.al!='1'){hs=0;if(t)t.classList.remove('gw');return} /* no glow when the tile says everything is clear (data-al=0) */
+ if(document.querySelector('.mdl'))return; /* a dialog is open: wait */
+ const n=Date.now();
+ if(!hs){hs=n;nx=n}
+ if(n>=nx){glowTile();nx=n+GLOW+GAPG}},250);
 let ld=today();
 document.addEventListener('visibilitychange',()=>{
  if(document.hidden)return;
  if(ld!=today()){ld=today();if(document.getElementById('Tile3s')){try{draw()}catch(e){}}} /* a new day began while away: refresh the dates once */
- if(typeof url!='undefined'&&url&&!offline())sync().then(ok=>{if(ok===true)glowTile()}).catch(()=>{})});
+ if(typeof url!='undefined'&&url&&!offline())sync().catch(()=>{})});
 </script></body></html>
