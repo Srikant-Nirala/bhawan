@@ -225,11 +225,6 @@ html[data-theme=dark] .mnav.tl button{background:rgba(120,120,128,.32);color:#f5
 .pfb{position:relative;top:12px;margin-right:10px!important;flex:none;width:40px;height:40px;border-radius:50%;border:0;padding:0;margin:0;display:grid;place-items:center;background:#d1d1d6;color:#2a4d75;transition:transform .12s,opacity .2s}.pfb:active{transform:scale(.9);opacity:.8}html[data-theme=dark] .pfb{background:#3a3a3c;color:var(--p)}
 nav{z-index:20}body:not(.nonav){padding-bottom:calc(78px + env(safe-area-inset-bottom,0px))}
 .cam.gy{background:#d1d1d6}html[data-theme=dark] .cam.gy{background:#3a3a3c}
-/* banner: slides in from the left into the gap between the big tile and the बिल बनाएँ tile when payments are pending / bills not made */
-#tbn{position:absolute;z-index:70;box-sizing:border-box;padding:0 14px;display:flex;align-items:center;justify-content:center;text-align:center;border-radius:14px;background:rgba(255,59,48,.8);-webkit-backdrop-filter:blur(14px) saturate(160%);backdrop-filter:blur(14px) saturate(160%);box-shadow:0 8px 24px rgba(255,59,48,.38),inset 0 0 0 1px rgba(255,255,255,.4);color:#fff;touch-action:pan-y;cursor:pointer;-webkit-user-select:none;user-select:none;will-change:transform}
-#tbn .tbt{white-space:nowrap;font-size:17px;font-weight:800;line-height:1.3;letter-spacing:-.01em;text-shadow:0 1px 2px rgba(0,0,0,.28)}
-html[data-theme=dark] #tbn{background:rgba(255,69,58,.8);color:#fff;box-shadow:0 8px 24px rgba(255,69,58,.35),inset 0 0 0 1px rgba(255,255,255,.3)}
-
 /* ================================================================
    MODERN UI LAYER (v2) — visual refresh only. No markup / logic changes.
    Loaded last so it overrides the base styles above.
@@ -288,15 +283,15 @@ html[data-theme=dark] .tile{border-color:rgba(255,255,255,.05)}
 
 /* ---- HERO tile on home ---- */
 .quad.one{background:
-  radial-gradient(120% 90% at 0% 0%,rgba(255,255,255,.22) 0%,transparent 55%),
-  radial-gradient(90% 80% at 100% 100%,rgba(109,93,246,.7) 0%,transparent 60%),
-  linear-gradient(135deg,#2a3fd0 0%,#4361ee 50%,#5b86f5 100%);
-  border-radius:28px;box-shadow:0 22px 44px -16px rgba(67,97,238,.65),inset 0 1px 0 rgba(255,255,255,.35);margin:10px 0 14px}
+  radial-gradient(120% 90% at 0% 0%,rgba(255,255,255,.20) 0%,transparent 55%),
+  radial-gradient(90% 80% at 100% 100%,rgba(14,32,56,.55) 0%,transparent 62%),
+  linear-gradient(135deg,#3d6590 0%,#2a4d75 52%,#1d3a5c 100%);
+  border-radius:28px;box-shadow:0 22px 44px -16px rgba(42,77,117,.65),inset 0 1px 0 rgba(255,255,255,.35),inset 0 -2px 6px rgba(8,20,40,.22);margin:10px 0 14px}
 html[data-theme=dark] .quad.one{background:
   radial-gradient(120% 90% at 0% 0%,rgba(255,255,255,.12) 0%,transparent 55%),
-  radial-gradient(90% 80% at 100% 100%,rgba(122,106,245,.6) 0%,transparent 60%),
-  linear-gradient(135deg,#1c2a8f 0%,#2f46c9 55%,#4a63e0 100%);
-  box-shadow:0 22px 44px -16px rgba(0,0,0,.7),inset 0 1px 0 rgba(255,255,255,.15)}
+  radial-gradient(90% 80% at 100% 100%,rgba(8,20,38,.6) 0%,transparent 62%),
+  linear-gradient(135deg,#335a85 0%,#234266 55%,#172f4b 100%);
+  box-shadow:0 22px 44px -16px rgba(0,0,0,.7),inset 0 1px 0 rgba(255,255,255,.15),inset 0 -2px 6px rgba(0,0,0,.25)}
 .quad.one::before{background:linear-gradient(180deg,rgba(255,255,255,.12),transparent);border-radius:28px 28px 0 0;height:40%}
 .quad.one>div{transition:background .15s}
 .quad.one>div:active{background:rgba(255,255,255,.12)}
@@ -420,7 +415,6 @@ html[data-theme=dark] .nm{color:var(--t)}
 .glw{color:var(--p)!important}
 .tile.lb{background:color-mix(in srgb,var(--p) 10%,var(--c));border-color:color-mix(in srgb,var(--p) 25%,var(--b));box-shadow:none}
 #offb{background:linear-gradient(90deg,#f04458,#ff6b6b);font-weight:700}
-#tbn{border-radius:18px;background:rgba(240,68,88,.86)}
 .ib li::marker{color:var(--p)}
 a.back,.back{color:var(--p)}
 
@@ -1582,78 +1576,15 @@ permDelete=XW(permDelete);saveTenDocs=XW(saveTenDocs);archive=XW(archive);updPho
 if('serviceWorker' in navigator){const had=!!navigator.serviceWorker.controller;let rl=false;
  navigator.serviceWorker.addEventListener('controllerchange',()=>{if(had&&!rl){rl=true;location.reload()}});
  addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(r=>r.update()).catch(()=>{}))}
-draw();window.__bnSync=loadUrl().then(()=>{if(url&&cur().length&&cur()[cur().length-1][0]=='keys')draw();return sync()}).catch(()=>{});
+draw();loadUrl().then(()=>{if(url&&cur().length&&cur()[cur().length-1][0]=='keys')draw();return sync()}).catch(()=>{});
 /* ================================================================
-   13. HOME BANNER (the pop-up above the thin tile)
+   13. LATEST MESSAGE ON OPEN
+   Opening the app from closed (above) or coming back to it from minimised: ask Google for the latest data.
+   sync() redraws the home screen, so the thin tile shows the newest message. No pop-up, no repeating timer.
+   If offline, or Google does not answer, the tile simply keeps the saved message.
    ================================================================ */
-/* BANNER RULES (the pop-up above the thin tile):
-   0. The pop-up only appears after Google has answered with the latest data. From closed state it appears 0.2s after Google's answer.
-   1. App opened from closed state: the pop-up shows (as soon as Google answers + 0.2s) for 3s. After it disappears, if the person is still on the home screen, it shows again every 3.5s (3s visible, 3.5s hidden) until he leaves the home screen.
-   2. Every time before the pop-up appears the latest data is pulled from Google.
-   3. After leaving the home screen (minimising the app, or going to another page) and coming back, the pop-up shows after 2s on the home screen, then rule 1 repeats (every 3.5s after it disappears).
-   It only shows when the thin tile says payments are pending / bills are not made. Swipe left to dismiss (it comes back by rule 1), tap opens the same page as the thin tile. */
-(function(){
-const SHOW=3000,GAP=3500,BACK=2000;
-let el=null,hideT=0,homeSince=0,nextAt=0,first=1,pulling=0,fromClosed=0;
-const locked=()=>{const l=document.getElementById('lk');return !!l&&l.style.display!='none'};
-const homeOn=()=>!!document.getElementById('Tile3s')&&!document.hidden&&!locked();
-const cap=p=>Promise.race([Promise.resolve(p).catch(()=>0),new Promise(r=>setTimeout(r,3000))]); /* wait for Google, never more than 3s */
-function tileTf(e){const tl=document.getElementById('Tile3s');if(!tl)return'translate(0,0) scale(1)';
- const a=tl.getBoundingClientRect(),w=e.offsetWidth,h=e.offsetHeight,bx=e.offsetLeft-scrollX+w/2,by=e.offsetTop-scrollY+h/2;
- return'translate('+Math.round(a.left+a.width/2-bx)+'px,'+Math.round(a.top+a.height/2-by)+'px) scale('+(a.width/w).toFixed(4)+','+(a.height/h).toFixed(4)+')'}
-function kill(){clearTimeout(hideT);if(el){el.remove();el=null}}
-function close(){if(!el)return;clearTimeout(hideT);const e=el;el=null;nextAt=Date.now()+GAP+460; /* 3.5s counted from when it has fully disappeared */
- const m=e.querySelector('.tbt');if(m){m.style.transition='opacity .18s ease';m.style.opacity='0'}
- e.style.transition='transform .42s cubic-bezier(.4,0,.2,1),opacity .42s ease-in,border-radius .42s ease';e.style.transform=tileTf(e);e.style.opacity='0';e.style.borderRadius='8px';setTimeout(()=>e.remove(),460)}
-const tileMsg=()=>{const t=document.getElementById('Tile3s');if(!t||t.dataset.al!='1')return'';const sp=t.querySelector('span');return((sp||t).textContent||'').trim()};
-function open(){
- const big=document.querySelector('.quad.one'),nxt=document.getElementById('Tile3');
- if(!big||!nxt||locked()||el)return false;
- const msg=tileMsg();if(!msg)return false;
- const tl=document.getElementById('Tile3s'),r=big.getBoundingClientRect(),n=nxt.getBoundingClientRect(),gt=r.bottom+5,gh=Math.round(n.top-5-gt);
- if(gh<30)return false;
- const h=Math.min(gh,Math.round((tl?tl.getBoundingClientRect().height:30)*2)),top=gt+Math.round((gh-h)/2); /* twice the height of the thin tile, centred in the gap between the big tile and the next tile */
- const b=document.createElement('div');b.id='tbn';
- b.style.cssText='left:'+Math.round(r.left+scrollX)+'px;top:'+Math.round(top+scrollY)+'px;width:'+Math.round(r.width)+'px;height:'+h+'px';
- const m=document.createElement('div');m.className='tbt';m.textContent=msg;b.appendChild(m);
- document.body.appendChild(b);el=b;
- {let fs=17;m.style.fontSize=fs+'px';while(m.scrollWidth>b.clientWidth-28&&fs>9){fs--;m.style.fontSize=fs+'px'}} /* keep the text on a single line: shrink the font until it fits */
- b.style.transform=tileTf(b);b.style.opacity='0';b.style.borderRadius='8px';m.style.opacity='0';void b.offsetHeight;
- b.style.transition='transform .42s cubic-bezier(.2,.8,.3,1),opacity .3s ease-out,border-radius .42s ease';b.style.transform='translate(0,0) scale(1)';b.style.opacity='1';b.style.borderRadius='';
- m.style.transition='opacity .25s ease .17s';m.style.opacity='1';
- hideT=setTimeout(close,SHOW);
- let x0=0,y0=0,dx=0,t0=0,drag=0;
- b.addEventListener('pointerdown',e=>{if(b!==el)return;drag=1;x0=e.clientX;y0=e.clientY;dx=0;t0=Date.now();clearTimeout(hideT);b.style.transition='none';try{b.setPointerCapture(e.pointerId)}catch(_){}});
- b.addEventListener('pointermove',e=>{if(!drag||b!==el)return;dx=Math.min(0,e.clientX-x0);b.style.transform='translateX('+dx+'px)'});
- const up=e=>{if(!drag||b!==el)return;drag=0;
-  if(e.type=='pointerup'&&Math.abs(e.clientX-x0)<8&&Math.abs(e.clientY-y0)<8&&Date.now()-t0<600){close();const tl=document.getElementById('Tile3s');if(tl)tl.click();return}
-  if(dx<-40){close();return}
-  b.style.transition='transform .3s ease';b.style.transform='translateX(0)';hideT=setTimeout(close,SHOW)};
- b.addEventListener('pointerup',up);b.addEventListener('pointercancel',up);
- return true}
-/* pull the latest record from Google. The pop-up opens ONLY after Google has answered (true); no answer (offline, error, timeout) = no pop-up this round. */
-function pull(p){if(pulling)return Promise.resolve(false);pulling=1;
- const q=p||((typeof url!='undefined'&&url&&typeof offline=='function'&&!offline())?sync():0);
- return Promise.race([Promise.resolve(q).catch(()=>false),new Promise(r=>setTimeout(()=>r(false),20000))]).then(ok=>{pulling=0;return ok===true},()=>{pulling=0;return false})}
-function show(p,extra){
- pull(p).then(ok=>{
-  if(!ok){nextAt=Date.now()+GAP;return} /* no answer from Google: try again after 3.5s */
-  const go=()=>{if(!homeOn()||el||document.querySelector('.mdl'))return;open()}; /* open() reads the tile that Google's data has just redrawn */
-  if(extra)setTimeout(go,extra);else go()})}
-function tick(){
- if(!homeOn()){ /* left the home screen (minimised, other page, lock): remove at once, next return waits 2s */
-  kill();homeSince=0;return}
- if(document.querySelector('.mdl'))return; /* a dialog is open on the home screen: wait, don't start new pop-ups */
- const now=Date.now();
- if(!homeSince){homeSince=now;fromClosed=first;nextAt=first?now:now+BACK;first=0}
- if(!el&&!pulling&&now>=nextAt){nextAt=now+SHOW+GAP+460; /* provisional; close() sets the exact time */
-  const useBoot=fromClosed&&window.__bnSync&&!window.__bnUsed;if(useBoot)window.__bnUsed=1;
-  show(useBoot?window.__bnSync:0,fromClosed?200:0);fromClosed=0}}
 document.addEventListener('visibilitychange',()=>{
- if(document.hidden){kill();homeSince=0;return}
- if(document.getElementById('Tile3s')){try{draw()}catch(e){}} /* back on the home screen: redraw from the phone's data */
- tick()});
-setInterval(tick,150);
-tick();
-})();
+ if(document.hidden)return;
+ if(document.getElementById('Tile3s')){try{draw()}catch(e){}} /* show the saved data at once */
+ if(typeof url!='undefined'&&url&&!offline())sync().catch(()=>{})});
 </script></body></html>
