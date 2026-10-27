@@ -284,13 +284,13 @@ html[data-theme=dark] .tile{border-color:rgba(255,255,255,.05)}
 /* ---- HERO tile on home ---- */
 .quad.one{background:
   radial-gradient(120% 90% at 0% 0%,rgba(255,255,255,.20) 0%,transparent 55%),
-  radial-gradient(90% 80% at 100% 100%,rgba(14,32,56,.55) 0%,transparent 62%),
-  linear-gradient(135deg,#3d6590 0%,#2a4d75 52%,#1d3a5c 100%);
-  border-radius:28px;box-shadow:0 22px 44px -16px rgba(42,77,117,.65),inset 0 1px 0 rgba(255,255,255,.35),inset 0 -2px 6px rgba(8,20,40,.22);margin:10px 0 14px}
+  radial-gradient(90% 80% at 100% 100%,rgba(10,26,52,.28) 0%,transparent 62%),
+  linear-gradient(135deg,#346496 0%,#2c588a 52%,#244879 100%);
+  border-radius:28px;box-shadow:0 22px 44px -16px rgba(44,88,138,.65),inset 0 1px 0 rgba(255,255,255,.35),inset 0 -2px 6px rgba(8,20,44,.22);margin:10px 0 14px}
 html[data-theme=dark] .quad.one{background:
   radial-gradient(120% 90% at 0% 0%,rgba(255,255,255,.12) 0%,transparent 55%),
-  radial-gradient(90% 80% at 100% 100%,rgba(8,20,38,.6) 0%,transparent 62%),
-  linear-gradient(135deg,#335a85 0%,#234266 55%,#172f4b 100%);
+  radial-gradient(90% 80% at 100% 100%,rgba(6,18,38,.32) 0%,transparent 62%),
+  linear-gradient(135deg,#305f8b 0%,#25496f 55%,#1d3c5e 100%);
   box-shadow:0 22px 44px -16px rgba(0,0,0,.7),inset 0 1px 0 rgba(255,255,255,.15),inset 0 -2px 6px rgba(0,0,0,.25)}
 .quad.one::before{background:linear-gradient(180deg,rgba(255,255,255,.12),transparent);border-radius:28px 28px 0 0;height:40%}
 .quad.one>div{transition:background .15s}
@@ -380,8 +380,8 @@ nav i svg{display:block;margin:auto}
 body:not(.nonav){padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))}
 
 /* ---- circular profile + back buttons ---- */
-.pfb{width:44px;height:44px;top:10px;background:var(--c);border:1px solid var(--b);color:var(--p);box-shadow:var(--sh)}
-html[data-theme=dark] .pfb{background:var(--c);color:var(--p)}
+.pfb{width:44px;height:44px;top:10px;background:var(--c);border:1px solid var(--b);color:#2c588a;box-shadow:var(--sh)}
+html[data-theme=dark] .pfb{background:var(--c);color:#6c9bd1}
 .bkc{width:38px;height:38px;background:var(--c);border:1px solid var(--b);color:var(--p);box-shadow:var(--sh)}
 .bkc.st{margin-bottom:10px}
 
@@ -569,15 +569,16 @@ async function txCore(f,quiet){
 function save(s,row){if(!TX)throw new Error('A change was attempted outside a save');const a=db[s],i=a.findIndex(x=>x.id==row.id);i<0?a.push(row):a[i]=row;persist();post({a:'upsert',s,r:row})}
 function setProf(k,v){if(!TX)throw new Error('A change was attempted outside a save');db.profile[k]=v;persist();post({a:'upsert',s:'profile',r:{key:k,value:v}})}
 async function syncCore(){if(!url)return;let d;try{d=await post({a:'all'})}catch(e){return false}if(!d||!d.props)return false;
+ const was=JSON.stringify(db);
  db.props=d.props.filter(x=>x.id);db.tenants=d.tenants.filter(x=>x.id);db.bills=d.bills.filter(x=>x.id);
  const ymd=v=>{v=String(v??'');if(!v||/^\d{4}-\d{2}-\d{2}$/.test(v))return v;const d=new Date(v);return isNaN(d)?v:d.getFullYear()+'-'+pd2(d.getMonth()+1)+'-'+pd2(d.getDate())},
  ym=v=>{v=String(v??'');if(!v||/^\d{4}-\d{2}$/.test(v))return v;const d=new Date(v);return isNaN(d)?v:d.getFullYear()+'-'+pd2(d.getMonth()+1)};
  db.bills.forEach(b=>{b.month=ym(b.month);b.date=String(b.date||'')});db.tenants.forEach(t=>{t.entry=ymd(t.entry);t.exit=ymd(t.exit)});
  if(d.payments)db.payments=d.payments.filter(x=>x.id).map(x=>({...x,pdate:ymd(x.pdate)}));
  if(d.readings){db.mr={};d.readings.filter(x=>x.id&&x.month).forEach(x=>{const m=String(x.month),o=db.mr[m]=db.mr[m]||{};if(String(x.tenantId)=='_ok')o._ok=1;else{o[x.tenantId]=String(x.reading);if(x.date)o['d_'+x.tenantId]=String(x.date).slice(0,10)}})}
- d.profile.forEach(r=>db.profile[r.key]=r.value);persistNow();draw();return true}
+ d.profile.forEach(r=>db.profile[r.key]=r.value);persistNow();if(JSON.stringify(db)!==was)draw();return true} /* same data as already shown = no rebuild, no flicker */
 const sync=()=>exclusive(syncCore);
-let dir='fade';
+let dir='';
 const cur=()=>st[tab],sy={0:0,1:0},topSY=()=>{const s=cur();return s.length?(s[s.length-1][2]||0):(sy[tab]||0)},
 go=(v,a)=>{const s=cur();if(s.length)s[s.length-1][2]=scrollY;else sy[tab]=scrollY;s.push([v,a]);dir='fwd';draw()},
 rp=(v,a)=>{const s=cur();s.length?s[s.length-1]=[v,a]:s.push([v,a]);dir='fwd';draw()},back=()=>{if(!cur().length)return;cur().pop();dir='bck';draw()},
@@ -1580,11 +1581,12 @@ draw();loadUrl().then(()=>{if(url&&cur().length&&cur()[cur().length-1][0]=='keys
 /* ================================================================
    13. LATEST MESSAGE ON OPEN
    Opening the app from closed (above) or coming back to it from minimised: ask Google for the latest data.
-   sync() redraws the home screen, so the thin tile shows the newest message. No pop-up, no repeating timer.
+   sync() redraws the home screen only if Google's data differs from what is shown, so the thin tile shows the newest message without a flicker. No pop-up, no repeating timer.
    If offline, or Google does not answer, the tile simply keeps the saved message.
    ================================================================ */
+let ld=today();
 document.addEventListener('visibilitychange',()=>{
  if(document.hidden)return;
- if(document.getElementById('Tile3s')){try{draw()}catch(e){}} /* show the saved data at once */
+ if(ld!=today()){ld=today();if(document.getElementById('Tile3s')){try{draw()}catch(e){}}} /* a new day began while away: refresh the dates once */
  if(typeof url!='undefined'&&url&&!offline())sync().catch(()=>{})});
 </script></body></html>
