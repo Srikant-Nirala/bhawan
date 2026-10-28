@@ -400,7 +400,7 @@ html[data-theme=dark] .pfb{background:var(--c);color:#6c9bd1}
 .dph button{background:var(--grad);box-shadow:none}
 
 /* ---- app lock ---- */
-#lk{background:radial-gradient(90% 60% at 50% 0%,color-mix(in srgb,var(--p) 18%,transparent),transparent 70%),var(--bg)}
+#lk{background:var(--bg)} /* plain background: no blue wash; only the 6 dots (.lkd) stay blue */
 .lkt{font-size:22px;font-weight:800;letter-spacing:-.03em}
 .lkd{color:var(--p)}
 .lkp button{background:var(--c);border:1px solid var(--b);width:72px;height:72px;font-weight:600;transition:transform .1s,background .15s}
@@ -990,8 +990,10 @@ function pickA(m){A.m=m;draw();scrollTo({top:0,behavior:'smooth'})}
 /* one month-stepper + one swipe handler shared by the payments (PV), electricity (EM) and received (RM) month screens: months can't go past the current month */
 const stepMon=(o,d)=>{const[y,m]=o.m.split('-').map(Number),x=new Date(y,m-1+d,1),k=x.getFullYear()+'-'+pd2(x.getMonth()+1);if(k>curMonth())return;o.m=k;draw();riseMon()},
 swipeMon=(e,step)=>{if(colRoots().length)return;const d=e.changedTouches[0].clientX-tx;if(Math.abs(d)>70)step(d>0?-1:1)};
-/* month toggle: the cards/tiles below the month bar rise in with the same animation and stagger as a page opening (the month bar itself stays still) */
-function riseMon(){const b=document.querySelector('#main .mnav.tl'),w=b&&b.parentElement;if(!w||w.id=='main')return;let i=0;[...w.children].forEach(c=>{if(c===b)return;c.style.animation='rise .38s cubic-bezier(.3,.8,.4,1) '+(Math.min(i++,5)*.03)+'s backwards';c.addEventListener('animationend',()=>{c.style.animation=''},{once:true})})}
+/* page opening AND month toggle on the month pages: cards/tiles rise in exactly like other pages (the month bar stays still) */
+function riseMon(){const bar=document.querySelector('#main .mnav.tl');let w=bar&&bar.parentElement;if(!w||w.id=='main')w=document.querySelector('#main>div[style*="min-height:50vh"]');if(!w)return;
+ /* same animation + stagger as the cards that sit directly in the page (see "gentle entrance" CSS): the wrapper counts as child 2 onward after the title */
+ [...w.children].forEach((c,i)=>{if(!c.matches('.card,.tile,.duo,.quad,.slim'))return;const n=i+2;c.style.animation='rise .38s cubic-bezier(.3,.8,.4,1) '+(n<=6?(n-1)*.03:0)+'s backwards';c.addEventListener('animationend',()=>{c.style.animation=''},{once:true})})}
 function shiftPM(d){stepMon(PV,d)}
 function swpP(e){swipeMon(e,shiftPM)}
 const byFlat=(a,b)=>String(a.flat).localeCompare(String(b.flat),undefined,{numeric:true});
@@ -1113,7 +1115,7 @@ function draw(){const y0=scrollY,nv=!!dir,rb=dir=='bck';if(cur().length&&cur()[c
  const s=cur(),[v,a]=s.length?s[s.length-1]:[tab?'profile':'menu'];
  document.body.classList.toggle('nonav',s.length>0);document.querySelectorAll('nav button').forEach((b,i)=>b.classList.toggle('on',i==tab));$('#main').classList.remove('fxo','bdo');const ov=rb?mkOv(y0):null;$('#main').innerHTML=views[v](a);fitSlim();fitEf();if(s.length||tab){const bh='<button type=button class="bkc@@" aria-label="वापस" onclick="backBtn()"><svg width=19 height=19 viewBox=\"0 0 24 24\" aria-hidden=true><path d=\"M19 12H5M11 6l-6 6 6 6\" fill=none stroke=currentColor stroke-width=2.4 stroke-linecap=round stroke-linejoin=round /></svg></button>',h2=$('#main').querySelector('h2');if(h2){h2.style.position='relative';h2.style.paddingLeft='54px';h2.style.paddingRight='0';h2.insertAdjacentHTML('afterbegin',bh.replace('@@',''))}else $('#main').insertAdjacentHTML('afterbegin',bh.replace('@@',' st'))}
  if(dir){const M=$('#main');M.className='';void M.offsetWidth;M.className=dir;dir=''}
- $('#main').querySelectorAll('script').forEach(x=>{eval(x.textContent)});fitH2();scrollTo(0,rb?topSY():nv?0:y0);navShow();if(ov)runOv(ov);syncHist()}
+ $('#main').querySelectorAll('script').forEach(x=>{eval(x.textContent)});fitH2();scrollTo(0,rb?topSY():nv?0:y0);navShow();if(ov)runOv(ov);if(nv&&!rb)riseMon();syncHist()}
 /* page transitions: forward = new page slides in from the left; back = current page slides out to the right */
 function mkOv(y){const M=$('#main'),o=document.createElement('div'),c=M.cloneNode(true);o.className='ovr';c.removeAttribute('id');c.removeAttribute('class');c.removeAttribute('style');c.querySelectorAll('[id]').forEach(x=>x.removeAttribute('id'));c.querySelectorAll('script').forEach(x=>x.remove());c.style.top=(-y)+'px';o.appendChild(c);return o}
 function runOv(o){document.body.appendChild(o);const rm=()=>o.remove();o.addEventListener('animationend',rm);setTimeout(rm,600)}
@@ -1596,13 +1598,15 @@ draw();loadUrl().then(()=>{if(url&&cur().length&&cur()[cur().length-1][0]=='keys
 function glowTile(){const t=document.getElementById('Tile3s');if(!t)return;t.classList.remove('gw');void t.offsetWidth;t.classList.add('gw');setTimeout(()=>t.classList.remove('gw'),2100)}
 const GLOW=2000,GAPG=3000;let hs=0,nx=0;
 const lockUp=()=>{const l=document.getElementById('lk');return !!l&&l.style.display!='none'};
+let gt=null;
 setInterval(()=>{
  const t=document.getElementById('Tile3s');
- if(!t||document.hidden||lockUp()||t.dataset.al!='1'){hs=0;if(t)t.classList.remove('gw');return} /* no glow when the tile says everything is clear (data-al=0) */
+ if(!t||document.hidden||lockUp()||t.dataset.al!='1'){hs=0;gt=null;if(t)t.classList.remove('gw');return} /* no glow when the tile says everything is clear (data-al=0) */
+ if(t!==gt){gt=t;hs=0} /* tile was redrawn: count the 0.3s again */
  if(document.querySelector('.mdl'))return; /* a dialog is open: wait */
  const n=Date.now();
- if(!hs){hs=n;nx=n}
- if(n>=nx){glowTile();nx=n+GLOW+GAPG}},250);
+ if(!hs){hs=n;nx=n+300} /* first glow 0.3s after the home screen appears (from closed, minimised, or back from another page) */
+ if(n>=nx){glowTile();nx=n+GLOW+GAPG}},50);
 let ld=today();
 document.addEventListener('visibilitychange',()=>{
  if(document.hidden)return;
