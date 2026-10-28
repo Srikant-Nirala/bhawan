@@ -675,7 +675,7 @@ return `<div class="card cp clk" onclick="togCard(this)"><div style="display:fle
  bk=t=>bt(t,'#e8590c'),
  /* बकाया tab, tenant with no dues: same line "<माह> तक का बकाया = ₹0", opens the payment page like a tenant with dues */
  nd=t=>bt(t,'#1b8a3d'),
- tb=(on,c,tx,i)=>`<button class="${on?'on':''}" style="font-weight:700;${on?`background:${c.b};color:#fff`:`color:${c.t}`}" onclick="PR.t=${i};${i?`EM.m=curMonth();`:''}draw()">${tx}</button>`,
+ tb=(on,c,tx,i)=>`<button class="${on?'on':''}" style="font-weight:700;${on?`background:${c.b};color:#fff`:`color:${c.t}`}" onclick="PR.t=${i};${i?`EM.m=curMonth();`:''}draw();${i?'riseMon()':'riseMain()'}">${tx}</button>`,
  tabs=`<div class="seg big" style="margin-top:22px">${tb(!pr.t,{b:'linear-gradient(135deg,#7aa7ff,#5b6cff)',t:'#6a8aff'},'पेमेंट नोट करें',0)}${tb(pr.t,{b:'#0a84ff',t:'#0a84ff'},'बिजली बिल देखें',1)}</div>`,
  /* बकाया tab: every tenant; those with dues first (tap -> note payment), cleared tenants at the bottom ("<माह> तक चुकाया", tap -> expand). हिसाब किताब tab: every tenant. */
  list=pr.t?'':(act.filter(t=>tdue(t)>0).map(bk).join('')+old.map(bk).join('')+act.filter(t=>tdue(t)<=0).map(nd).join(''))||'<div class=card><span class=m>कोई किरायेदार नहीं</span></div>';
@@ -994,6 +994,8 @@ swipeMon=(e,step)=>{if(colRoots().length)return;const d=e.changedTouches[0].clie
 function riseMon(){const bar=document.querySelector('#main .mnav.tl');let w=bar&&bar.parentElement;if(!w||w.id=='main')w=document.querySelector('#main>div[style*="min-height:50vh"]');if(!w)return;
  /* same animation + stagger as the cards that sit directly in the page (see "gentle entrance" CSS): the wrapper counts as child 2 onward after the title */
  [...w.children].forEach((c,i)=>{if(!c.matches('.card,.tile,.duo,.quad,.slim'))return;const n=i+2;c.style.animation='rise .38s cubic-bezier(.3,.8,.4,1) '+(n<=6?(n-1)*.03:0)+'s backwards';c.addEventListener('animationend',()=>{c.style.animation=''},{once:true})})}
+/* tab switch on a page whose cards sit directly in the page (किरायेदार चुनें): same rise + stagger as the page-opening CSS, tabs stay still */
+function riseMain(){const M=document.getElementById('main');if(!M)return;[...M.children].forEach((c,i)=>{if(!c.matches('.card,.tile,.duo,.quad,.slim'))return;c.style.animation='rise .38s cubic-bezier(.3,.8,.4,1) '+(i>=1&&i<=5?i*.03:0)+'s backwards';c.addEventListener('animationend',()=>{c.style.animation=''},{once:true})})}
 function shiftPM(d){stepMon(PV,d)}
 function swpP(e){swipeMon(e,shiftPM)}
 const byFlat=(a,b)=>String(a.flat).localeCompare(String(b.flat),undefined,{numeric:true});
