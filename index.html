@@ -310,7 +310,7 @@ html[data-theme=dark] .slim,html[data-theme=dark] .slim.ok{background:rgba(52,21
 html[data-theme=dark] .slim span,html[data-theme=dark] .slim.ok span{color:#4ade9a!important}
 html[data-theme=dark] #Tile3s[data-al="1"]{background:rgba(245,158,11,.14)!important;border-color:rgba(245,158,11,.3)}
 html[data-theme=dark] #Tile3s[data-al="1"],html[data-theme=dark] #Tile3s[data-al="1"] span{color:#fbbf24!important}
-#Tile3s{border-radius:16px;min-height:48px;margin-left:2.5px;margin-right:2.5px} /* 5px narrower than full width */
+#Tile3s{border-radius:16px;min-height:48px;margin:0 2.5px 20px} /* 5px narrower than full width */
 .slim.two{padding:0;background:var(--c)!important;border:1px solid var(--b);box-shadow:var(--sh)}
 .slim.two>div{color:var(--t)!important;padding:14px 8px;font-weight:700!important;font-size:14.5px!important}
 .slim.two>i{background:var(--b)}
@@ -402,9 +402,9 @@ html[data-theme=dark] .pfb{background:var(--c);color:#6c9bd1}
 /* ---- app lock ---- */
 #lk{background:var(--bg)} /* plain background: no blue wash; only the 6 dots (.lkd) stay blue */
 .lkt{font-size:22px;font-weight:800;letter-spacing:-.03em}
-.lkd{color:var(--p)}
+.lkd{color:#2c588a}html[data-theme=dark] .lkd{color:#7aa9de}
 .lkp button{background:var(--c);border:1px solid var(--b);width:72px;height:72px;font-weight:600;transition:transform .1s,background .15s}
-.lkp button:active{background:var(--grad);color:#fff;transform:scale(.92)}
+.lkp button:active{background:#2c588a;color:#fff;transform:scale(.92)}
 
 /* ---- misc polish ---- */
 .call{background:linear-gradient(135deg,#34d27b,#1fb35e);box-shadow:0 8px 16px -6px rgba(34,179,107,.6)}
@@ -432,11 +432,13 @@ a.back,.back{color:var(--p)}
 #main.fade>*:nth-child(5),#main.fwd>*:nth-child(5){animation-delay:.1s}
 #main.fade>*:nth-child(6),#main.fwd>*:nth-child(6){animation-delay:.125s}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
-/* ---- navigation: प्रबंधन / प्रोफाइल in #2c588a, active tab gets a light glow of the same colour ---- */
+/* ---- navigation: प्रबंधन / प्रोफाइल text in #2c588a; glow/background of the active tab as before ---- */
 nav button{color:#2c588a}
-nav .on{color:#2c588a;background:linear-gradient(180deg,color-mix(in srgb,#2c588a 20%,transparent),color-mix(in srgb,#2c588a 8%,transparent));box-shadow:0 0 14px -3px color-mix(in srgb,#2c588a 38%,transparent),inset 0 1px 0 rgba(255,255,255,.35)}
+nav .on{color:#2c588a;background:color-mix(in srgb,var(--p) 12%,transparent);box-shadow:none}
 html[data-theme=dark] nav button,html[data-theme=dark] nav .on{color:#7aa9de} /* lighter shade of the same blue so it stays readable on the dark bar */
-html[data-theme=dark] nav .on{background:linear-gradient(180deg,color-mix(in srgb,#7aa9de 22%,transparent),color-mix(in srgb,#7aa9de 8%,transparent));box-shadow:0 0 14px -3px color-mix(in srgb,#7aa9de 40%,transparent),inset 0 1px 0 rgba(255,255,255,.1)}
+html[data-theme=dark] nav .on{background:color-mix(in srgb,var(--p) 12%,transparent);box-shadow:none}
+/* thin tile centred vertically: equal 20px gap to the big tile above and the बिल बनाएँ tiles below */
+.quad.one{margin-bottom:20px}
 </style></head><body><div id=offb>ऑफ़लाइन · सिर्फ़ देख सकते हैं (View only)</div>
 <div id="lk"><div class="lkb"><div class="lkt" id="lkt"></div><div class="lkd" id="lkd"></div><div class="lke" id="lke"></div><div class="lkp" id="lkp"></div><button id="lkc" style="display:none" onclick="lkCancel()">Cancel</button></div></div>
 <div id="main"></div>
