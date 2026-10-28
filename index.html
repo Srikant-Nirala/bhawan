@@ -80,7 +80,7 @@ nav button{position:relative}nav{display:grid!important;grid-template-columns:1f
 .ovr{position:fixed;inset:0;z-index:50;overflow:hidden;background:var(--bg);pointer-events:none;animation:outR .3s cubic-bezier(.22,.8,.3,1) forwards}.ovr>div{position:absolute;left:0;right:0;margin:0 auto;max-width:560px;padding:calc(12px + env(safe-area-inset-top,0px)) 16px 12px}
 html,body{overflow-x:clip}
 nav{transition:transform .28s ease}nav.hide{transform:translateY(110%)}body.nonav nav{display:none!important}.bkc{position:absolute;left:0;top:50%;transform:translateY(-50%);width:36px;height:36px;border-radius:50%;border:0;background:rgba(10,132,255,.14);color:var(--p);display:flex;align-items:center;justify-content:center;padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:opacity .15s}.bkc:active{opacity:.4}.bkc.st{position:static;transform:none;margin:0 0 8px}.bkc svg{display:block}body.nonav{padding-bottom:30px}
-@keyframes fd{from{opacity:.6}to{opacity:1}}
+@keyframes fd{from{opacity:.35}to{opacity:1}}
 .item[onclick]{margin:0 -8px;padding-left:8px;padding-right:8px;border-radius:10px;transition:background .15s,transform .12s}
 .item[onclick]:active{background:rgba(120,120,128,.16);transform:scale(.985)}
 .badge,.mnav button,.seg button,nav button{transition:transform .12s,background .2s,color .2s,opacity .2s}
@@ -383,7 +383,7 @@ body:not(.nonav){padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))}
 @keyframes tgw{0%{box-shadow:0 0 0 0 transparent}18%,65%{border-color:color-mix(in srgb,currentColor 55%,transparent);box-shadow:0 0 0 1px color-mix(in srgb,currentColor 35%,transparent),0 0 12px 2px color-mix(in srgb,currentColor 24%,transparent)}100%{box-shadow:0 0 0 0 transparent}}
 #Tile3s.gw{animation:tgw 2s ease-in-out 1}
 /* after a fade/fwd page entry, '#main.fade>.slim' (more specific) kept overriding the glow; list both animations so the glow still plays */
-#main.fade>#Tile3s.gw,#main.fwd>#Tile3s.gw{animation:rise .3s cubic-bezier(.3,.8,.4,1) .06s backwards,tgw 2s ease-in-out 1}
+#main.fade>#Tile3s.gw,#main.fwd>#Tile3s.gw{animation:rise .34s cubic-bezier(.3,.8,.4,1) .075s backwards,tgw 2s ease-in-out 1}
 .pfb{width:44px;height:44px;top:10px;background:var(--c);border:1px solid var(--b);color:#2c588a;box-shadow:var(--sh)}
 html[data-theme=dark] .pfb{background:var(--c);color:#6c9bd1}
 .bkc{width:38px;height:38px;background:var(--c);border:1px solid var(--b);color:var(--p);box-shadow:var(--sh)}
@@ -423,14 +423,14 @@ html[data-theme=dark] .nm{color:var(--t)}
 a.back,.back{color:var(--p)}
 
 /* ---- gentle entrance for lists ---- */
-@keyframes rise{from{opacity:.3;transform:translateY(5px)}to{opacity:1;transform:none}}
+@keyframes rise{from{opacity:.15;transform:translateY(7px)}to{opacity:1;transform:none}}
 #main.fade>.card,#main.fade>.tile,#main.fade>.duo,#main.fade>.quad,#main.fade>.slim,
-#main.fwd>.card,#main.fwd>.tile,#main.fwd>.duo,#main.fwd>.quad,#main.fwd>.slim{animation:rise .3s cubic-bezier(.3,.8,.4,1) backwards}
-#main.fade>*:nth-child(2),#main.fwd>*:nth-child(2){animation-delay:.02s}
-#main.fade>*:nth-child(3),#main.fwd>*:nth-child(3){animation-delay:.04s}
-#main.fade>*:nth-child(4),#main.fwd>*:nth-child(4){animation-delay:.06s}
-#main.fade>*:nth-child(5),#main.fwd>*:nth-child(5){animation-delay:.08s}
-#main.fade>*:nth-child(6),#main.fwd>*:nth-child(6){animation-delay:.1s}
+#main.fwd>.card,#main.fwd>.tile,#main.fwd>.duo,#main.fwd>.quad,#main.fwd>.slim{animation:rise .34s cubic-bezier(.3,.8,.4,1) backwards}
+#main.fade>*:nth-child(2),#main.fwd>*:nth-child(2){animation-delay:.025s}
+#main.fade>*:nth-child(3),#main.fwd>*:nth-child(3){animation-delay:.05s}
+#main.fade>*:nth-child(4),#main.fwd>*:nth-child(4){animation-delay:.075s}
+#main.fade>*:nth-child(5),#main.fwd>*:nth-child(5){animation-delay:.1s}
+#main.fade>*:nth-child(6),#main.fwd>*:nth-child(6){animation-delay:.125s}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style></head><body><div id=offb>ऑफ़लाइन · सिर्फ़ देख सकते हैं (View only)</div>
 <div id="lk"><div class="lkb"><div class="lkt" id="lkt"></div><div class="lkd" id="lkd"></div><div class="lke" id="lke"></div><div class="lkp" id="lkp"></div><button id="lkc" style="display:none" onclick="lkCancel()">Cancel</button></div></div>
@@ -993,9 +993,9 @@ swipeMon=(e,step)=>{if(colRoots().length)return;const d=e.changedTouches[0].clie
 /* page opening AND month toggle on the month pages: cards/tiles rise in exactly like other pages (the month bar stays still) */
 function riseMon(){const bar=document.querySelector('#main .mnav.tl');let w=bar&&bar.parentElement;if(!w||w.id=='main')w=document.querySelector('#main>div[style*="min-height:50vh"]');if(!w)return;
  /* same animation + stagger as the cards that sit directly in the page (see "gentle entrance" CSS): the wrapper counts as child 2 onward after the title */
- [...w.children].forEach((c,i)=>{if(!c.matches('.card,.tile,.duo,.quad,.slim'))return;const n=i+2;c.style.animation='rise .3s cubic-bezier(.3,.8,.4,1) '+(n<=6?(n-1)*.02:0)+'s backwards';c.addEventListener('animationend',()=>{c.style.animation=''},{once:true})})}
+ [...w.children].forEach((c,i)=>{if(!c.matches('.card,.tile,.duo,.quad,.slim'))return;const n=i+2;c.style.animation='rise .34s cubic-bezier(.3,.8,.4,1) '+(n<=6?(n-1)*.025:0)+'s backwards';c.addEventListener('animationend',()=>{c.style.animation=''},{once:true})})}
 /* tab switch on a page whose cards sit directly in the page (किरायेदार चुनें): same rise + stagger as the page-opening CSS, tabs stay still */
-function riseMain(){const M=document.getElementById('main');if(!M)return;[...M.children].forEach((c,i)=>{if(!c.matches('.card,.tile,.duo,.quad,.slim'))return;c.style.animation='rise .3s cubic-bezier(.3,.8,.4,1) '+(i>=1&&i<=5?i*.02:0)+'s backwards';c.addEventListener('animationend',()=>{c.style.animation=''},{once:true})})}
+function riseMain(){const M=document.getElementById('main');if(!M)return;[...M.children].forEach((c,i)=>{if(!c.matches('.card,.tile,.duo,.quad,.slim'))return;c.style.animation='rise .34s cubic-bezier(.3,.8,.4,1) '+(i>=1&&i<=5?i*.025:0)+'s backwards';c.addEventListener('animationend',()=>{c.style.animation=''},{once:true})})}
 function shiftPM(d){stepMon(PV,d)}
 function swpP(e){swipeMon(e,shiftPM)}
 const byFlat=(a,b)=>String(a.flat).localeCompare(String(b.flat),undefined,{numeric:true});
