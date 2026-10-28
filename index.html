@@ -310,7 +310,7 @@ html[data-theme=dark] .slim,html[data-theme=dark] .slim.ok{background:rgba(52,21
 html[data-theme=dark] .slim span,html[data-theme=dark] .slim.ok span{color:#4ade9a!important}
 html[data-theme=dark] #Tile3s[data-al="1"]{background:rgba(245,158,11,.14)!important;border-color:rgba(245,158,11,.3)}
 html[data-theme=dark] #Tile3s[data-al="1"],html[data-theme=dark] #Tile3s[data-al="1"] span{color:#fbbf24!important}
-#Tile3s{border-radius:16px;min-height:48px;margin-left:0;margin-right:0}
+#Tile3s{border-radius:16px;min-height:48px;margin-left:2.5px;margin-right:2.5px} /* 5px narrower than full width */
 .slim.two{padding:0;background:var(--c)!important;border:1px solid var(--b);box-shadow:var(--sh)}
 .slim.two>div{color:var(--t)!important;padding:14px 8px;font-weight:700!important;font-size:14.5px!important}
 .slim.two>i{background:var(--b)}
@@ -382,6 +382,8 @@ body:not(.nonav){padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))}
 /* ---- circular profile + back buttons ---- */
 @keyframes tgw{0%{box-shadow:0 0 0 0 transparent}18%,65%{border-color:color-mix(in srgb,currentColor 55%,transparent);box-shadow:0 0 0 1px color-mix(in srgb,currentColor 35%,transparent),0 0 12px 2px color-mix(in srgb,currentColor 24%,transparent)}100%{box-shadow:0 0 0 0 transparent}}
 #Tile3s.gw{animation:tgw 2s ease-in-out 1}
+/* after a fade/fwd page entry, '#main.fade>.slim' (more specific) kept overriding the glow; list both animations so the glow still plays */
+#main.fade>#Tile3s.gw,#main.fwd>#Tile3s.gw{animation:rise .38s cubic-bezier(.3,.8,.4,1) .09s backwards,tgw 2s ease-in-out 1}
 .pfb{width:44px;height:44px;top:10px;background:var(--c);border:1px solid var(--b);color:#2c588a;box-shadow:var(--sh)}
 html[data-theme=dark] .pfb{background:var(--c);color:#6c9bd1}
 .bkc{width:38px;height:38px;background:var(--c);border:1px solid var(--b);color:var(--p);box-shadow:var(--sh)}
@@ -986,8 +988,10 @@ function welcomeMsg(t){const o=(db.profile.name||'').trim(),ad=String(t.aadhar||
 function shiftA(d){const i=A.l.indexOf(A.m)+d;if(i>=0&&i<A.l.length){A.m=A.l[i];draw()}}
 function pickA(m){A.m=m;draw();scrollTo({top:0,behavior:'smooth'})}
 /* one month-stepper + one swipe handler shared by the payments (PV), electricity (EM) and received (RM) month screens: months can't go past the current month */
-const stepMon=(o,d)=>{const[y,m]=o.m.split('-').map(Number),x=new Date(y,m-1+d,1),k=x.getFullYear()+'-'+pd2(x.getMonth()+1);if(k>curMonth())return;o.m=k;draw()},
+const stepMon=(o,d)=>{const[y,m]=o.m.split('-').map(Number),x=new Date(y,m-1+d,1),k=x.getFullYear()+'-'+pd2(x.getMonth()+1);if(k>curMonth())return;o.m=k;draw();riseMon()},
 swipeMon=(e,step)=>{if(colRoots().length)return;const d=e.changedTouches[0].clientX-tx;if(Math.abs(d)>70)step(d>0?-1:1)};
+/* month toggle: the cards/tiles below the month bar rise in with the same animation and stagger as a page opening (the month bar itself stays still) */
+function riseMon(){const b=document.querySelector('#main .mnav.tl'),w=b&&b.parentElement;if(!w||w.id=='main')return;let i=0;[...w.children].forEach(c=>{if(c===b)return;c.style.animation='rise .38s cubic-bezier(.3,.8,.4,1) '+(Math.min(i++,5)*.03)+'s backwards';c.addEventListener('animationend',()=>{c.style.animation=''},{once:true})})}
 function shiftPM(d){stepMon(PV,d)}
 function swpP(e){swipeMon(e,shiftPM)}
 const byFlat=(a,b)=>String(a.flat).localeCompare(String(b.flat),undefined,{numeric:true});
