@@ -439,10 +439,11 @@ html[data-theme=dark] nav button,html[data-theme=dark] nav .on{color:#7aa9de} /*
 html[data-theme=dark] nav .on{background:color-mix(in srgb,var(--p) 12%,transparent);box-shadow:none}
 /* thin tile centred vertically: equal 20px gap to the big tile above and the बिल बनाएँ tiles below */
 .quad.one{margin-bottom:20px}
+body,body:not(.nonav){padding-bottom:calc(30px + env(safe-area-inset-bottom,0px))!important}
 </style></head><body><div id=offb>ऑफ़लाइन · सिर्फ़ देख सकते हैं (View only)</div>
 <div id="lk"><div class="lkb"><div class="lkt" id="lkt"></div><div class="lkd" id="lkd"></div><div class="lke" id="lke"></div><div class="lkp" id="lkp"></div><button id="lkc" style="display:none" onclick="lkCancel()">Cancel</button></div></div>
 <div id="main"></div>
-<nav><button type=button id=nb0 onclick="tabTo(0)"><i>🏠</i>प्रबंधन</button><span class=dv></span><button type=button id=nb1 onclick="tabTo(1)"><i><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true" style="display:block"><circle cx="12" cy="7.5" r="4.4"/><path d="M3.8 20.6c0-4.2 3.6-6.9 8.2-6.9s8.2 2.7 8.2 6.9c0 .6-.4 1-1 1H4.8c-.6 0-1-.4-1-1z"/></svg></i>प्रोफ़ाइल</button></nav>
+
 
 <script>
 /* APP LOCK: the 4-digit code is chosen by you on first open and is NOT stored in this file.
@@ -623,7 +624,7 @@ return `<div style="display:flex;align-items:center;gap:12px"><h2 style="margin:
 <div class="slim${b4>0||nd>0?' run':' ok'}" id=Tile3s data-al="${sp||b4>0?1:0}" onclick="${sp?"PR.t=0;go('payRenter')":"NB.t=0;go('notBilled')"}"><span>${sp?'💰 अभी '+nd+' किरायेदारों का पेमेंट होना बाकी है':b4>0?'🧾 '+mn+' में '+b4+' किरायेदार का बिल बनाना बाकी':'🎉 '+mn+' महीने का सारा पेमेंट क्लियर है'}</span></div>
 <div class=duo><button class=tile id=Tile3 onclick="NB.t=0;go('notBilled')"><span class=ic style="background:#0a84ff">🧾</span>बिल बनाएँ</button><button class=tile id=Tile4 onclick="PR.t=0;go('payRenter')"><span class=ic style="background:#30b858">💰</span>पेमेंट नोट करें</button></div>
 <div class="slim two" id=Tile7s style="margin-top:28px"><div onclick="go('occ')">🏠 ${oc} फ्लैट भरे हुए</div><i></i><div onclick="go('empty')">🔑 ${em} फ्लैट खाली</div></div>
-${tl('menu1','analytics','📊','#8a6bb0','Rent Analytics','Paid vs pending by month')}${tl('menu2','listTen','🔍','#a3a97a','किरायेदार की जानकारी','कॉल करें और सूचना देखें')}${tl('menu3','addRemove','👤','#0ea5b7','किरायेदार जोड़ें या हटाएँ','नया किरायेदार जोड़ें या पुराना हटाएँ')}${tl('menu5','qrSend','📲','#5b9a70','QR code भेजें','UPI QR WhatsApp पर भेजें')}`},
+${tl('menu2','listTen','🔍','#a3a97a','किरायेदार की जानकारी','कॉल करें और सूचना देखें')}${tl('menu3','addRemove','👤','#0ea5b7','किरायेदार जोड़ें या हटाएँ','नया किरायेदार जोड़ें या पुराना हटाएँ')}${tl('menu1','analytics','📊','#8a6bb0','Rent Analytics','Paid vs pending by month')}${tl('menu5','qrSend','📲','#5b9a70','QR code भेजें','UPI QR WhatsApp पर भेजें')}`},
 
 meterRead:()=>{const k=x=>String(x).trim().toLowerCase(),d0='2016-04-01',
 ymd=v=>{const x=new Date(v);return isNaN(x)?'':x.getFullYear()+'-'+pd2(x.getMonth()+1)+'-'+pd2(x.getDate())},
@@ -750,7 +751,7 @@ return `<h2>किरायेदार चुनें</h2>`+(g.map(x=>`<h3>${E
 tenant:id=>{const t=T(id);
 return `<h2>${E(t.name)}</h2><div class=card style="padding:22px 20px"><div style="font-size:18px;font-weight:800;margin-bottom:8px;display:flex;justify-content:space-between;align-items:baseline;gap:10px"><span>किरायेदार की जानकारी</span><a role=button onclick="go('updTen','${id}')" style="flex:none;font-size:15px;font-weight:700;color:var(--p);text-decoration:underline;text-underline-offset:3px;cursor:pointer">अपडेट करें</a></div><ul class=ib style="margin:0;padding-left:22px;font-size:15px;font-weight:700;line-height:1.55"><li class=iv>फ्लैट: ${E(t.flat)}</li><li class=iv>किराया: ${R(t.rent)}</li><li class=iv>जमा राशि: ${R(t.deposit)}</li><li class=iv>प्रवेश तिथि: ${E(t.entry)}</li><li class=iv>फ़ोन नंबर: ${E(t.phone)}</li>${t.phone2?`<li class=iv>सेकंडरी फ़ोन नंबर: ${E(t.phone2)}</li>`:''}<li class=iv>आधार नंबर: ${E(t.aadhar)}</li></ul>${t.photo||docLis(t)?`<div style="font-size:16px;font-weight:800;margin:14px 0 6px">किरायेदार के डॉक्यूमेंट</div><ul class=ib style="margin:0;padding-left:22px;font-size:15px;font-weight:700;line-height:1.55">${t.photo?`<li><a target=_blank href="${E(t.photo)}" style="color:var(--p);text-decoration:underline;text-underline-offset:3px">View Aadhar photo</a></li>`:''}${docLis(t)}</ul>`:''}</div>
 ${dueCard(id,'24px 0 0')}
-<div style="display:flex;gap:10px;margin:24px 0 0"><button class=btn style="margin:0;flex:1;background:var(--p);height:53px;padding:0 4px;font-size:14px;line-height:1.2;white-space:nowrap;display:flex;align-items:center;justify-content:center" onclick="PT.t=1;go('payTenant','${id}')">पेमेंट हिस्ट्री देखें</button><button class=btn style="margin:0;flex:1;background:#2c588a;height:53px;padding:0 4px;font-size:14px;line-height:1.2;white-space:nowrap;display:flex;align-items:center;justify-content:center" onclick="billReceipt('${id}')">बिल की रसीद देखें</button></div>
+<div style="display:flex;gap:10px;margin:24px 0 0"><button class=btn style="margin:0;flex:1;background:#2c588a;height:53px;padding:0 4px;font-size:14px;line-height:1.2;white-space:nowrap;display:flex;align-items:center;justify-content:center" onclick="PT.t=1;go('payTenant','${id}')">पेमेंट हिस्ट्री देखें</button><button class=btn style="margin:0;flex:1;background:#2c588a;height:53px;padding:0 4px;font-size:14px;line-height:1.2;white-space:nowrap;display:flex;align-items:center;justify-content:center" onclick="billReceipt('${id}')">बिल की रसीद देखें</button></div>
 <button class="btn r dbtn" style="margin-top:48px;height:53px;padding:0" onclick="go('archiveForm','${id}')">फ्लैट खाली करें</button>`},
 updTen:id=>{const t=T(id);return `<h2 style="white-space:nowrap;font-size:max(19px,min(26px,6vw))">जानकारी अपडेट करें</h2><div class=m style="margin:-6px 2px 8px">${E(t.name)} · Flat ${E(t.flat)}</div>
 <div class=card id=rc><div class=item style="padding:0"><div class=gr><div class=m>Monthly rent</div><b style="font-size:20px">${R(t.rent)}</b></div><button class=badge style="border:0;color:var(--p);background:rgba(10,132,255,.12)" onclick="editRent('${id}')">Edit</button></div></div>
@@ -987,7 +988,7 @@ async function confirmBills(){const mo=curMonth(),st=(db.mr&&db.mr[mo])||{};if(!
  rp('bulkDone',bills.map(b=>b.id))}
 function welcomeMsg(t){const o=(db.profile.name||'').trim(),ad=String(t.aadhar||'').replace(/(\d{4})(?=\d)/g,'$1 ');
  return ['Hello '+String(t.name).trim().split(/\s+/)[0]+' जी,','','नमस्कार!','',
- 'हमारे घर में आपको किराये पर फ्लैट देकर मुझे बहुत खुशी हो रही है। आशा है आपका प्रवास सुखद और शांतिपूर्ण रहेगा। धन्यवाद!','',
+ 'अपने घर में आपको किराये पर फ्लैट देकर मुझे प्रसन्नता हो रही है। आशा है आपका प्रवास सुखद और शांतिपूर्ण रहेगा। धन्यवाद!','',
  'हमारे रिकॉर्ड में आपकी जानकारी इस प्रकार है:','• नाम - '+t.name,...(ad?['• आधार नंबर: '+ad]:[]),'• मोबाइल नंबर: '+t.phone,'• फ्लैट नंबर: '+(t.flat||'-'),'• प्रवेश तिथि: '+fmtDL(t.entry),'• मासिक एडवांस तय किराया: '+R(t.rent),
  ...(String(t.meter||'')!==''?['• सब-मीटर की शुरुआती रीडिंग: '+t.meter]:[]),'',
  'नोट:',...(t.photo?[]:['• कृपया अपने आधार कार्ड की कॉपी उपलब्ध करा दें (यदि पहले से नहीं दी है)।']),'• '+(t.photo?'':'साथ ही, ')+'कृपया सुनिश्चित करें कि किराया हर महीने की 7 तारीख तक जमा हो जाए।','',
